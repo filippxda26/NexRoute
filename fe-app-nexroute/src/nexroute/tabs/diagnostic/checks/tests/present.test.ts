@@ -290,22 +290,34 @@ describe('the traffic check', () => {
       'goes through section "Vanya_FULL_VPN"',
     );
     expect(
-      presentTraffic(traffic(), { fakeip: true }, {
-        ...dual,
-        routes: { ...dual.routes, ipv6: 'direct-out' },
-      })[1].value,
+      presentTraffic(
+        traffic(),
+        { fakeip: true },
+        {
+          ...dual,
+          routes: { ...dual.routes, ipv6: 'direct-out' },
+        },
+      )[1].value,
     ).toBe('goes through section "Vanya_FULL_VPN" (IPv4)');
     expect(
-      presentTraffic(traffic(), { fakeip: true }, {
-        ...dual,
-        routes: { fakeip: 'direct-out' },
-      })[1].value,
+      presentTraffic(
+        traffic(),
+        { fakeip: true },
+        {
+          ...dual,
+          routes: { fakeip: 'direct-out' },
+        },
+      )[1].value,
     ).toBe('goes through NexRoute');
     expect(
-      presentTraffic(traffic(), { fakeip: true }, {
-        ...dual,
-        routes: { ...dual.routes, ipv6: 'Germany' },
-      })[1].value,
+      presentTraffic(
+        traffic(),
+        { fakeip: true },
+        {
+          ...dual,
+          routes: { ...dual.routes, ipv6: 'Germany' },
+        },
+      )[1].value,
     ).toBe(
       'goes through section "Vanya_FULL_VPN" (IPv4); goes through section "Germany" (IPv6)',
     );

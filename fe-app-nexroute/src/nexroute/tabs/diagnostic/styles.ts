@@ -237,6 +237,30 @@ controls. */
     row-gap: 2px;
 }
 
+/* Narrow cards: keep addresses and section names below their labels. */
+@container (max-width: 599px) {
+    .fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__summary {
+        margin-left: 0;
+    }
+
+    .fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__summary__item {
+        grid-column-gap: 6px;
+        margin-top: 4px;
+    }
+
+    .fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__summary__item__body {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: 2px;
+    }
+
+    .fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__direct_exits {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
+        margin: 0;
+    }
+}
+
 .fkp_diagnostic_alert__summary__item--error {
     color: var(--error-color-medium, red);
 }

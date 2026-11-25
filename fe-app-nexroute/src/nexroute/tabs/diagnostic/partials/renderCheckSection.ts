@@ -151,7 +151,13 @@ export function renderCheckSection(
 
   return E(
     'div',
-    { class: `fkp_diagnostic_alert fkp_diagnostic_alert--${props.state}` },
+    {
+      class: `fkp_diagnostic_alert fkp_diagnostic_alert--${props.state}${
+        props.code.toLowerCase() === 'traffic'
+          ? ' fkp_diagnostic_alert--traffic'
+          : ''
+      }`,
+    },
     [
       header,
       ...(props.items.length && (expanded || !foldable)
