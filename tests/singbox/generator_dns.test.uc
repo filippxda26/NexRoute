@@ -71,7 +71,7 @@ t.test("static records answer from a hosts server after the sections and before 
         ]
     });
     let hosts = q.dns_server_tag(records, "hosts-server");
-    t.eq([ hosts.type, hosts.path ], [ "hosts", null ], "only the records Forkop was given, from no file");
+    t.eq([ hosts.type, hosts.path ], [ "hosts", null ], "only the records NexRoute was given, from no file");
     t.eq(hosts.predefined["ntc.party"], [ "130.255.77.28", "2a03:4000::1" ], "a repeated domain collects every address");
     t.eq(hosts.predefined["www.ntc.party"], [ "130.255.77.28" ]);
     t.ok(hosts.predefined["example.com"] != null, "a trailing comment keeps its record");
@@ -107,6 +107,26 @@ t.test("no records, no hosts server", () => {
 
 const DNS = { dns_server: [ "77.88.8.8" ], bootstrap_dns_server: [ "77.88.8.8" ] };
 const BYPASS = [ { ".name": "direct", enabled: "1", action: "bypass", destinations: "example.org" } ];
+
+t.test("HTTPS DNS records are rejected by default and can be enabled for ECH", () => {
+    let baseline = build({ settings: DNS, section: BYPASS });
+    t.eq(baseline.dns.rules[0], { action: "reject", query_type: "HTTPS" }, "the default remains unchanged");
+    let disabled = build({ settings: { ...DNS, dns_https_records_enabled: "0" }, section: BYPASS });
+    t.eq(disabled.dns.rules[0], baseline.dns.rules[0], "an explicit off switch also rejects HTTPS records");
+
+    let enabled = build({ settings: { ...DNS, dns_https_records_enabled: "1" }, section: BYPASS });
+    t.eq(q.dns_rule(enabled, (r) => r.action == "reject" && r.query_type == "HTTPS"), null,
+        "HTTPS records are no longer globally rejected");
+    t.eq(enabled.dns.rules[0], { action: "reject", domain_suffix: "use-application-dns.net" },
+        "the application DNS block is not relaxed");
+    t.ok(q.dns_rule(enabled, (r) => r.server == "fakeip-server" && q.has(r.query_type, "A") && q.has(r.query_type, "AAAA")) != null,
+        "FakeIP still applies to address requests");
+    t.ok(q.dns_rule(enabled, (r) => r.server == "dnsmasq-server" && r.domain_suffix == ".lan") != null,
+        "the local DNS zone remains local");
+    t.ok(q.dns_rule(enabled, (r) => r.server == "dns-server" && q.has(r.inbound, "source-dns-in") && r.query_type == null &&
+        r.domain_regex == null && r.domain_suffix == null) != null,
+        "unmatched client queries still reach the configured DNS server");
+});
 
 t.test("a DNS inbound refuses what is not hijacked", () => {
     let config = build({ settings: DNS, section: BYPASS });
@@ -191,7 +211,7 @@ t.test("a device whose every query goes to one server keeps the local zone with 
     t.eq(q.dns_rule(router, (r) => q.has(r.source_ip_cidr, "192.168.1.30/32") && r.domain_regex != null), null, "with nothing to carve out");
 });
 
-t.test("unmatched client DNS goes to Forkop, with the local zone left to whoever owns loopback 53", () => {
+t.test("unmatched client DNS goes to NexRoute, with the local zone left to whoever owns loopback 53", () => {
     let moved = build({ settings: DNS, dhcp_dnsmasq: { port: "5353", domain: "home" }, section: BYPASS });
     let local = q.dns_server_tag(moved, "dnsmasq-server");
     t.eq([ local.server, local.server_port ], [ "127.0.0.1", 53 ], "a moved dnsmasq port changes nothing about the fallback");
@@ -199,10 +219,10 @@ t.test("unmatched client DNS goes to Forkop, with the local zone left to whoever
     t.ok(q.dns_rule(moved, (r) => r.server == "dnsmasq-server" && q.has(r.inbound, "source-dns-in") && r.domain_regex == "^[^.]+$") != null, "single-label names");
     t.ok(q.dns_rule(moved, (r) => r.server == "dnsmasq-server" && q.has(r.inbound, "source-dns-in") && r.domain_suffix == ".home") != null, "the DHCP domain");
     t.ok(q.dns_rule(moved, (r) => r.server == "dnsmasq-server" && q.has(r.inbound, "source-dns-in") && q.has(r.query_type, "PTR")) != null, "reverse lookups");
-    let forkop_at = q.dns_rule_index(moved, (r) => r.server == "dns-server" && q.has(r.inbound, "source-dns-in") && r.domain_regex == null);
+    let nexroute_at = q.dns_rule_index(moved, (r) => r.server == "dns-server" && q.has(r.inbound, "source-dns-in") && r.domain_regex == null);
     for (let i, rule in moved.dns.rules)
         if (rule.server == "dnsmasq-server" && q.has(rule.inbound, "source-dns-in"))
-            t.ok(i < forkop_at, "the local zone is answered before the Forkop fallback");
+            t.ok(i < nexroute_at, "the local zone is answered before the NexRoute fallback");
 
     let disabled = build({ settings: DNS, dhcp_dnsmasq: { port: "0" }, section: BYPASS });
     t.eq(q.dns_server_tag(disabled, "dnsmasq-server").server_port, 53, "a disabled dnsmasq port changes nothing either");
@@ -224,6 +244,19 @@ t.test("DNS timeout reaches the core as configured", () => {
     t.eq(config.dns.optimistic, null);
     t.eq(config.dns.independent_cache, null);
     t.eq(config.experimental.cache_file.store_subscriptions, true);
+});
+
+t.test("MAC devices keep source constraints in DNS and route rules", () => {
+    let mac = "02:00:00:00:00:11";
+    let config = build({ settings: { dns_server: [ "8.8.8.8" ] }, section: [
+        { ".name": "direct_mac", enabled: "1", action: "bypass", destinations: "example.org", source_ip_cidr: [ "@mac:" + mac, "192.168.1.20/32" ] },
+        { ".name": "all_mac", enabled: "1", action: "bypass", fully_routed_ips: [ "@mac:02:00:00:00:00:12" ] }
+    ] });
+    t.ok(q.dns_rule(config, (r) => q.has(r.source_mac_address, mac) && q.has(r.domain_suffix, "example.org") && r.source_ip_cidr == null) != null);
+    t.ok(q.dns_rule(config, (r) => q.has(r.source_ip_cidr, "192.168.1.20/32") && q.has(r.domain_suffix, "example.org") && r.source_mac_address == null) != null);
+    t.ok(length(filter(config.route.rules, (r) => q.has(r.source_mac_address, mac) && r.source_ip_cidr == null)) > 0);
+    t.ok(length(filter(config.route.rules, (r) => q.has(r.source_mac_address, "02:00:00:00:00:12"))) > 0);
+    t.ok(q.dns_rule(config, (r) => q.has(r.source_mac_address, "02:00:00:00:00:12")) != null);
 });
 
 t.done();

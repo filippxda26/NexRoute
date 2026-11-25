@@ -1,0 +1,4056 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the NEXROUTE package.
+# ushan0v <ushanov2204@gmail.com>, 2026.
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NEXROUTE\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-31 16:23+0300\n"
+"PO-Revision-Date: 2026-10-31 16:23+0300\n"
+"Last-Translator: ushan0v <ushanov2204@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/outboundNames.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "-- Select --"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseWireGuardConfig.ts
+msgid "[Peer] without AllowedIPs"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseWireGuardConfig.ts
+msgid "[Peer] without PublicKey or Endpoint"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/helpers/formatDuration.ts
+msgid "%d d"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/helpers/formatDuration.ts
+msgid "%d h"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/present.ts
+msgid "%d MB"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/helpers/formatDuration.ts
+msgid "%d min"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/present.ts
+msgid "%d ms"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/helpers/formatDuration.ts
+msgid "%d s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/cbi/choices.ts
+msgid "%s (section is unavailable)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/dns.ts
+msgid "%s answers with %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/ruleSets.ts
+msgid "%s are already in %s: remove them first"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/dns.ts
+msgid "%s cannot find %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/dns.ts
+msgid "%s does not answer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "%s does not resolve"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "%s holds a configuration of NexRoute %s, which is brought to %s as an update would bring it."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "%s holds a configuration of NexRoute %s."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "%s intercepts traffic"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/ruleSets.ts
+msgid "%s is already in %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/ruleSets.ts
+msgid "%s is already in %s: remove it first"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "%s is closed in the firewall"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "%s is empty"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "%s is not a public address"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "%s is PKCS#12: export it as PEM with openssl pkcs12 -in %s -out client.pem -nodes"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/overrides.ts
+msgid "%s is set by the cascade connection"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "%s leads to %s, the router has %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "%s of %s free"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "%s takes DNS queries before NexRoute"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "%s waiting for approval in the console"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+msgid "%s, direct %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+msgid "%s, the same as direct"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "%s: invalid port %s"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "%s: needs a value"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "%s: needs a whole number"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "%s: unsupported protocol %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/clients.ts
+msgid "+ Add client"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "+ Add fallback"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "+ Add JSON outbound"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "+ Add peer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+msgid "+ Add servers"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "+ Add tunnel"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "+ Add URLTest"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "0 switches it off (mssfix in the profile)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "0 switches it off (ping-restart in the profile)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "0 switches it off (reneg-sec in the profile)"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "A client certificate without its key: select the key file with it"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "A client key without its certificate"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "A custom sing-box outbound object"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/overrides.ts
+msgid "A JSON object merged into every server. Parameters a server does not support are skipped, matching parameters are overwritten"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+msgid "A link cannot be built from these settings."
+msgstr ""
+
+#: fe-app-nexroute/src/validators/validateDns.ts
+msgid "A path only with https:// and h3://"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/clientDialog.ts
+msgid "A routing mode of this client's own instead of the server's"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "A session signed in elsewhere, such as after a browser sign-in. When the server refuses it, the login above is used"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "A static key profile needs a CBC cipher"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "A static key profile needs ifconfig"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "A URL or local path. The format is detected automatically"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "A URL, or the absolute path of a file on the router"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "A WireGuard, OpenVPN or OpenConnect configuration, or a wireguard://, vpn:// or anyconnect:// link"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderExitPanel.ts
+msgid "About the address on ipinfo.io"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+msgid "Absent Interface"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Accept routes"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Accept server DNS"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/traffic.ts
+msgid "Access to YACD from the internet. The port has to be opened in the firewall"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
+msgid "Accurate latency measurement"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Action"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/render.ts
+msgid "Active"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/gridSection.ts
+msgid "Add"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+msgid "Add a client to this server to get a link."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/table.ts
+msgid "Add a connection URI, subscription, interface, tunnel or JSON outbound"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/table.ts
+msgid "Add a domain, built-in list, rule set or device"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+msgid "Add a section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+msgid "Add a section to configure routing"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+msgid "Add a server inbound"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnect.ts
+msgid "Add a username, a client certificate or a session cookie"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Add AmneziaWG junk and signature packets. Makes the traffic harder to recognize"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/validate.ts
+msgid "Add at least one AmneziaWG parameter"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/headers.ts
+msgid "Add header"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/outboundNames.ts
+msgid "Add URLTest"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/overrides.ts
+msgid "Added after every server name"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/overrides.ts
+msgid "Added in front of every server name"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/validateSubnet.ts
+msgid "Address %s is not allowed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Addresses"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Advanced settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Advertise routes"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "All device traffic"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/render.ts
+msgid "All devices"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "All except selected"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/tunnel.ts
+msgid "All of the clients' traffic goes to the selected routing mode"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+msgid "All remaining"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/render.ts
+msgid "All routes"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "All servers"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "All traffic from the device is forced through the section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/tunnel.ts
+msgid "All traffic through the server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Allow HTTPS DNS records (ECH)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Allow type HTTPS (65) DNS answers used for ECH. May affect HTTP/3 and routing; ECH also requires browser and site support."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Allowed IPs"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "ALPN"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Also deflate"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/validators.ts
+msgid "An even number of hex digits, up to 16"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "An OpenWrt uplink or tunnel interface"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "another sing-box is running (PID %s)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Answers to the login form"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Any"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Anyone on the way can pose as the server. Add the CA certificate or a fingerprint instead"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Applies WARP+ to the profile account"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/helpers/serviceStatusDisplay.ts
+msgid "applying..."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderAvailableActions.ts
+msgid "Applying..."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Approved"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/validateSavedSize.ts
+msgid "At most %d KB, this is %d KB"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/tunnel.ts
+msgid "At most one IPv4 subnet"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/tunnel.ts
+msgid "At most one IPv6 subnet"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "auth in the profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Auth token"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Authentication"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Authorization key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/logs/render.ts
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/render.ts
+msgid "Auto refresh"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+msgid "Availability check for every server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderAvailableActions.ts
+msgid "Available actions"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Available: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/cbi/modal.ts
+msgid "Back"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+msgid "BBR profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/overrides.ts
+msgid "Before a letter, write ${1} instead of $1"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "behind the provider's NAT (%s), unreachable from the internet"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/dns.ts
+msgid "Bootstrap DNS"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Bootstrap DNS Query Mode"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Bootstrap DNS Servers"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Both directions"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Browser sign-in"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Built-in lists"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/ruleSets.ts
+msgid "By default only the domain conditions of a rule set are applied. This option adds its IP addresses and subnets to nftables. Large lists can load the router heavily. Enable it only if you know the set holds the subnets you need"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "By default the router's routes choose it"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "CA certificate"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/service.ts
+msgid "Cache File Path"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+#: fe-app-nexroute/src/nexroute/tabs/components/removeDialog.ts
+msgid "Cancel"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Cannot be this section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Carry the traffic over the TLS connection without the faster DTLS channel, for a network that drops or slows UDP"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/cascade.ts
+msgid "Cascade connection"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "cert without key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Certificate"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Certificate profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "Change the build"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Change the HTTP headers of the request"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Change the parameters of the servers this subscription adds"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderExitPanel.ts
+msgid "Check again"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "Check interval"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Check IP"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+msgid "Check timeout"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "Check URL"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+msgid "Checked from top to bottom until the first working server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/initController.ts
+msgid "Checking, please wait"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/report.ts
+msgid "Checks"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/present.ts
+msgid "Checks failed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/present.ts
+msgid "Checks passed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Cipher"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Cipher suites up to TLS 1.2, separated by colons (tls-cipher in the profile)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/traffic.ts
+msgid "Clash API key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/methods/custom/clashApi.ts
+msgid "Clash API request timed out after it was sent"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/methods/custom/clashApi.ts
+msgid "Clash API response was lost after the request was sent"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Click a node to pin it, and click it again to unpin it."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/clientDialog.ts
+msgid "Client"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Client certificate"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Client fingerprint"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Client key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Client version"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/clientDialog.ts
+msgid "Client: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/clients.ts
+msgid "Clients"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/connectionList.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+#: fe-app-nexroute/src/nexroute/tabs/settings/staticHosts.ts
+#: fe-app-nexroute/src/partials/modal/renderModal.ts
+msgid "Close"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/render.ts
+msgid "Close all"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/render.ts
+msgid "Close all connections"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/connectionList.ts
+msgid "Close connection"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+msgid "Close matching"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+msgid "Close the connections that match the filters"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/render.ts
+msgid "Closed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Collapse section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Common name (name)"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "comp-lzo: unsupported mode %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+msgid "Components"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "compress: unsupported algorithm %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Compression"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Compression weakens encryption where an attacker can mix data into the traffic"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Conditions"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/service.ts
+msgid "Config File Path"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Configuration"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "Conflicts"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+msgid "Congestion control"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/cascade.ts
+msgid "Connect through"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Connect to every server of this subscription through another section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/links.ts
+msgid "Connect to the server through another section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Connect to the tunnel server through another section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/sections.ts
+msgid "connection failed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+msgid "Connection timeout"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/links.ts
+msgid "Connection URI"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Connections"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+msgid "Connections are unavailable"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Control channel key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Control channel protection"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Control characters are not allowed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Coordination server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Coordination server through"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Coordination server through a section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+#: fe-app-nexroute/src/helpers/copyToClipboard.ts
+msgid "Copied"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/logs/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/logs/render.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+#: fe-app-nexroute/src/partials/modal/renderModal.ts
+msgid "Copy"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderExitPanel.ts
+msgid "Copy address"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/logs/initController.ts
+msgid "Copy matching"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Copy proxy link"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "Copy the output"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+msgid "Copy the profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "Core"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/initController.ts
+msgid "Could not disable autostart"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/initController.ts
+msgid "Could not enable autostart"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/controls.ts
+msgid "Could not generate a Reality key pair"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/controls.ts
+msgid "Could not generate a VLESS Encryption key pair"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/present.ts
+msgid "Could not get the check results"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderExitPanel.ts
+msgid "Country"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "CPU"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
+msgid "Create and fetch Cloudflare WARP profiles through the selected section. The tunnels' own traffic does not go through it"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Created in the Tailscale console under Settings → Keys"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderWidget.ts
+msgid "Currently unavailable"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+msgid "Dashboard"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Dashboard currently unavailable"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Data ciphers"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "data-ciphers in the profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Dead peer detection, seconds"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+msgid "Default"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Default (1.2)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Default (BF-CBC)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Default (legacy)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Default (Linux)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Default (SHA1)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "Delay in milliseconds before reloading NexRoute after interface UP"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/table.ts
+msgid "Delete"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/initController.ts
+msgid "Device"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Device ID"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Device name"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/conditions.ts
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "Device or IP"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "device waiting for approval in the console"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Devices"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/initController.ts
+msgid "Diagnostic report"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/constants.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/routing.ts
+msgid "Direct"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderAvailableActions.ts
+msgid "Disable autostart"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/traffic.ts
+msgid "Disable QUIC"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/traffic.ts
+msgid "Disables QUIC for compatibility and to fix video streaming"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "DNS outside the rules"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+msgid "DNS Query Mode"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "DNS requests through"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "DNS Rewrite TTL"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "DNS Server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "DNS Strategy"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "DNS through section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "DNS timeout"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/dns.ts
+msgid "dnsmasq does not answer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Do not check"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Do not verify the server certificate"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Does not expire"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "does not listen on %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+msgid "does not use the router's DNS"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+msgid "Domain Resolver"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Domains"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Domains and IPs"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/conditions.ts
+msgid "Domains only"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "done"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Downlink"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/logs/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/logs/render.ts
+#: fe-app-nexroute/src/partials/modal/renderModal.ts
+msgid "Download"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
+msgid "Download lists through"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
+msgid "Download lists through a section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/logs/initController.ts
+msgid "Download matching"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
+msgid "Download the built-in lists and remote rule sets through the selected section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+msgid "Download the profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Download the subscription through another section instead of directly"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/connectionList.ts
+msgid "Downloaded"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/healthCheck.ts
+msgid "Drop every active connection when the selected server changes"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Duplicate value"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+#: fe-app-nexroute/src/nexroute/tabs/settings/staticHosts.ts
+msgid "Edit"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/cbi/grid.ts
+msgid "Edit rule action"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/report.ts
+msgid "empty"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Enable"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderAvailableActions.ts
+msgid "Enable autostart"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+msgid "Enable built-in DNS resolver for domains handled by this section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "Enable Output Network Interface"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/traffic.ts
+msgid "Enable YACD"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/traffic.ts
+msgid "Enable YACD WAN Access"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Ephemeral node"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "Exclude by pattern"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "Exclude devices from routing"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "Exclude servers"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "Exclude types"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+msgid "excluded from routing"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderExitPanel.ts
+msgid "Exit IP"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Exit node"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "exit node waiting for approval in the console"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderExitPanel.ts
+msgid "Exit through"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+msgid "Exit via \"%s\""
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Expand section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/healthCheck.ts
+msgid "Expected status"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Expired %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Expires"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Expires %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "failed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+msgid "Failed to close connection"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+msgid "Failed to close connections"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+#: fe-app-nexroute/src/helpers/copyToClipboard.ts
+msgid "Failed to copy!"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/methods/shell/index.ts
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+#: fe-app-nexroute/src/nexroute/tabs/components/installerApi.ts
+msgid "Failed to execute"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Failed to get the Tailscale state: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/model.ts
+msgid "Failed to load default subscription headers"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/initController.ts
+#: fe-app-nexroute/src/partials/modal/renderModal.ts
+msgid "Failed to load diagnostics"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/logs/initController.ts
+msgid "Failed to load logs"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "Failed to load the configuration: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Failed to pin the server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/serviceTransition.ts
+msgid "Failed to restart the service"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/serviceTransition.ts
+msgid "Failed to start the service"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/serviceTransition.ts
+msgid "Failed to stop the service"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Failed to switch the server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Failed to update lists"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Failed to update subscriptions"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "Failed to upload the file: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Fallback"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Fallback cipher"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Fallback details"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Fallback details are unavailable"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+msgid "Fallback settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+msgid "Fallback: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+msgid "Fill in the credentials of this client to get a link."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderExitPanel.ts
+msgid "Finding the exit…"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Fix the settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/staticHosts.ts
+msgid "Fixed addresses for domains in the hosts format"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/clients.ts
+msgid "Flow"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "For a field the server asks besides the login, as openconnect --form-entry takes it: FORM:NAME=VALUE"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "For a server of your own, such as Headscale"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "For a server of your own: the authority that issued its certificate"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "For a server that admits only some systems"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "For example 30m, 12h or 1d"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/report.ts
+msgid "NexRoute configuration"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/report.ts
+msgid "NexRoute diagnostic report"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/constants.ts
+msgid "NexRoute DNS"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/services/core.service.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "NexRoute Error"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "NexRoute ignores these devices entirely: their traffic is not routed and their DNS is not captured"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/constants.ts
+msgid "NexRoute service proxy"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/logs/render.ts
+msgid "NexRoute system logs"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/constants.ts
+msgid "NexRoute transparent proxy"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "form-entry: format FORM:NAME=VALUE"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/healthCheck.ts
+msgid "Format: *, 204, 200-299"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/tunnel.ts
+#: fe-app-nexroute/src/validators/validateSingBoxFilePath.ts
+msgid "Format: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/wireguard.ts
+msgid "Format: <b 0xdeadbeef><r 4>"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Format: 10.0.0.2/24"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Format: 30m, 12h, 1d"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/conditions.ts
+msgid "Format: 80 or 1000-2000"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/validators.ts
+msgid "Format: file:///www"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnect.ts
+msgid "Format: FORM:NAME=VALUE"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpn.ts
+msgid "Format: host:port"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Format: host:port/group"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/overrides.ts
+msgid "Format: pattern => replacement"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Format: pin-sha256:… or a SHA-1"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Forward secrecy only"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Fragment size"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "From a file…"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/controls.ts
+msgid "Generate"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/controls.ts
+msgid "Generate a key pair"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/amnezia.ts
+msgid "Generate parameters"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Generate profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderRunAction.ts
+msgid "Get report"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+msgid "goes past NexRoute"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+msgid "goes through NexRoute"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "going to the LuCI home page"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "Group name"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "gRPC service"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/wireguard.ts
+msgid "H1-H4 must not overlap"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/headers.ts
+msgid "Header name"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/headers.ts
+msgid "Header value"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/wireguard.ts
+msgid "HeaderProtectionKey needs S1-S4 of at least 12"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/headers.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Headers"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderCheckSection.ts
+msgid "Hide details"
+msgstr ""
+
+#: fe-app-nexroute/src/partials/modal/renderModal.ts
+msgid "Hide values"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/connectionList.ts
+msgid "Host"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Host and port. Put tcp:// or udp:// before a server on the other transport"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Host, with a port and a group path if the server has them: vpn.example.com:8443/staff"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "How long DNS records are cached, in seconds"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+msgid "How long to wait for a connection before moving to the next server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+msgid "How long to wait for a server to answer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/healthCheck.ts
+msgid "How long until health checks stop when the group is unused"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "How often every server of the group is checked"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/links.ts
+msgid "HTTP"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/api.ts
+msgid "HTTP error"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/healthCheck.ts
+msgid "HTTP status codes of a successful check. * is any response, or values and ranges: 204/200-299"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/healthCheck.ts
+msgid "Idle timeout"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "ifconfig and ifconfig-ipv6 in the profile"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "ifconfig-ipv6: needs an address"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "ifconfig: needs two addresses"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Import"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Import configuration"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Imported the first server. The profile also lists: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Imported. Not carried over: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "in progress"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "Include by pattern"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/ruleSets.ts
+msgid "Include IP addresses and subnets"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "Include servers"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
+msgid "Includes connection setup and the TLS handshake"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "insecure: also MD5 and short keys"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/render.ts
+msgid "Installed versions"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "Installer log"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "Installer output"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/helpers/serviceStatusDisplay.ts
+msgid "installer running..."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/sections.ts
+msgid "interface is up, no internet through it"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "Interface Monitoring"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "Interface Monitoring Delay"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "Interface monitoring for Bad WAN"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+msgid "Interface name"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/healthCheck.ts
+msgid "Interrupt connections"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "Interrupt the installer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "interrupted"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+#: fe-app-nexroute/src/helpers/parseWireGuardConfig.ts
+msgid "Invalid %s"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseWireGuardConfig.ts
+msgid "Invalid AmneziaWG parameters"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnect.ts
+msgid "Invalid base32 secret"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/methods/custom/clashApi.ts
+msgid "Invalid Clash API response"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/validateDns.ts
+msgid "Invalid DNS server"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Invalid domain"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Invalid domain or IP address"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/headers.ts
+msgid "Invalid header name"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Invalid interface name"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Invalid IP address"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Invalid IP address or subnet"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Invalid JSON"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Invalid JSON object"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Invalid key"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/material.ts
+msgid "Invalid OpenVPN static key"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseWireGuardConfig.ts
+msgid "Invalid or unsupported Amnezia VPN link"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnect.ts
+msgid "Invalid otpauth:// link"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Invalid path"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/material.ts
+msgid "Invalid PEM certificate"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/material.ts
+msgid "Invalid PEM private key"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Invalid pin-sha256"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Invalid port"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Invalid regular expression"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Invalid SHA-256 fingerprint"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Invalid subnet"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/material.ts
+msgid "Invalid tls-crypt-v2 key"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Invalid URL"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Invalid UUID"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/helpers/parseWireGuardConfig.ts
+msgid "Invalid WireGuard configuration"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/validateDns.ts
+msgid "IP address only"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/exitNodes.ts
+msgid "IP address or name of the device. Once the tunnel connects, the devices of its tailnet are offered here"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/exitNodes.ts
+msgid "IP address or name of the device. The tunnel has no connection to the coordination server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/exitNodes.ts
+msgid "IP address or name of the device. The tunnel is not signed in to its tailnet: check the authorization key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "IPv4 only"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "IPv6 only"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/present.ts
+msgid "Issues detected"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "It replaces the current one through unsaved changes, as if you made them by hand. NexRoute runs it once you apply them."
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/wireguard.ts
+msgid "Jmin is greater than Jmax"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/model.ts
+msgid "JSON endpoint"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/protocols.ts
+msgid "JSON inbound"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "JSON Inbound"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/outboundJson.ts
+msgid "JSON outbound"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/outboundJson.ts
+msgid "JSON outbound: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/removeDialog.ts
+msgid "Keep settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/clients.ts
+msgid "Key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Key direction"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Key passphrase"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Key renegotiation, seconds"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "key without cert"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "LAN subnets that tailnet devices can reach"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Last online %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "Latency difference"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "Latency measurement for every server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Latency test failed: the Clash API did not answer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
+msgid "Latency test URL"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Legacy encryption"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Level"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "License key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/headers.ts
+msgid "Line breaks are not allowed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/links.ts
+msgid "Link"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Linux, 32-bit"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Linux, 64-bit"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
+msgid "List update interval"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Listen address"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Listen port"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Lists updated"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Load"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/cbi/material.ts
+msgid "Load from a file"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/render.ts
+msgid "Loading connections..."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/logs/render.ts
+msgid "Loading logs..."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Loading…"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/dns.ts
+msgid "Local DNS"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Local port"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/report.ts
+msgid "Log"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/service.ts
+msgid "Log Level"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Login group"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+msgid "Logs"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/network.ts
+msgid "LuCI web interface"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/dns.ts
+msgid "Main DNS"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Main DNS Query Mode"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+msgid "Masquerade"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Match destination domains and addresses"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Match the domains of DNS queries"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+msgid "Max speed from a client, Mbps"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+msgid "Max speed to a client, Mbps"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Maximum time to wait for a DNS response"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "Memory"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/report.ts
+msgid "Memory: %s of %s free"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+msgid "Method"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Minimum TLS version"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "Missing file %s: select it together with the profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Mode"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "Monitored Interfaces"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+msgid "Monitoring"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "More details"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "MSS clamping"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "MTU"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Multiplex"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "N/A"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/clients.ts
+msgid "Name"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Name already taken"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Name in the console"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Name match"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/overrides.ts
+msgid "Name prefix"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/overrides.ts
+msgid "Name suffix"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Narrows the section's conditions to these ports. Without conditions, takes all traffic to them"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/validators.ts
+msgid "Needs a base64 key of %d bytes"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/tunnel.ts
+msgid "Needs an IPv4 subnet"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+msgid "Network"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/providers.ts
+msgid "Network interface"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+msgid "Network Interface"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+msgid "Network interface settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+msgid "Network interface: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "No"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseWireGuardConfig.ts
+msgid "No [Interface] or [Peer] section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+msgid "No active connections"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseWireGuardConfig.ts
+msgid "No Address or PrivateKey"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderExitPanel.ts
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "no answer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "no answer from the router"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/sections.ts
+msgid "no answer in time"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderExitPanel.ts
+msgid "No answer: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "No CA certificate (ca)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/initController.ts
+msgid "No closed connections"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "no connection to the coordination server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "No connection to the coordination server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/exitNodes.ts
+msgid "No device of the tailnet is approved as an exit node"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/validateStaticHosts.ts
+msgid "No domain"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "No NexRoute release wrote configuration version %s"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "No gateway"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "No host"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "No IPv6 in the tunnel"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/logs/initController.ts
+msgid "No logs available"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/logs/initController.ts
+msgid "No logs match the current filters"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "No other devices in the tailnet"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "no public address"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "No remote directive"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/sections.ts
+msgid "No sections with a proxy"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "No server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "No servers to check"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "No tag field"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Node key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "node key expired"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Node list is empty"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Nodes"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/clientDialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/protocols.ts
+msgid "None"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "none found"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+msgid "not checked: no answer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+msgid "not checked: the check service did not answer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/sections.ts
+msgid "not checked: the Clash API did not answer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/sections.ts
+msgid "Not checked: the Clash API did not answer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/sections.ts
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "not in the running configuration"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Not in use"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/helpers/singBoxVersion.ts
+msgid "Not installed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "not running"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/diagnostic.store.ts
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/initController.ts
+msgid "Not running"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "not running: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Not set"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "not started"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/validators.ts
+msgid "Not supported by this protocol"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/conditions.ts
+msgid "Nothing after %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "Nothing to upload: the file holds the current configuration"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Number or range from 0 to 4294967295"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+msgid "Obfuscation"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/amnezia.ts
+msgid "Obfuscation parameters"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+msgid "Obfuscation password"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Off"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/exitNodes.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Offline"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "OIDC access token"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/overrides.ts
+msgid "One rule per line: pattern => replacement, applied in order. The pattern is a regular expression, $1 in the replacement keeps a captured group and ${1} keeps it in front of a letter. Example: ^HK-(.*)$ => Hong Kong $1"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "One-time code"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Online"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "online · %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/exitNodes.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Online now"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/validateUrl.ts
+msgid "Only %s"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/wireguard.ts
+msgid "Only 0 or 1"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/validateTailscaleHostname.ts
+msgid "Only a-z, 0-9 and hyphens, up to 63 characters"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Only anyconnect://create and anyconnect://connect links carry a server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Only for a key protected by a passphrase"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Only for a server older than 2.4 (data-ciphers-fallback in the profile)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Only for a server that requires it: compression weakens encryption"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Only for a token bound to a device"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Only for a token protected by a password"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Only for devices"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Only https:// or no scheme"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/validators.ts
+msgid "Only https://, http:// or file://"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Only if the server uses it too (fragment in the profile)"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Only letters, digits and . _ -"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "Only selected"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Open the port"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Opens the port in the router's firewall to connections from the internet"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/withTimeout.ts
+msgid "Operation timed out"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/initController.ts
+msgid "OS"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "Output Network Interface"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/clientDialog.ts
+msgid "Override routing"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Packet authentication"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Padding"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/cbi/dnsServers.ts
+msgid "Parallel"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Parallel asks every server at once and is faster. Sequential asks them in turn until the first answer"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Parameters after ? are not supported"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/clients.ts
+msgid "Password"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Path MTU"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/validateSingBoxFilePath.ts
+msgid "Path must end with %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/validators.ts
+msgid "Path must start with /"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/render.ts
+msgid "Paused while text is selected"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Peer address"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Peer IPv6 address"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "peer-fingerprint: SHA-256 only"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Peers"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "PEM text or the path of a file on the router"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/diagnostic.store.ts
+msgid "Pending"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Persistent keepalive"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Pick a domain"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Pick a free port"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "PIN"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "pin-sha256:… as openconnect prints it. With one, the CA certificate is not needed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "ping in the profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Ping interval, seconds"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Ping the device"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "PKCS#12 is not supported: export the certificate and the key as PEM"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "port %s is taken by %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/validators.ts
+msgid "Port taken by %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Ports"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Pre-shared key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Prefer IPv4"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Prefer IPv6"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Preferred IP address type for domains"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Prefix length from %d to %d"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/conditions.ts
+msgid "Prefixes: full:, keyword:, regex:"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Private key"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/validateProxyUrl.ts
+msgid "Probably a subscription URL: paste it into Subscription"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Profile ID"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Protocol"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/validateDns.ts
+msgid "Protocol %s is not supported"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Proxy link is unavailable"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "PSKC token files are not supported: use the base32 secret"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Public address"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Public key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+msgid "QR code"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Random server order"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Reach the coordination server through a section instead of the WAN"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Ready-made lists of domains and subnets from %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Reality private key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Reality public key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Reality short ID"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Reconnect after silence, seconds"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Refill"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Refuse a TLS 1.2 key exchange without forward secrecy"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "remote: no server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/removeDialog.ts
+msgid "Remove"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "Remove NexRoute"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "Remove NexRoute?"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "Remove servers from the selection above"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "Remove servers whose names match the regular expression"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Remove the device from the tailnet once it goes offline"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/material.ts
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "Remove the key passphrase: openssl pkey -in key.pem -out plain.pem"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/removeDialog.ts
+msgid "Remove with settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/overrides.ts
+msgid "Rename servers"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Reported system"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Request through"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Request through a section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
+msgid "Request WARP through"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
+msgid "Request WARP through a section"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Required"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseWireGuardConfig.ts
+msgid "Reserved is not supported: add a Cloudflare WARP tunnel"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Reserved name"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Resolve the addresses of the main DNS servers and proxies. Several servers give automatic failover. The protocol is set by a prefix: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Resolves domains that match the section conditions. Several servers give automatic failover. The protocol is set by a prefix: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+msgid "resolves past NexRoute"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderAvailableActions.ts
+msgid "Restart"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/helpers/serviceStatusDisplay.ts
+msgid "restarting..."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderAvailableActions.ts
+msgid "Restarting..."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/connectionList.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Route"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Route DNS requests through a section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Route main DNS requests through a section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+msgid "Route the resolver's DNS requests through a section instead of this network interface"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Router"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/network.ts
+msgid "router SSH"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/report.ts
+msgid "Router up for %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/tunnel.ts
+msgid "Routes"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/clientDialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/routing.ts
+msgid "Routing mode"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/report.ts
+msgid "Routing rules"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+msgid "Routing rules are checked from top to bottom"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/clientDialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/routing.ts
+msgid "Routing section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
+msgid "Rule set auto update"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/ruleSets.ts
+msgid "Rule set settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/ruleSets.ts
+msgid "Rule set: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Rule sets"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/constants.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/routing.ts
+msgid "Rules"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderRunAction.ts
+msgid "Run Diagnostic"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "Run the installer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/helpers/serviceStatusDisplay.ts
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "running"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "running for %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/validators.ts
+msgid "Same file as the certificate"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/cbi/modal.ts
+#: fe-app-nexroute/src/nexroute/tabs/settings/staticHosts.ts
+msgid "Save"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/logs/render.ts
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/render.ts
+msgid "Search"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Seconds, or a range such as 25-35"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/constants.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/routing.ts
+msgid "Section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Section name"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Section unavailable"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/groups.ts
+msgid "Sections"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Security"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Select a .ovpn, .conf, .xml or .nmconnection file"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "Select a server or set a pattern"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Select an interface"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "Select the WAN interfaces to be monitored"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Selected"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Selects the first available node by priority"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Selects the node with the lowest latency"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Self-signed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/traffic.ts
+msgid "Send BitTorrent traffic past the proxy"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/cbi/dnsServers.ts
+msgid "Sequential"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/network.ts
+msgid "server %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Server address"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Server certificate"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Server certificate fingerprints"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Server certificate name"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Server certificate purpose"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/table.ts
+msgid "Server details"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Server details: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "Server filter"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+msgid "Server group settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+msgid "Server group: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+msgid "Server groups"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+msgid "Server key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/links.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "Server name"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Server name (SNI)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/overrides.ts
+msgid "Server parameters"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Server port"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/links.ts
+msgid "Server settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/links.ts
+msgid "Server: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Servers"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "Servers of these protocols are not imported"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "Servers of these protocols do not end up in the group"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "Servers whose names match the regular expression"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/groups.ts
+msgid "Service"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/methods/shell/index.ts
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/serviceTransition.ts
+msgid "Service action failed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Service list"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Session cookie"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+msgid "Set the public host and the port to get a link."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+msgid "Set the public host and the port to get a profile."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/model.ts
+msgid "Set the User-Agent under Headers"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/cbi/dynamicList.ts
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+msgid "Settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/cbi/modal.ts
+msgid "Settings not saved"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/interfaces.ts
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Several servers give automatic failover. The protocol is set by a prefix: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/healthCheck.ts
+msgid "Shorter than the check interval"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+msgid "Show a QR code"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderCheckSection.ts
+msgid "Show details"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Show metadata"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Show the metadata block on the dashboard"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Sign in"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Sign in with a certificate, alone or together with the login"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "sing-box %s, not sing-box-forkop"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/constants.ts
+msgid "sing-box Clash API"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/services/coreFeatures.service.ts
+msgid "sing-box is built without %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/service.ts
+msgid "sing-box log level"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "sing-box-forkop %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "sing-box-forkop %s (%s)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "sing-box-forkop %s is outdated: %s or newer is needed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/service.ts
+msgid "sing-box-forkop is not installed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/initController.ts
+msgid "Skipped: NexRoute is not running"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "SNI"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/links.ts
+msgid "SOCKS5"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Sort by latency"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/connectionList.ts
+msgid "Source"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "Source Network Interface"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Spaces are not allowed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "SSO and SAML through the sing-box dashboard, which the tunnel waits for at every connection"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderAvailableActions.ts
+msgid "Start"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/warpGenerate.ts
+msgid "Start NexRoute: WARP is requested through a section"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Start of the common name (name-prefix)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Starting"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/helpers/serviceStatusDisplay.ts
+msgid "starting..."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderAvailableActions.ts
+msgid "Starting..."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Stateless (lz4, lzs)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/staticHosts.ts
+msgid "Static DNS records"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Static key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Status"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderAvailableActions.ts
+msgid "Stop"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/helpers/serviceStatusDisplay.ts
+msgid "stopped"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Stopped"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/helpers/serviceStatusDisplay.ts
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "stopping..."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderAvailableActions.ts
+msgid "Stopping..."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/connectionList.ts
+msgid "Straight from the router, without a proxy or tunnel"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Subnets"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Subscription"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Subscription auto update"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Subscription name"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Subscription settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Subscription URL"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "Subscription URL or local path"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Subscription: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Subscriptions updated"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Support"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/coreSupport.ts
+msgid "Supported URIs: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "Switching threshold in ms at which to move to a faster server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/cbi/localDevices.ts
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/report.ts
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/source.ts
+msgid "System"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/partials/renderSystemInfo.ts
+msgid "System information"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Tailnet"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Tailscale details"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "TAP (layer 2) is not supported, only TUN"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+msgid "TCP and UDP"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "Terminal"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderToolbar.ts
+msgid "Test all sections"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Test latency"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "The / character is not allowed"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "The <%s> block is not closed"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "The address links and profiles point at"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "The AnyConnect version reported to the server"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "The Array Networks protocol is not supported by sing-box"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "The authorities the router trusts are not used"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "The configuration is from NexRoute %s, and NexRoute loads configurations from %s on"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "The configuration is from NexRoute %s, newer than this one: update NexRoute first"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "The configuration of NexRoute %s cannot be brought to %s: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/exitNodes.ts
+msgid "The device internet traffic leaves through. Without one, only tailnet devices and the subnets they share are reachable"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "The file is not a NexRoute configuration: it names no version"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "The file is not a NexRoute configuration: its version is not a release number"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "The file is not a UCI configuration"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "The file is over 1 MB, far larger than a NexRoute configuration"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/outboundNames.ts
+msgid "The group joins as the single node it has selected"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "The group, realm or gateway the server offers at sign-in"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/services/coreFeatures.service.ts
+msgid "the installed sing-box lacks %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "The interface the traffic comes from"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "The key is kept by the system or a token and cannot be exported"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "The link connects over IPsec, which OpenConnect does not speak"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "The MTU of the route to the server, which the tunnel is fitted into"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "The name the router reports to the server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/identity.ts
+msgid "The name this device appears under in the Tailscale console"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "the page reloads"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "The profile connects over IPsec, which OpenConnect does not speak"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "The range starts after it ends"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "The router answers the request for a code itself"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+msgid "The router issues the certificate of this client when the settings are applied. Apply them to get a profile."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+msgid "The router issues the certificate of this server when the settings are applied. Apply them to get a link."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/details.ts
+msgid "The router issues the keys of this client when the settings are applied. Apply them to get a profile."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+msgid "The router itself becomes a proxy server for your devices"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/connectionList.ts
+msgid "The router itself: its services and programs"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "The second address of ifconfig in the profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "The second address of ifconfig-ipv6 in the profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "The section's other conditions apply only to these devices"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "The server is disabled."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "The server is not running yet. Apply the settings, or start NexRoute."
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/tunnel.ts
+msgid "The server's address in the subnet, such as %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "The servers that are imported"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "The servers that are not imported"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "The servers that do not end up in the group"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/serverFilters.ts
+msgid "The servers that end up in the group"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "The signature algorithms and key sizes accepted (tls-cert-profile in the profile)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "The subnets that go through this peer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "The tunnel is not running yet. Apply the settings, or start NexRoute."
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "The username goes in its own field"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+msgid "This device"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "This is a server configuration, not a client profile"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "This is not an OpenConnect configuration"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "This is not an OpenVPN profile"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "This JSON is not an openconnect endpoint"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/connectionList.ts
+msgid "Time"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "TLS (certificates)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "TLS 1.0 and weak ciphers, for an old server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "TLS ciphers"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "TLS only"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Token password"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Token secret"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Token secret: invalid base32"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Token secret: invalid hexadecimal"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Tolerance"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/traffic.ts
+msgid "Torrents directly"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "TOTP: the base32 secret or the otpauth:// link of the QR code. RSA SecurID: the token string. OIDC: the access token"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/groups.ts
+msgid "Traffic"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Traffic obfuscation"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Traffic Total"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/openvpn.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/protocol.ts
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Transport"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Transport host"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Transport path"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "Trust only the CA certificate above"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "tun-mtu in the profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/validate.ts
+msgid "Tunnel"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Tunnel addresses"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Tunnel name"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Tunnel settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/tunnel.ts
+msgid "Tunnel subnet"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Tunnel type"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Tunnel: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/connectionList.ts
+msgid "Type"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/services/systemInfo.service.ts
+msgid "unknown"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Unknown compression mode %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderExitPanel.ts
+msgid "unknown error"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/api.ts
+msgid "Unknown error"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Unknown format"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Unknown OpenConnect protocol %s"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Unknown operating system %s"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Unknown option --%s"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Unknown option %s"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Unknown token mode %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "Unsaved changes to NexRoute made earlier are replaced."
+msgstr ""
+
+#: fe-app-nexroute/src/validators/validateProxyUrl.ts
+msgid "Unsupported link"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/clients.ts
+msgid "Up to %d characters"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Update interval"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderToolbar.ts
+msgid "Update lists"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
+msgid "Update remote lists and rule sets on a schedule"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderToolbar.ts
+msgid "Update subscriptions"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Update the subscription automatically at a set interval"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "Updated %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Uplink"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "Upload"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
+msgid "Upload the configuration?"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/connectionList.ts
+msgid "Uploaded"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Uptime"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
+msgid "URL for the shared latency test of section nodes"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "URL or absolute path only"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "URLTest"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/partials/renderSections.ts
+msgid "URLTest details"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "URLTest details are unavailable"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "URLTest settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "URLTest: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts
+msgid "Use pin-sha256 instead of a certificate SHA-256"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Use subnets other devices share"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "Use the tunnel's DNS for the domains its server declares. Add those domains to the section so that devices reach them through the tunnel"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/clients.ts
+msgid "User name"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+msgid "User-Agent"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openconnectForm.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Username"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Username and password"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/clients.ts
+msgid "UUID"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "verify-x509-name in the profile"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "verify-x509-name: no name"
+msgstr ""
+
+#: fe-app-nexroute/src/helpers/parseOpenVPNConfig.ts
+msgid "verify-x509-name: unsupported type %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "VLESS Encryption"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "VLESS Encryption private key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "VLESS Encryption public key"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/entry/view.ts
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/groups.ts
+msgid "VPN server"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Waiting for approval in the console"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
+msgid "waiting for sign-in"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Waiting for sign-in"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts
+msgid "Warnings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "WARP profile"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "WARP server address"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "WARP server port"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/configFile.ts
+msgid "What the update changes in it:"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/form.ts
+msgid "What to do when this section's conditions match"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/routing.ts
+msgid "Where to send the traffic of this server's connections"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
+#: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
+msgid "Which servers end up in the group"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/subscriptions/options.ts
+msgid "Which servers to import"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Who resolves domains no rule matched"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/fields.ts
+msgid "Whole number from %d"
+msgstr ""
+
+#: fe-app-nexroute/src/validators/messages.ts
+msgid "Whole number from %d to %d"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "Whole subject (subject)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/model.ts
+msgid "WireGuard peer"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "WireGuard peer settings"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/dialog.ts
+msgid "WireGuard peer: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/tunnels/openvpnForm.ts
+msgid "With fingerprints the CA certificate is not needed (peer-fingerprint in the profile)"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "XHTTP mode"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/traffic.ts
+msgid "YACD and other Clash API clients log in with it"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/ruleSets.ts
+msgid "YAML is not supported"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/dashboard/initController.ts
+msgid "Yes"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/components/runTime.ts
+msgid "yesterday %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/servers/form/security.ts
+msgid "Your own certificate"
+msgstr ""
+
+msgid "Clear displayed logs; system logs are kept"
+msgstr ""
+
+msgid "Clear logs"
+msgstr ""
+
+msgid "Direct exit (%s)"
+msgstr ""
+
+msgid "%s, possible IPv6 bypass"
+msgstr ""
+
+msgid "%s, route not verified"
+msgstr ""

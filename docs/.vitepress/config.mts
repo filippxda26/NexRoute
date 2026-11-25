@@ -1,18 +1,18 @@
 import { defineConfig } from 'vitepress'
 
-const repo = 'https://github.com/ushan0v/forkop'
+const repo = 'https://github.com/filippxda26/NexRoute'
 
 export default defineConfig({
   lang: 'ru-RU',
-  title: 'Forkop',
+  title: 'NexRoute',
   description: 'Маршрутизация трафика роутера OpenWrt по правилам: какие сайты и устройства через какой туннель',
-  base: '/forkop/',
+  base: '/NexRoute/',
   cleanUrls: true,
   lastUpdated: true,
   srcExclude: ['README.md'],
   head: [
     ['meta', { name: 'theme-color', content: '#0d9488' }],
-    ['meta', { property: 'og:title', content: 'Forkop' }],
+    ['meta', { property: 'og:title', content: 'NexRoute' }],
     ['meta', { property: 'og:description', content: 'Маршрутизация трафика роутера OpenWrt по правилам' }],
   ],
   markdown: {

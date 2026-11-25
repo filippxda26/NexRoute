@@ -155,8 +155,8 @@
   },
   "state_wait_ms": 15000,
   "action_openings": [
-    "Starting Forkop",
-    "Stopping Forkop",
+    "Starting NexRoute",
+    "Stopping NexRoute",
     "Applying configuration",
     "Reapplying configuration"
   ],
@@ -387,7 +387,7 @@
     { "key": "disable_cookies", "kind": "flag", "one_sided": false }
   ],
   "installer": {
-    "object": "forkop.installer",
+    "object": "nexroute.installer",
     "methods": ["input", "read", "stop"],
     "actions": ["update", "variant", "uninstall"]
   }

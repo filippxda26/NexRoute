@@ -26,24 +26,24 @@ function before(lines, first, second, label) {
     t.ok(a >= 0 && b >= 0 && a < b, label + ": " + first + " before " + second);
 }
 
-const T = "add rule inet ForkopTable ";
+const T = "add rule inet NexRouteTable ";
 
 t.test("the base table captures the source interfaces, FakeIP and the TProxy inbounds", () => {
     let lines = script_lines({ settings: { source_network_interfaces: "br-lan tun0" } });
-    t.eq(lines[0], "add table inet ForkopTable");
-    has(lines, "add set inet ForkopTable localv4 { type ipv4_addr; flags interval; auto-merge; }");
-    has(lines, "add set inet ForkopTable localv6 { type ipv6_addr; flags interval; auto-merge; }");
-    t.ok(length(filter(lines, (l) => index(l, "add element inet ForkopTable localv4 { 0.0.0.0/8,10.0.0.0/8,127.0.0.0/8") == 0)) == 1);
-    has(lines, "add set inet ForkopTable forkop_interfaces { type ifname; flags interval; }");
-    has(lines, "add element inet ForkopTable forkop_interfaces { br-lan }");
-    has(lines, "add element inet ForkopTable forkop_interfaces { tun0 }");
-    has(lines, "add chain inet ForkopTable mangle { type filter hook prerouting priority -149; policy accept; }", "mangle runs after the Tailscale connmark restore");
+    t.eq(lines[0], "add table inet NexRouteTable");
+    has(lines, "add set inet NexRouteTable localv4 { type ipv4_addr; flags interval; auto-merge; }");
+    has(lines, "add set inet NexRouteTable localv6 { type ipv6_addr; flags interval; auto-merge; }");
+    t.ok(length(filter(lines, (l) => index(l, "add element inet NexRouteTable localv4 { 0.0.0.0/8,10.0.0.0/8,127.0.0.0/8") == 0)) == 1);
+    has(lines, "add set inet NexRouteTable nexroute_interfaces { type ifname; flags interval; }");
+    has(lines, "add element inet NexRouteTable nexroute_interfaces { br-lan }");
+    has(lines, "add element inet NexRouteTable nexroute_interfaces { tun0 }");
+    has(lines, "add chain inet NexRouteTable mangle { type filter hook prerouting priority -149; policy accept; }", "mangle runs after the Tailscale connmark restore");
     has(lines, T + "priority_output_rules meta mark != 0 return", "a provider mark is preserved");
-    has(lines, "add chain inet ForkopTable dns_redirect { type nat hook prerouting priority -101; policy accept; }");
-    has(lines, T + "dns_redirect iifname @forkop_interfaces udp dport 53 counter redirect to :1603");
-    has(lines, T + "dns_redirect iifname @forkop_interfaces tcp dport 53 counter redirect to :1603");
-    has(lines, T + "mangle iifname @forkop_interfaces ip6 daddr @localv6 return", "local IPv6 is left alone");
-    before(lines, T + "mangle iifname @forkop_interfaces meta l4proto { tcp, udp } th dport 53 return", T + "mangle jump priority_rules",
+    has(lines, "add chain inet NexRouteTable dns_redirect { type nat hook prerouting priority -101; policy accept; }");
+    has(lines, T + "dns_redirect iifname @nexroute_interfaces udp dport 53 counter redirect to :1603");
+    has(lines, T + "dns_redirect iifname @nexroute_interfaces tcp dport 53 counter redirect to :1603");
+    has(lines, T + "mangle iifname @nexroute_interfaces ip6 daddr @localv6 return", "local IPv6 is left alone");
+    before(lines, T + "mangle iifname @nexroute_interfaces meta l4proto { tcp, udp } th dport 53 return", T + "mangle jump priority_rules",
         "client DNS is left to the capture");
     has(lines, T + "mangle jump priority_rules");
     has(lines, T + "proxy meta mark & 0x04000000 == 0x04000000 meta l4proto tcp tproxy ip to :1602 counter");
@@ -55,7 +55,7 @@ t.test("the base table captures the source interfaces, FakeIP and the TProxy inb
     before(lines, T + "mangle_output meta l4proto { tcp, udp } th dport 53 return", T + "mangle_output jump priority_output_rules",
         "the resolver reaches its upstream directly");
     has(lines, T + "mangle_output jump priority_output_rules");
-    has(lines, "add chain inet ForkopTable system_dns_redirect { type nat hook output priority -100; policy accept; }",
+    has(lines, "add chain inet NexRouteTable system_dns_redirect { type nat hook output priority -100; policy accept; }",
         "the router's own lookups are captured whatever the sections say");
     for (let address in [ "ip daddr 127.0.0.1", "ip6 daddr ::1" ])
         for (let proto in [ "tcp", "udp" ])
@@ -66,7 +66,7 @@ t.test("the base table captures the source interfaces, FakeIP and the TProxy inb
         for (let proto in [ "tcp", "udp" ])
             has(lines, T + "mangle_output " + pair[0] + " daddr " + pair[1] + " meta l4proto " + proto + " meta mark set 0x10000000 counter",
                 "the router's own FakeIP traffic");
-    for (let absent in [ "forkop_subnets", "forkop_ports", "forkop_ip_ports", "forkop_dns_sources", "forkop_excluded" ])
+    for (let absent in [ "nexroute_subnets", "nexroute_ports", "nexroute_ip_ports", "nexroute_dns_sources", "nexroute_excluded" ])
         lacks(lines, absent);
 });
 
@@ -77,7 +77,7 @@ t.test("a flow handed to sing-box stays captured whatever the sets hold, and a p
         let first = filter(lines, (line) => index(line, T + pair[0] + " ") == 0)[0];
         t.eq(first, T + pair[0] + " " + held(pair[1]), pair[0] + ": a held flow is not matched against the sets or the exclusions");
     }
-    has(lines, "add chain inet ForkopTable capture_pause { }");
+    has(lines, "add chain inet NexRouteTable capture_pause { }");
     for (let chain in [ "proxy", "dns_redirect", "system_dns_redirect" ]) {
         let first = filter(lines, (line) => index(line, T + chain + " ") == 0)[0];
         t.eq(first, T + chain + " jump capture_pause", chain + " asks the pause first");
@@ -87,30 +87,45 @@ t.test("a flow handed to sing-box stays captured whatever the sets hold, and a p
             T + "proxy iifname lo meta mark & 0x10000000 == 0x10000000 meta l4proto tcp tproxy ip to :1604 counter accept",
             "the flow is marked before any TProxy rule accepts its packet");
 
-    t.eq(nft.capture_command(true), [ "nft", "flush chain inet ForkopTable capture_pause" ]);
-    t.eq(nft.capture_command(false), [ "nft", "flush chain inet ForkopTable capture_pause; " +
-        "add rule inet ForkopTable capture_pause meta mark & 0x04000000 == 0x04000000 counter drop; " +
-        "add rule inet ForkopTable capture_pause meta mark & 0x10000000 == 0x10000000 counter drop; " +
-        "add rule inet ForkopTable capture_pause counter accept" ], "paused: traffic for sing-box waits, lookups go to their resolver");
+    t.eq(nft.capture_command(true), [ "nft", "flush chain inet NexRouteTable capture_pause" ]);
+    t.eq(nft.capture_command(false), [ "nft", "flush chain inet NexRouteTable capture_pause; " +
+        "add rule inet NexRouteTable capture_pause meta mark & 0x04000000 == 0x04000000 counter drop; " +
+        "add rule inet NexRouteTable capture_pause meta mark & 0x10000000 == 0x10000000 counter drop; " +
+        "add rule inet NexRouteTable capture_pause counter accept" ], "paused: traffic for sing-box waits, lookups go to their resolver");
 });
 
 t.test("excluded devices leave every capture before anything matches them", () => {
     let lines = script_lines({ settings: { routing_excluded_ips: "192.168.1.50 2001:db8::5/128" } });
-    has(lines, "add set inet ForkopTable forkop_excluded { type ipv4_addr; flags interval; auto-merge; }");
-    has(lines, "add element inet ForkopTable forkop_excluded { 192.168.1.50 }");
-    has(lines, "add element inet ForkopTable forkop_excluded6 { 2001:db8::5/128 }");
-    before(lines, T + "dns_redirect ip saddr @forkop_excluded counter return", T + "dns_redirect iifname @forkop_interfaces tcp dport 53 counter redirect to :1603",
+    has(lines, "add set inet NexRouteTable nexroute_excluded { type ipv4_addr; flags interval; auto-merge; }");
+    has(lines, "add element inet NexRouteTable nexroute_excluded { 192.168.1.50 }");
+    has(lines, "add element inet NexRouteTable nexroute_excluded6 { 2001:db8::5/128 }");
+    before(lines, T + "dns_redirect ip saddr @nexroute_excluded counter return", T + "dns_redirect iifname @nexroute_interfaces tcp dport 53 counter redirect to :1603",
         "the DNS exclusion");
-    before(lines, T + "mangle ip saddr @forkop_excluded counter return", T + "mangle jump priority_rules", "the capture exclusion");
-    has(lines, T + "mangle ip6 saddr @forkop_excluded6 counter return");
+    before(lines, T + "mangle ip saddr @nexroute_excluded counter return", T + "mangle jump priority_rules", "the capture exclusion");
+    has(lines, T + "mangle ip6 saddr @nexroute_excluded6 counter return");
     lacks(lines, T + "mangle_output counter return", "the router is not excluded with them");
+});
+
+t.test("MAC exclusions bypass client IPv4 and IPv6 capture and DNS", () => {
+    let result = built({ settings: { routing_excluded_ips: "192.168.1.50 @mac:02:00:00:00:00:AB @mac:02:00:00:00:00:ab" } });
+    let lines = split(result.script, "\n");
+    let matcher = "iifname @nexroute_interfaces ether saddr { 02:00:00:00:00:ab } counter return";
+    t.eq(result.skipped, [], "MAC selectors are not parsed as IP addresses");
+    has(lines, "add element inet NexRouteTable nexroute_excluded { 192.168.1.50 }");
+    before(lines, T + "dns_redirect " + matcher, T + "dns_redirect iifname @nexroute_interfaces tcp dport 53 counter redirect to :1603", "DNS bypass");
+    before(lines, T + "mangle " + matcher, T + "mangle jump priority_rules", "routing bypass");
+    lacks(lines, T + "mangle_output " + matcher);
+    let only = script_lines({ settings: { routing_excluded_ips: "@mac:02:00:00:00:00:ab" } });
+    has(only, T + "dns_redirect " + matcher);
+    has(only, T + "mangle " + matcher);
+    lacks(only, "add set inet NexRouteTable nexroute_excluded ");
 });
 
 t.test("the excluded System device keeps the router's own traffic and lookups out of every capture", () => {
     let result = built({ settings: { routing_excluded_ips: "@system 192.168.1.50" } });
     let lines = split(result.script, "\n");
     t.eq(result.skipped, [], "the System device is not an address to skip");
-    has(lines, "add element inet ForkopTable forkop_excluded { 192.168.1.50 }");
+    has(lines, "add element inet NexRouteTable nexroute_excluded { 192.168.1.50 }");
     before(lines, T + "mangle_output counter return", T + "mangle_output ip daddr @localv4 return", "the router's traffic");
     before(lines, T + "system_dns_redirect counter return", T + "system_dns_redirect meta mark != 0 return", "the router's lookups");
     lacks(lines, T + "mangle counter return", "clients stay captured");
@@ -139,38 +154,38 @@ t.test("an answer to a connection the other side opened never reaches the sectio
 t.test("section rules keep configuration order and reach only the traffic their devices send", () => {
     let lines = script_lines({ settings: {}, section: priority_sections() });
     let local = "ip daddr != @localv4 ";
-    has(lines, "add set inet ForkopTable forkop_rule_bypass_first_subnets { type ipv4_addr; flags interval; auto-merge; }");
-    has(lines, T + "priority_rules iifname @forkop_interfaces ip saddr @forkop_rule_bypass_first_fully_sources " + local + "ip daddr != 198.18.0.0/16 counter accept",
+    has(lines, "add set inet NexRouteTable nexroute_rule_bypass_first_subnets { type ipv4_addr; flags interval; auto-merge; }");
+    has(lines, T + "priority_rules iifname @nexroute_interfaces ip saddr @nexroute_rule_bypass_first_fully_sources " + local + "ip daddr != 198.18.0.0/16 counter accept",
         "a fully routed bypass takes real addresses");
-    has(lines, T + "priority_rules iifname @forkop_interfaces ip6 saddr @forkop_rule_bypass_first_fully_sources6 ip6 daddr != @localv6 ip6 daddr != 2001:2::/112 counter accept");
-    has(lines, T + "priority_rules iifname @forkop_interfaces ip saddr @forkop_rule_wide_proxy_fully_sources " + local + "meta l4proto tcp meta mark set 0x04000000 counter accept");
+    has(lines, T + "priority_rules iifname @nexroute_interfaces ip6 saddr @nexroute_rule_bypass_first_fully_sources6 ip6 daddr != @localv6 ip6 daddr != 2001:2::/112 counter accept");
+    has(lines, T + "priority_rules iifname @nexroute_interfaces ip saddr @nexroute_rule_wide_proxy_fully_sources " + local + "meta l4proto tcp meta mark set 0x04000000 counter accept");
     has(lines, T + "priority_output_rules " + local + "ip daddr != 198.18.0.0/16 counter accept", "the System device fully routed around the proxy");
     has(lines, T + "priority_output_rules " + local + "meta l4proto tcp meta mark set 0x10000000 counter accept", "the System device fully routed through it");
-    has(lines, T + "priority_output_rules " + local + "ip daddr @forkop_rule_system_filter_subnets meta mark set 0x10000000 counter accept");
-    has(lines, T + "priority_rules iifname @forkop_interfaces ip saddr @forkop_rule_client_filter_sources " + local + "ip daddr @forkop_rule_client_filter_subnets meta mark set 0x04000000 counter accept");
+    has(lines, T + "priority_output_rules " + local + "ip daddr @nexroute_rule_system_filter_subnets meta mark set 0x10000000 counter accept");
+    has(lines, T + "priority_rules iifname @nexroute_interfaces ip saddr @nexroute_rule_client_filter_sources " + local + "ip daddr @nexroute_rule_client_filter_subnets meta mark set 0x04000000 counter accept");
     t.eq(filter(lines, (l) => index(l, "priority_rules iifname") >= 0 && index(l, "system_filter") >= 0), [], "a System-only filter on forwarded traffic");
     t.eq(filter(lines, (l) => index(l, "priority_output_rules") >= 0 && index(l, "client_filter") >= 0), [], "a client filter on the router's traffic");
     lacks(lines, "@system", "the System sentinel is not an address");
-    has(lines, T + "priority_rules iifname @forkop_interfaces " + local + "ip daddr != 198.18.0.0/16 tcp dport @forkop_rule_port_bypass_ports counter accept");
-    before(lines, T + "priority_rules iifname @forkop_interfaces " + local + "ip daddr != 198.18.0.0/16 ip daddr @forkop_rule_bypass_first_subnets counter accept",
-        T + "priority_rules iifname @forkop_interfaces " + local + "ip daddr @forkop_rule_wide_proxy_subnets meta mark set 0x04000000 counter accept", "bypass order");
+    has(lines, T + "priority_rules iifname @nexroute_interfaces " + local + "ip daddr != 198.18.0.0/16 tcp dport @nexroute_rule_port_bypass_ports counter accept");
+    before(lines, T + "priority_rules iifname @nexroute_interfaces " + local + "ip daddr != 198.18.0.0/16 ip daddr @nexroute_rule_bypass_first_subnets counter accept",
+        T + "priority_rules iifname @nexroute_interfaces " + local + "ip daddr @nexroute_rule_wide_proxy_subnets meta mark set 0x04000000 counter accept", "bypass order");
 
-    has(lines, "add set inet ForkopTable forkop_rule_builtin_subnets_ip_ports { type ipv4_addr . inet_service; flags interval; auto-merge; }",
+    has(lines, "add set inet NexRouteTable nexroute_rule_builtin_subnets_ip_ports { type ipv4_addr . inet_service; flags interval; auto-merge; }",
         "a built-in list's port-scoped addresses have a set a rule reads");
-    has(lines, T + "priority_rules iifname @forkop_interfaces " + local + "ip daddr . udp dport @forkop_rule_builtin_subnets_ip_ports meta mark set 0x04000000 counter accept");
-    has(lines, "add set inet ForkopTable forkop_rule_builtin_subnets_proto6_ports { type ipv6_addr . inet_proto . inet_service; flags interval; auto-merge; }");
-    t.eq(length(filter(lines, (l) => index(l, "th dport @forkop_rule_builtin_subnets_proto_ports") >= 0)), 2, "one rule per chain covers both transports");
-    has(lines, T + "priority_rules iifname @forkop_interfaces " + local + "ip daddr @forkop_rule_ip_and_ports_subnets tcp dport @forkop_rule_ip_and_ports_ports meta mark set 0x04000000 counter accept",
+    has(lines, T + "priority_rules iifname @nexroute_interfaces " + local + "ip daddr . udp dport @nexroute_rule_builtin_subnets_ip_ports meta mark set 0x04000000 counter accept");
+    has(lines, "add set inet NexRouteTable nexroute_rule_builtin_subnets_proto6_ports { type ipv6_addr . inet_proto . inet_service; flags interval; auto-merge; }");
+    t.eq(length(filter(lines, (l) => index(l, "th dport @nexroute_rule_builtin_subnets_proto_ports") >= 0)), 2, "one rule per chain covers both transports");
+    has(lines, T + "priority_rules iifname @nexroute_interfaces " + local + "ip daddr @nexroute_rule_ip_and_ports_subnets tcp dport @nexroute_rule_ip_and_ports_ports meta mark set 0x04000000 counter accept",
         "an address with a port is matched against both plain sets");
-    has(lines, T + "priority_output_rules ip6 daddr != @localv6 ip6 daddr @forkop_rule_ip_and_ports_subnets6 udp dport @forkop_rule_ip_and_ports_ports meta mark set 0x10000000 counter accept");
-    lacks(lines, "ip daddr @forkop_rule_ip_and_ports_subnets meta mark", "an address with a port is never matched without it");
-    lacks(lines, T + "priority_rules iifname @forkop_interfaces " + local + "tcp dport @forkop_rule_ip_and_ports_ports", "a port next to an address on its own");
+    has(lines, T + "priority_output_rules ip6 daddr != @localv6 ip6 daddr @nexroute_rule_ip_and_ports_subnets6 udp dport @nexroute_rule_ip_and_ports_ports meta mark set 0x10000000 counter accept");
+    lacks(lines, "ip daddr @nexroute_rule_ip_and_ports_subnets meta mark", "an address with a port is never matched without it");
+    lacks(lines, T + "priority_rules iifname @nexroute_interfaces " + local + "tcp dport @nexroute_rule_ip_and_ports_ports", "a port next to an address on its own");
 
-    for (let absent in [ "forkop_rule_port_bypass_subnets", "forkop_rule_port_bypass_sources", "forkop_rule_bypass_first_ports",
-        "forkop_rule_bypass_first_sources", "forkop_rule_client_filter_fully_sources", "forkop_rule_system_filter_sources",
-        "forkop_rule_ip_and_ports_ip_ports", "forkop_rule_ip_and_ports_proto_ports",
-        "forkop_rule_bypass_first_proto_ports", "forkop_rule_builtin_subnets_ports" ])
-        lacks(lines, "add set inet ForkopTable " + absent + " ", "no rule reads " + absent);
+    for (let absent in [ "nexroute_rule_port_bypass_subnets", "nexroute_rule_port_bypass_sources", "nexroute_rule_bypass_first_ports",
+        "nexroute_rule_bypass_first_sources", "nexroute_rule_client_filter_fully_sources", "nexroute_rule_system_filter_sources",
+        "nexroute_rule_ip_and_ports_ip_ports", "nexroute_rule_ip_and_ports_proto_ports",
+        "nexroute_rule_bypass_first_proto_ports", "nexroute_rule_builtin_subnets_ports" ])
+        lacks(lines, "add set inet NexRouteTable " + absent + " ", "no rule reads " + absent);
 });
 
 t.test("the sets are filled in the same transaction from what the configuration lists", () => {
@@ -184,20 +199,20 @@ t.test("the sets are filled in the same transaction from what the configuration 
         { ".name": "dns_only", action: "dns", destinations: "dns-only.example\n192.0.2.53", fully_routed_ips: [ "192.168.1.53/32" ] },
         { ".name": "vpn", action: "connection", fully_routed_ips: [ "@system" ] }
     ] });
-    has(lines, "add element inet ForkopTable forkop_rule_inline_subnets { 198.51.100.1,203.0.113.0/24 }", "addresses and ports are not multiplied");
-    has(lines, "add element inet ForkopTable forkop_rule_inline_subnets6 { 2001:db8::1 }");
-    has(lines, "add element inet ForkopTable forkop_rule_inline_ports { 80,443-444 }");
-    lacks(lines, "forkop_rule_inline_ip_ports", "only a provider limits addresses to ports of its own");
-    has(lines, "add element inet ForkopTable forkop_rule_inline_no_ports_subnets { 198.51.100.200 }");
-    has(lines, "add element inet ForkopTable forkop_rule_inline_no_ports_subnets6 { 2001:db8::200 }");
-    has(lines, "add element inet ForkopTable forkop_rule_ports_only_ports { 53,853,5353 }");
-    has(lines, "add element inet ForkopTable forkop_rule_inline_fully_sources { 192.168.1.20/32 }");
-    has(lines, "add element inet ForkopTable forkop_rule_inline_fully_sources6 { 2001:db8::20/128 }");
-    has(lines, "add element inet ForkopTable forkop_rule_inline_sources { 192.168.1.60/32 }");
-    before(lines, "add set inet ForkopTable forkop_rule_inline_subnets { type ipv4_addr; flags interval; auto-merge; }",
-        "add element inet ForkopTable forkop_rule_inline_subnets { 198.51.100.1,203.0.113.0/24 }", "a set exists before it is filled");
+    has(lines, "add element inet NexRouteTable nexroute_rule_inline_subnets { 198.51.100.1,203.0.113.0/24 }", "addresses and ports are not multiplied");
+    has(lines, "add element inet NexRouteTable nexroute_rule_inline_subnets6 { 2001:db8::1 }");
+    has(lines, "add element inet NexRouteTable nexroute_rule_inline_ports { 80,443-444 }");
+    lacks(lines, "nexroute_rule_inline_ip_ports", "only a provider limits addresses to ports of its own");
+    has(lines, "add element inet NexRouteTable nexroute_rule_inline_no_ports_subnets { 198.51.100.200 }");
+    has(lines, "add element inet NexRouteTable nexroute_rule_inline_no_ports_subnets6 { 2001:db8::200 }");
+    has(lines, "add element inet NexRouteTable nexroute_rule_ports_only_ports { 53,853,5353 }");
+    has(lines, "add element inet NexRouteTable nexroute_rule_inline_fully_sources { 192.168.1.20/32 }");
+    has(lines, "add element inet NexRouteTable nexroute_rule_inline_fully_sources6 { 2001:db8::20/128 }");
+    has(lines, "add element inet NexRouteTable nexroute_rule_inline_sources { 192.168.1.60/32 }");
+    before(lines, "add set inet NexRouteTable nexroute_rule_inline_subnets { type ipv4_addr; flags interval; auto-merge; }",
+        "add element inet NexRouteTable nexroute_rule_inline_subnets { 198.51.100.1,203.0.113.0/24 }", "a set exists before it is filled");
     lacks(lines, "192.0.2.1", "a disabled section");
-    lacks(lines, "forkop_rule_ports_with_domain_ports", "a port next to a domain is sing-box's to match");
+    lacks(lines, "nexroute_rule_ports_with_domain_ports", "a port next to a domain is sing-box's to match");
     lacks(lines, "192.0.2.53", "a DNS section's addresses");
     lacks(lines, "@system");
 });
@@ -231,7 +246,7 @@ t.test("the script is the same for the same configuration and moves with anythin
 t.test("a value nft cannot take is left out and reported when the table is applied", () => {
     let result = built({ settings: { routing_excluded_ips: "192.168.1.50 phone" } });
     t.eq(result.skipped, [ "Exclude devices from routing: 'phone' is not an IP address or subnet and is ignored" ]);
-    t.contains(split(result.script, "\n"), "add element inet ForkopTable forkop_excluded { 192.168.1.50 }");
+    t.contains(split(result.script, "\n"), "add element inet NexRouteTable nexroute_excluded { 192.168.1.50 }");
 });
 
 function routing(ip_state) {
@@ -241,13 +256,13 @@ function routing(ip_state) {
     let logs = [];
     let handlers = [
         stub.logger(logs),
-        [ "/sbin/ip route list table forkop", { stdout: ip_state?.route4 ?? "" } ],
-        [ "/sbin/ip -6 route list table forkop", { stdout: ip_state?.route6 ?? "" } ],
-        [ "/sbin/ip -4 rule list table forkop", { stdout: ip_state?.rule4 ?? "" } ],
-        [ "/sbin/ip -6 rule list table forkop", { stdout: ip_state?.rule6 ?? "" } ],
+        [ "/sbin/ip route list table nexroute", { stdout: ip_state?.route4 ?? "" } ],
+        [ "/sbin/ip -6 route list table nexroute", { stdout: ip_state?.route6 ?? "" } ],
+        [ "/sbin/ip -4 rule list table nexroute", { stdout: ip_state?.rule4 ?? "" } ],
+        [ "/sbin/ip -6 rule list table nexroute", { stdout: ip_state?.rule6 ?? "" } ],
         [ "/sbin/ip -4 rule list priority 104", { stdout: ip_state?.rule104 ?? "" } ],
         [ /'\/sbin\/ip'.* 'add' /, {} ],
-        [ "nft -t list table inet ForkopTable", { status: 1 } ],
+        [ "nft -t list table inet NexRouteTable", { status: 1 } ],
         [ /^'nft' '-f' '-'/, { status: ip_state?.nft_status ?? 0 } ]
     ];
     return { dir, logs, handlers };
@@ -260,24 +275,24 @@ t.test("applying the table sets up its routing once and hands nft the whole scri
     nft.apply(nft.build());
     let calls = stub.calls();
     stub.restore();
-    t.eq(fs.readfile(nft.paths.rt_tables), "105 forkop\n");
+    t.eq(fs.readfile(nft.paths.rt_tables), "105 nexroute\n");
     let commands = map(calls, (c) => join(" ", c.argv));
-    for (let line in [ "/sbin/ip route add local 0.0.0.0/0 dev lo table forkop", "/sbin/ip -6 route add local ::/0 dev lo table forkop",
-        "/sbin/ip -4 rule add fwmark 0x04000000/0x04000000 table forkop priority 105", "/sbin/ip -6 rule add fwmark 0x04000000/0x04000000 table forkop priority 105",
-        "/sbin/ip -4 rule add fwmark 0x10000000/0x10000000 table forkop priority 105", "/sbin/ip -6 rule add fwmark 0x10000000/0x10000000 table forkop priority 105",
+    for (let line in [ "/sbin/ip route add local 0.0.0.0/0 dev lo table nexroute", "/sbin/ip -6 route add local ::/0 dev lo table nexroute",
+        "/sbin/ip -4 rule add fwmark 0x04000000/0x04000000 table nexroute priority 105", "/sbin/ip -6 rule add fwmark 0x04000000/0x04000000 table nexroute priority 105",
+        "/sbin/ip -4 rule add fwmark 0x10000000/0x10000000 table nexroute priority 105", "/sbin/ip -6 rule add fwmark 0x10000000/0x10000000 table nexroute priority 105",
         "/sbin/ip -4 rule add iif lo fwmark 0x04000000/0x04000000 lookup main priority 104" ])
         t.contains(commands, line);
     t.eq(filter(commands, (line) => index(line, "-6 rule add iif lo") >= 0), [], "IPv6 checks no source by a lookup");
     let transactions = filter(calls, (c) => c.argv[0] == "nft" && c.argv[1] == "-f");
     t.eq(length(transactions), 1, "one transaction");
-    t.eq(split(transactions[0].stdin, "\n")[0], "add table inet ForkopTable");
+    t.eq(split(transactions[0].stdin, "\n")[0], "add table inet NexRouteTable");
     t.eq(r.logs, [], "setting the routing up is a routine step and is not reported");
 
     let present = routing({ route4: "local default dev lo scope host", route6: "local default dev lo metric 1024 pref medium",
-        rule4: "105: from all fwmark 0x4000000/0x4000000 lookup forkop\n105: from all fwmark 0x10000000/0x10000000 lookup forkop",
+        rule4: "105: from all fwmark 0x4000000/0x4000000 lookup nexroute\n105: from all fwmark 0x10000000/0x10000000 lookup nexroute",
         rule6: "105: from all fwmark 0x4000000/0x4000000 lookup podkop\n105: from all fwmark 0x10000000/0x10000000 lookup podkop",
         rule104: "104:\tfrom all fwmark 0x4000000/0x4000000 iif lo lookup main" });
-    fs.writefile(nft.paths.rt_tables, "105 forkop\n");
+    fs.writefile(nft.paths.rt_tables, "105 nexroute\n");
     stub.commands(present.handlers);
     nft.apply(nft.build());
     commands = stub.command_lines();
@@ -295,23 +310,23 @@ t.test("a router with IPv6 off everywhere, or a kernel without IPv6, gets IPv4 r
         let calls = stub.calls();
         stub.restore();
         let commands = map(calls, (c) => join(" ", c.argv));
-        t.contains(commands, "/sbin/ip route add local 0.0.0.0/0 dev lo table forkop");
-        t.contains(commands, "/sbin/ip -4 rule add fwmark 0x04000000/0x04000000 table forkop priority 105");
-        t.contains(commands, "/sbin/ip -4 rule add fwmark 0x10000000/0x10000000 table forkop priority 105");
+        t.contains(commands, "/sbin/ip route add local 0.0.0.0/0 dev lo table nexroute");
+        t.contains(commands, "/sbin/ip -4 rule add fwmark 0x04000000/0x04000000 table nexroute priority 105");
+        t.contains(commands, "/sbin/ip -4 rule add fwmark 0x10000000/0x10000000 table nexroute priority 105");
         t.contains(commands, "/sbin/ip -4 rule add iif lo fwmark 0x04000000/0x04000000 lookup main priority 104");
         t.eq(filter(commands, (line) => index(line, " -6 ") >= 0), [], "nothing is asked of IPv6");
         t.eq(length(filter(calls, (c) => c.argv[0] == "nft" && c.argv[1] == "-f")), 1, "the table is applied");
     }
 });
 
-t.test("IPv6 left on some interfaces but off on lo is refused, since that traffic would bypass Forkop", () => {
+t.test("IPv6 left on some interfaces but off on lo is refused, since that traffic would bypass NexRoute", () => {
     fixture.seed({ settings: {} });
     let r = routing({ ipv6: { lo: "1", "br-lan": "0", wan: "0", "wan.30": "1" } });
     stub.commands(r.handlers);
     let e = t.throws(() => nft.apply(nft.build()));
     let calls = stub.calls();
     stub.restore();
-    t.eq(e.message, "IPv6 is disabled on the loopback interface lo but enabled on br-lan, wan, so Forkop cannot route that IPv6 traffic. " +
+    t.eq(e.message, "IPv6 is disabled on the loopback interface lo but enabled on br-lan, wan, so NexRoute cannot route that IPv6 traffic. " +
         "Disable IPv6 on every interface or enable it on lo");
     t.eq(filter(calls, (c) => c.argv[0] == "nft" && c.argv[1] == "-f"), [], "the table is not applied");
 });
@@ -389,34 +404,34 @@ t.test("a rebuilt table keeps what the rule-set worker wrote and defines everyth
     ] });
     let result = nft.build();
     let fed = [ "subnets", "subnets6", "ip_ports", "ip6_ports", "proto_ports", "proto6_ports" ];
-    t.eq(result.kept, map(fed, (suffix) => "forkop_rule_fed_" + suffix), "only a section a provider feeds has sets to keep");
-    t.eq(split(result.script, "\n")[0], "add table inet ForkopTable");
+    t.eq(result.kept, map(fed, (suffix) => "nexroute_rule_fed_" + suffix), "only a section a provider feeds has sets to keep");
+    t.eq(split(result.script, "\n")[0], "add table inet NexRouteTable");
 
-    let live = "table inet ForkopTable {\n\tset localv4 {\n\t\ttype ipv4_addr\n\t}\n\tset forkop_rule_fed_subnets {\n\t\ttype ipv4_addr\n\t}\n" +
-        "\tset forkop_rule_fed_proto_ports {\n\t\ttype ipv4_addr . inet_proto . inet_service\n\t}\n\tset forkop_rule_own_subnets {\n\t}\n" +
-        "\tset forkop_rule_gone_subnets {\n\t}\n\tchain mangle {\n\t\ttype filter hook prerouting priority mangle + 1; policy accept;\n\t}\n" +
+    let live = "table inet NexRouteTable {\n\tset localv4 {\n\t\ttype ipv4_addr\n\t}\n\tset nexroute_rule_fed_subnets {\n\t\ttype ipv4_addr\n\t}\n" +
+        "\tset nexroute_rule_fed_proto_ports {\n\t\ttype ipv4_addr . inet_proto . inet_service\n\t}\n\tset nexroute_rule_own_subnets {\n\t}\n" +
+        "\tset nexroute_rule_gone_subnets {\n\t}\n\tchain mangle {\n\t\ttype filter hook prerouting priority mangle + 1; policy accept;\n\t}\n" +
         "\tchain priority_rules {\n\t}\n}\n";
     let r = routing({ route4: "local default dev lo scope host", route6: "local default dev lo metric 1024 pref medium",
-        rule4: "105: from all fwmark 0x4000000/0x4000000 lookup forkop", rule6: "105: from all fwmark 0x4000000/0x4000000 lookup forkop" });
-    fs.writefile(nft.paths.rt_tables, "105 forkop\n");
-    stub.commands([ [ "nft -t list table inet ForkopTable", { stdout: live } ], ...r.handlers ]);
+        rule4: "105: from all fwmark 0x4000000/0x4000000 lookup nexroute", rule6: "105: from all fwmark 0x4000000/0x4000000 lookup nexroute" });
+    fs.writefile(nft.paths.rt_tables, "105 nexroute\n");
+    stub.commands([ [ "nft -t list table inet NexRouteTable", { stdout: live } ], ...r.handlers ]);
     nft.apply(result);
     let fed_script = filter(stub.calls(), (c) => c.argv[1] == "-f")[0].stdin;
     stub.restore();
     let lines = split(fed_script, "\n");
-    t.eq(slice(lines, 0, 7), [ "add table inet ForkopTable", "flush table inet ForkopTable",
-        "delete set inet ForkopTable localv4", "delete set inet ForkopTable forkop_rule_own_subnets", "delete set inet ForkopTable forkop_rule_gone_subnets",
-        "delete chain inet ForkopTable mangle", "delete chain inet ForkopTable priority_rules" ],
+    t.eq(slice(lines, 0, 7), [ "add table inet NexRouteTable", "flush table inet NexRouteTable",
+        "delete set inet NexRouteTable localv4", "delete set inet NexRouteTable nexroute_rule_own_subnets", "delete set inet NexRouteTable nexroute_rule_gone_subnets",
+        "delete chain inet NexRouteTable mangle", "delete chain inet NexRouteTable priority_rules" ],
         "the rules go, every chain is defined again, and a set goes unless the worker fills it");
-    has(lines, "add set inet ForkopTable forkop_rule_fed_subnets { type ipv4_addr; flags interval; auto-merge; }", "a kept set is declared as before");
+    has(lines, "add set inet NexRouteTable nexroute_rule_fed_subnets { type ipv4_addr; flags interval; auto-merge; }", "a kept set is declared as before");
     lacks(lines, "flush set", "a kept set keeps its addresses");
     t.eq(join("\n", slice(lines, 7)), result.script, "followed by the table as built");
 
-    stub.commands([ [ "nft -t list table inet ForkopTable", { status: 1 } ], ...r.handlers ]);
+    stub.commands([ [ "nft -t list table inet NexRouteTable", { status: 1 } ], ...r.handlers ]);
     nft.apply(result);
     fed_script = filter(stub.calls(), (c) => c.argv[1] == "-f")[0].stdin;
     stub.restore();
-    t.eq(slice(split(fed_script, "\n"), 0, 3), [ "add table inet ForkopTable", "flush table inet ForkopTable", "add table inet ForkopTable" ],
+    t.eq(slice(split(fed_script, "\n"), 0, 3), [ "add table inet NexRouteTable", "flush table inet NexRouteTable", "add table inet NexRouteTable" ],
         "a missing table has nothing to take apart");
 });
 
@@ -432,10 +447,10 @@ t.test("a value left out is a warning each time the table is applied", () => {
 t.test("a refused transaction fails with the first line nft gave", () => {
     fixture.seed({ settings: {} });
     let r = routing({ route4: "local default dev lo scope host", route6: "local default dev lo metric 1024 pref medium",
-        rule4: "105: from all fwmark 0x4000000/0x4000000 lookup forkop", rule6: "105: from all fwmark 0x4000000/0x4000000 lookup forkop" });
-    fs.writefile(nft.paths.rt_tables, "105 forkop\n");
+        rule4: "105: from all fwmark 0x4000000/0x4000000 lookup nexroute", rule6: "105: from all fwmark 0x4000000/0x4000000 lookup nexroute" });
+    fs.writefile(nft.paths.rt_tables, "105 nexroute\n");
     stub.commands([ [ /^'nft' '-f' '-'/, (argv, command) => {
-        fs.writefile(match(command, /2>'([^']+)'/)[1], "Error: syntax error, unexpected junk\nadd element inet ForkopTable localv4 { junk }\n");
+        fs.writefile(match(command, /2>'([^']+)'/)[1], "Error: syntax error, unexpected junk\nadd element inet NexRouteTable localv4 { junk }\n");
         return { status: 1 };
     } ], ...r.handlers ]);
     let e = t.throws(() => nft.apply(nft.build()));
@@ -457,6 +472,22 @@ t.test("bridge netfilter is switched off only where it is on", () => {
     t.eq(logs, [ "[info] Disabled bridge netfilter (net.bridge.bridge-nf-call-iptables) for transparent proxying" ], "a change to the system is reported");
     t.eq(calls(""), []);
     t.eq(length(logs), 1);
+});
+
+t.test("MAC devices match IPv4 and IPv6 without widening a destination filter", () => {
+    let lines = script_lines({ settings: {}, section: [
+        { ".name": "mac_all", action: "connection", fully_routed_ips: [ "@mac:02:00:00:00:00:11", "@mac:02:00:00:00:00:11" ] },
+        { ".name": "mac_filter", action: "connection", destinations: "203.0.113.0/24 2001:db8::/32", source_ip_cidr: [ "@mac:02:00:00:00:00:12" ] }
+    ] });
+    for (let family in [ 4, 6 ]) {
+        let ip = family == 4 ? "ip" : "ip6";
+        let local = family == 4 ? "localv4" : "localv6";
+        let suffix = family == 4 ? "_subnets" : "_subnets6";
+        for (let proto in [ "tcp", "udp" ])
+            has(lines, T + "priority_rules iifname @nexroute_interfaces ether saddr { 02:00:00:00:00:11 } " + ip + " daddr != @" + local + " meta l4proto " + proto + " meta mark set 0x04000000 counter accept");
+        has(lines, T + "priority_rules iifname @nexroute_interfaces ether saddr { 02:00:00:00:00:12 } " + ip + " daddr != @" + local + " " + ip + " daddr @nexroute_rule_mac_filter" + suffix + " meta mark set 0x04000000 counter accept");
+        lacks(lines, "priority_rules iifname @nexroute_interfaces " + ip + " daddr != @" + local + " " + ip + " daddr @nexroute_rule_mac_filter" + suffix);
+    }
 });
 
 t.done();

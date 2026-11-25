@@ -7,7 +7,7 @@ usage() {
   cat <<EOF
 Usage: $(basename "$0") <version> [output-directory]
 
-Build Forkop IPK and APK packages and the other files of its release: install.sh,
+Build NexRoute IPK and APK packages and the other files of its release: install.sh,
 release.json and SHA256SUMS. The version must use x.y.z format.
 
 INSTALL_COMMAND, when set, goes into release.json as install_command: the release installs
@@ -34,19 +34,19 @@ if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 fi
 APK_INTERNAL_VERSION="$RELEASE_VERSION"
 
-BUILD_DIR="${BUILD_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/forkop/build}"
-SDK_CACHE_DIR="${SDK_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/forkop/openwrt-sdk}"
+BUILD_DIR="${BUILD_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/nexroute/build}"
+SDK_CACHE_DIR="${SDK_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/nexroute/openwrt-sdk}"
 SDK_DIR="${SDK_DIR:-$SDK_CACHE_DIR/extracted}"
 IPK_SDK_URL="${IPK_SDK_URL:-https://downloads.openwrt.org/releases/24.10.6/targets/x86/64/openwrt-sdk-24.10.6-x86-64_gcc-13.3.0_musl.Linux-x86_64.tar.zst}"
-APK_SDK_URL="${APK_SDK_URL:-https://downloads.openwrt.org/releases/25.12.3/targets/x86/64/openwrt-sdk-25.12.3-x86-64_gcc-14.3.0_musl.Linux-x86_64.tar.zst}"
+APK_SDK_URL="${APK_SDK_URL:-https://downloads.openwrt.org/releases/25.12.5/targets/x86/64/openwrt-sdk-25.12.5-x86-64_gcc-14.3.0_musl.Linux-x86_64.tar.zst}"
 
 BACKEND_DESCRIPTION="Rule-based traffic routing for OpenWrt"
-APP_DESCRIPTION="Web interface for Forkop"
-I18N_DESCRIPTION="Translation for luci-app-forkop - Русский (Russian)"
+APP_DESCRIPTION="Web interface for NexRoute"
+I18N_DESCRIPTION="Translation for luci-app-nexroute - Русский (Russian)"
 MAINTAINER="ushan0v <ushan0v@users.noreply.github.com>"
-PROJECT_URL="https://github.com/ushan0v/forkop"
+PROJECT_URL="https://github.com/filippxda26/NexRoute"
 uc_constant() {
-  sed -n "s/^[[:space:]]*\(const[[:space:]]\{1,\}\)\{0,1\}$2[[:space:]]*[:=][[:space:]]*\"\([^\"]*\)\".*/\2/p" "$ROOT_DIR/forkop/files/usr/lib/$1"
+  sed -n "s/^[[:space:]]*\(const[[:space:]]\{1,\}\)\{0,1\}$2[[:space:]]*[:=][[:space:]]*\"\([^\"]*\)\".*/\2/p" "$ROOT_DIR/nexroute/files/usr/lib/$1"
 }
 SB_REQUIRED_VERSION="$(uc_constant core/constants.uc SB_REQUIRED_VERSION)"
 MIN_CONFIG_VERSION="$(uc_constant config/migration.uc MIN_CONFIG_VERSION)"
@@ -55,15 +55,15 @@ if [[ ! "$SB_REQUIRED_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+-r[0-9]+$ ]] ||
   echo "Cannot read SB_REQUIRED_VERSION or MIN_CONFIG_VERSION from the sources" >&2
   exit 1
 fi
-# Forkop runs only on its own core. A 1.0.x updater installs luci-app-forkop and forkop by
+# NexRoute runs only on its own core. A 1.0.x updater installs luci-app-nexroute and nexroute by
 # file and never the core: this dependency makes that fail before anything changes.
 # APK says ip: apk refuses ip-tiny beside ip-full, yet takes it for ip; opkg takes ip-full for ip
 BACKEND_DEPENDS_IPK="libc, ca-bundle, ucode, ucode-mod-fs, ucode-mod-resolv, ucode-mod-socket, ucode-mod-ubus, ucode-mod-uloop, ucode-mod-uci, uclient-fetch, kmod-nft-tproxy, nftables, kmod-nft-nat, ip-tiny, sing-box-forkop (>= ${SB_REQUIRED_VERSION})"
-BACKEND_DEPENDS_APK="ca-bundle ip kmod-nft-nat kmod-nft-tproxy libc nftables uclient-fetch ucode ucode-mod-fs ucode-mod-resolv ucode-mod-socket ucode-mod-ubus ucode-mod-uci ucode-mod-uloop sing-box-forkop>=${SB_REQUIRED_VERSION}"
+BACKEND_DEPENDS_APK="!forkop !luci-app-forkop !luci-i18n-forkop-ru ca-bundle ip kmod-nft-nat kmod-nft-tproxy libc nftables uclient-fetch ucode ucode-mod-fs ucode-mod-resolv ucode-mod-socket ucode-mod-ubus ucode-mod-uci ucode-mod-uloop sing-box-forkop>=${SB_REQUIRED_VERSION}"
 # The app calls the backend's ubus object, so it needs a backend at least as new;
 # the feed Makefile's DEPENDS cannot express a version.
-APP_DEPENDS_IPK="libc, luci-base, forkop (>= ${RELEASE_VERSION})"
-APP_DEPENDS_APK="libc luci-base forkop>=${RELEASE_VERSION}"
+APP_DEPENDS_IPK="libc, luci-base, nexroute (>= ${RELEASE_VERSION})"
+APP_DEPENDS_APK="libc luci-base nexroute>=${RELEASE_VERSION}"
 
 ensure_host_deps() {
   local missing=()
@@ -119,7 +119,7 @@ extract_sdk() {
   local archive_path="$2"
   local sdk_url="$3"
   local destination="$SDK_DIR/$kind"
-  local marker_file="$destination/.forkop-sdk-url"
+  local marker_file="$destination/.nexroute-sdk-url"
   local temp_dir
   local extracted_root
 
@@ -189,26 +189,26 @@ build_backend_root() {
   make_dir "$output_root/etc/init.d"
   make_dir "$output_root/etc/config"
   make_dir "$output_root/usr/bin"
-  make_dir "$output_root/usr/lib/forkop"
-  make_dir "$output_root/usr/share/forkop"
+  make_dir "$output_root/usr/lib/nexroute"
+  make_dir "$output_root/usr/share/nexroute"
   make_dir "$output_root/usr/share/nftables.d/chain-pre/input"
   make_dir "$output_root/lib/upgrade/keep.d"
 
-  install -m 0755 "$ROOT_DIR/forkop/files/etc/init.d/forkop" "$output_root/etc/init.d/forkop"
-  install -m 0755 "$ROOT_DIR/forkop/files/etc/init.d/forkop-state" "$output_root/etc/init.d/forkop-state"
-  install -m 0644 "$ROOT_DIR/forkop/files/etc/config/forkop" "$output_root/etc/config/forkop"
-  install -m 0644 "$ROOT_DIR/forkop/files/etc/config/forkop" "$output_root/usr/share/forkop/default-config"
-  install -m 0755 "$ROOT_DIR/forkop/files/usr/bin/forkop" "$output_root/usr/bin/forkop"
-  cp -a "$ROOT_DIR/forkop/files/usr/lib/." "$output_root/usr/lib/forkop/"
-  install -m 0644 "$ROOT_DIR/forkop/files/usr/share/nftables.d/chain-pre/input/forkop.nft" \
-    "$output_root/usr/share/nftables.d/chain-pre/input/forkop.nft"
-  install -m 0644 "$ROOT_DIR/forkop/files/lib/upgrade/keep.d/forkop" "$output_root/lib/upgrade/keep.d/forkop"
+  install -m 0755 "$ROOT_DIR/nexroute/files/etc/init.d/nexroute" "$output_root/etc/init.d/nexroute"
+  install -m 0755 "$ROOT_DIR/nexroute/files/etc/init.d/nexroute-state" "$output_root/etc/init.d/nexroute-state"
+  install -m 0644 "$ROOT_DIR/nexroute/files/etc/config/nexroute" "$output_root/etc/config/nexroute"
+  install -m 0644 "$ROOT_DIR/nexroute/files/etc/config/nexroute" "$output_root/usr/share/nexroute/default-config"
+  install -m 0755 "$ROOT_DIR/nexroute/files/usr/bin/nexroute" "$output_root/usr/bin/nexroute"
+  cp -a "$ROOT_DIR/nexroute/files/usr/lib/." "$output_root/usr/lib/nexroute/"
+  install -m 0644 "$ROOT_DIR/nexroute/files/usr/share/nftables.d/chain-pre/input/nexroute.nft" \
+    "$output_root/usr/share/nftables.d/chain-pre/input/nexroute.nft"
+  install -m 0644 "$ROOT_DIR/nexroute/files/lib/upgrade/keep.d/nexroute" "$output_root/lib/upgrade/keep.d/nexroute"
 
   sed -i -e "s/__COMPILED_VERSION_VARIABLE__/${RELEASE_VERSION}/g" \
-    "$output_root/usr/lib/forkop/core/constants.uc"
+    "$output_root/usr/lib/nexroute/core/constants.uc"
 
   normalize_package_root_modes "$output_root"
-  chmod 0755 "$output_root/etc/init.d/forkop" "$output_root/etc/init.d/forkop-state" "$output_root/usr/bin/forkop"
+  chmod 0755 "$output_root/etc/init.d/nexroute" "$output_root/etc/init.d/nexroute-state" "$output_root/usr/bin/nexroute"
 }
 
 build_app_root() {
@@ -217,10 +217,10 @@ build_app_root() {
   rm -rf "$output_root"
   make_dir "$output_root/www"
 
-  cp -a "$ROOT_DIR/luci-app-forkop/htdocs/." "$output_root/www/"
-  cp -a "$ROOT_DIR/luci-app-forkop/root/." "$output_root/"
+  cp -a "$ROOT_DIR/luci-app-nexroute/htdocs/." "$output_root/www/"
+  cp -a "$ROOT_DIR/luci-app-nexroute/root/." "$output_root/"
   sed -i -e "s/__COMPILED_VERSION_VARIABLE__/${RELEASE_VERSION}/g" \
-    "$output_root/www/luci-static/resources/view/forkop/main.js"
+    "$output_root/www/luci-static/resources/view/nexroute/main.js"
 
   normalize_package_root_modes "$output_root"
   find "$output_root/etc/uci-defaults" -type f -exec chmod 0755 {} + 2>/dev/null || true
@@ -229,17 +229,17 @@ build_app_root() {
 build_i18n_root() {
   local output_root="$1"
   local po2lmo_bin="$2"
-  local lmo_path="$output_root/usr/lib/lua/luci/i18n/forkop.ru.lmo"
+  local lmo_path="$output_root/usr/lib/lua/luci/i18n/nexroute.ru.lmo"
 
   rm -rf "$output_root"
   make_dir "$output_root/etc/uci-defaults"
   make_dir "$(dirname "$lmo_path")"
 
-  cat > "$output_root/etc/uci-defaults/luci-i18n-forkop-ru" <<'EOF'
+  cat > "$output_root/etc/uci-defaults/luci-i18n-nexroute-ru" <<'EOF'
 uci set luci.languages.ru='Русский (Russian)'; uci commit luci
 EOF
 
-  "$po2lmo_bin" "$ROOT_DIR/luci-app-forkop/po/ru/forkop.po" "$lmo_path"
+  "$po2lmo_bin" "$ROOT_DIR/luci-app-nexroute/po/ru/nexroute.po" "$lmo_path"
 
   normalize_package_root_modes "$output_root"
   find "$output_root/etc/uci-defaults" -type f -exec chmod 0755 {} + 2>/dev/null || true
@@ -280,8 +280,9 @@ write_backend_ipk_control() {
   make_dir "$control_dir"
 
   cat > "$control_dir/control" <<EOF
-Package: forkop
+Package: nexroute
 Version: ${RELEASE_VERSION}
+Conflicts: forkop, luci-app-forkop, luci-i18n-forkop-ru
 Depends: ${BACKEND_DEPENDS_IPK}
 License: GPL-2.0-or-later
 Section: net
@@ -293,21 +294,21 @@ Description: ${BACKEND_DESCRIPTION}
 EOF
 
   cat > "$control_dir/conffiles" <<'EOF'
-/etc/config/forkop
+/etc/config/nexroute
 EOF
 
   cat > "$control_dir/postinst" <<'EOF'
 #!/bin/sh
 [ -n "${IPKG_INSTROOT}" ] && exit 0
-FORKOP_LIB=/usr/lib/forkop ucode -L /usr/lib/forkop /usr/lib/forkop/config/migration.uc migrate || exit $?
-FORKOP_BYTECODE_VALIDATION_TTL=0 /usr/bin/forkop package_postinst
+NEXROUTE_LIB=/usr/lib/nexroute ucode -L /usr/lib/nexroute /usr/lib/nexroute/config/migration.uc migrate || exit $?
+NEXROUTE_BYTECODE_VALIDATION_TTL=0 /usr/bin/nexroute package_postinst
 EOF
 
   cat > "$control_dir/prerm" <<'EOF'
 #!/usr/bin/ucode
 
 if (getenv("IPKG_INSTROOT") == null || getenv("IPKG_INSTROOT") == "")
-	system("/usr/bin/forkop package_prerm " + (ARGV[0] || "") + " >/dev/null 2>&1");
+	system("/usr/bin/nexroute package_prerm " + (ARGV[0] || "") + " >/dev/null 2>&1");
 
 exit(0);
 EOF
@@ -323,7 +324,7 @@ write_app_ipk_control() {
   make_dir "$control_dir"
 
   cat > "$control_dir/control" <<EOF
-Package: luci-app-forkop
+Package: luci-app-nexroute
 Version: ${RELEASE_VERSION}
 Depends: ${APP_DEPENDS_IPK}
 License: GPL-2.0-or-later
@@ -347,7 +348,7 @@ EOF
 #!/bin/sh
 [ -s ${IPKG_INSTROOT}/lib/functions.sh ] || exit 0
 . ${IPKG_INSTROOT}/lib/functions.sh
-[ -n "${IPKG_INSTROOT}" ] || /usr/bin/forkop luci_prerm >/dev/null 2>&1 || true
+[ -n "${IPKG_INSTROOT}" ] || /usr/bin/nexroute luci_prerm >/dev/null 2>&1 || true
 default_prerm $0 $@
 EOF
 
@@ -362,9 +363,9 @@ write_i18n_ipk_control() {
   make_dir "$control_dir"
 
   cat > "$control_dir/control" <<EOF
-Package: luci-i18n-forkop-ru
+Package: luci-i18n-nexroute-ru
 Version: ${RELEASE_VERSION}
-Depends: libc, luci-app-forkop (>= ${RELEASE_VERSION})
+Depends: libc, luci-app-nexroute (>= ${RELEASE_VERSION})
 License: GPL-2.0-or-later
 Section: luci
 URL: ${PROJECT_URL}
@@ -437,7 +438,7 @@ EOF
   cat > "$scripts_dir/backend-post-install.sh" <<'EOF'
 #!/usr/bin/ucode
 if (getenv("IPKG_INSTROOT") == null || getenv("IPKG_INSTROOT") == "")
-    exit(system("FORKOP_LIB=/usr/lib/forkop ucode -L /usr/lib/forkop /usr/lib/forkop/config/migration.uc migrate && FORKOP_BYTECODE_VALIDATION_TTL=0 /usr/bin/forkop package_postinst"));
+    exit(system("NEXROUTE_LIB=/usr/lib/nexroute ucode -L /usr/lib/nexroute /usr/lib/nexroute/config/migration.uc migrate && NEXROUTE_BYTECODE_VALIDATION_TTL=0 /usr/bin/nexroute package_postinst"));
 exit(0);
 EOF
 
@@ -445,7 +446,7 @@ EOF
 #!/usr/bin/ucode
 
 if (getenv("IPKG_INSTROOT") == null || getenv("IPKG_INSTROOT") == "")
-	system("/usr/bin/forkop package_prerm remove >/dev/null 2>&1");
+	system("/usr/bin/nexroute package_prerm remove >/dev/null 2>&1");
 
 exit(0);
 EOF
@@ -453,14 +454,14 @@ EOF
   cat > "$scripts_dir/backend-pre-upgrade.sh" <<'EOF'
 #!/usr/bin/ucode
 if (getenv("IPKG_INSTROOT") == null || getenv("IPKG_INSTROOT") == "")
-    exit(system("/usr/bin/forkop package_prerm upgrade >/dev/null 2>&1"));
+    exit(system("/usr/bin/nexroute package_prerm upgrade >/dev/null 2>&1"));
 exit(0);
 EOF
 
   cat > "$scripts_dir/backend-post-upgrade.sh" <<'EOF'
 #!/usr/bin/ucode
 if (getenv("IPKG_INSTROOT") == null || getenv("IPKG_INSTROOT") == "")
-    exit(system("FORKOP_LIB=/usr/lib/forkop ucode -L /usr/lib/forkop /usr/lib/forkop/config/migration.uc migrate && FORKOP_BYTECODE_VALIDATION_TTL=0 /usr/bin/forkop package_postinst"));
+    exit(system("NEXROUTE_LIB=/usr/lib/nexroute ucode -L /usr/lib/nexroute /usr/lib/nexroute/config/migration.uc migrate && NEXROUTE_BYTECODE_VALIDATION_TTL=0 /usr/bin/nexroute package_postinst"));
 exit(0);
 EOF
 
@@ -483,7 +484,7 @@ EOF
 [ -s ${IPKG_INSTROOT}/lib/functions.sh ] || exit 0
 . ${IPKG_INSTROOT}/lib/functions.sh
 export root="${IPKG_INSTROOT}"
-export pkgname="luci-app-forkop"
+export pkgname="luci-app-nexroute"
 add_group_and_user
 default_postinst
 EOF
@@ -493,8 +494,8 @@ EOF
 [ -s ${IPKG_INSTROOT}/lib/functions.sh ] || exit 0
 . ${IPKG_INSTROOT}/lib/functions.sh
 export root="${IPKG_INSTROOT}"
-export pkgname="luci-app-forkop"
-[ -n "${IPKG_INSTROOT}" ] || /usr/bin/forkop luci_prerm >/dev/null 2>&1 || true
+export pkgname="luci-app-nexroute"
+[ -n "${IPKG_INSTROOT}" ] || /usr/bin/nexroute luci_prerm >/dev/null 2>&1 || true
 default_prerm
 exit 0
 EOF
@@ -511,7 +512,7 @@ export PKG_UPGRADE=1
 [ -s ${IPKG_INSTROOT}/lib/functions.sh ] || exit 0
 . ${IPKG_INSTROOT}/lib/functions.sh
 export root="${IPKG_INSTROOT}"
-export pkgname="luci-app-forkop"
+export pkgname="luci-app-nexroute"
 add_group_and_user
 default_postinst
 EOF
@@ -535,7 +536,7 @@ EOF
 [ -s ${IPKG_INSTROOT}/lib/functions.sh ] || exit 0
 . ${IPKG_INSTROOT}/lib/functions.sh
 export root="${IPKG_INSTROOT}"
-export pkgname="luci-i18n-forkop-ru"
+export pkgname="luci-i18n-nexroute-ru"
 add_group_and_user
 default_postinst
 EOF
@@ -545,7 +546,7 @@ EOF
 [ -s ${IPKG_INSTROOT}/lib/functions.sh ] || exit 0
 . ${IPKG_INSTROOT}/lib/functions.sh
 export root="${IPKG_INSTROOT}"
-export pkgname="luci-i18n-forkop-ru"
+export pkgname="luci-i18n-nexroute-ru"
 default_prerm
 EOF
 
@@ -561,7 +562,7 @@ export PKG_UPGRADE=1
 [ -s ${IPKG_INSTROOT}/lib/functions.sh ] || exit 0
 . ${IPKG_INSTROOT}/lib/functions.sh
 export root="${IPKG_INSTROOT}"
-export pkgname="luci-i18n-forkop-ru"
+export pkgname="luci-i18n-nexroute-ru"
 add_group_and_user
 default_postinst
 EOF
@@ -600,7 +601,7 @@ build_apk_package() {
     -I "description:${description}" \
     -I "arch:noarch" \
     -I "license:GPL-2.0-or-later" \
-    -I "origin:forkop" \
+    -I "origin:nexroute" \
     -I "maintainer:${maintainer}" \
     -I "url:${PROJECT_URL}" \
     -I "depends:${depends}" \
@@ -623,11 +624,11 @@ verify_ipk_metadata() {
   grep -q "^Package: ${expected_package}$" "$tmp_dir/control"
   grep -q "^Version: ${expected_version}$" "$tmp_dir/control"
   case "$expected_package" in
-    forkop)
+    nexroute)
       grep -q "^Depends: .*sing-box-forkop (>= ${SB_REQUIRED_VERSION})" "$tmp_dir/control"
       ;;
-    luci-app-forkop) grep -q "^Depends: .*forkop (>= ${expected_version})" "$tmp_dir/control" ;;
-    luci-i18n-forkop-ru) grep -q "^Depends: .*luci-app-forkop (>= ${expected_version})" "$tmp_dir/control" ;;
+    luci-app-nexroute) grep -q "^Depends: .*nexroute (>= ${expected_version})" "$tmp_dir/control" ;;
+    luci-i18n-nexroute-ru) grep -q "^Depends: .*luci-app-nexroute (>= ${expected_version})" "$tmp_dir/control" ;;
   esac
   rm -rf "$tmp_dir"
 }
@@ -644,11 +645,11 @@ verify_apk_metadata() {
   grep -q "^  name: ${expected_package}$" "$dump_file"
   grep -q "^  version: ${expected_version}$" "$dump_file"
   case "$expected_package" in
-    forkop)
+    nexroute)
       grep -q "^[[:space:]]*- sing-box-forkop>=${SB_REQUIRED_VERSION}$" "$dump_file"
       ;;
-    luci-app-forkop) grep -q "^[[:space:]]*- forkop>=${expected_version}$" "$dump_file" ;;
-    luci-i18n-forkop-ru) grep -q "^[[:space:]]*- luci-app-forkop>=${expected_version}$" "$dump_file" ;;
+    luci-app-nexroute) grep -q "^[[:space:]]*- nexroute>=${expected_version}$" "$dump_file" ;;
+    luci-i18n-nexroute-ru) grep -q "^[[:space:]]*- luci-app-nexroute>=${expected_version}$" "$dump_file" ;;
   esac
   rm -f "$dump_file"
 }
@@ -672,7 +673,7 @@ write_release_files() {
   cat > "$output_dir/release.json" <<EOF
 {
   "schema": 1,
-  "name": "forkop",
+  "name": "nexroute",
   "version": "${RELEASE_VERSION}",
   "tag": "${RELEASE_VERSION}",
   "page": "${PROJECT_URL}/releases/tag/${RELEASE_VERSION}",
@@ -682,7 +683,7 @@ write_release_files() {
 EOF
   (
     cd "$output_dir"
-    sha256sum forkop_* luci-app-forkop_* luci-i18n-forkop-ru_* install.sh release.json > SHA256SUMS
+    sha256sum nexroute_* luci-app-nexroute_* luci-i18n-nexroute-ru_* install.sh release.json > SHA256SUMS
   )
 }
 
@@ -722,12 +723,12 @@ main() {
   mkdir -p "$BUILD_DIR" "$SDK_CACHE_DIR"
   exec 9>"$SDK_CACHE_DIR/.build.lock"
   if ! flock -n 9; then
-    echo "Another Forkop package build is already running" >&2
+    echo "Another NexRoute package build is already running" >&2
     exit 1
   fi
   output_dir="$OUTPUT_DIR"
   mkdir -p "$output_dir"
-  rm -f "$output_dir"/forkop_* "$output_dir"/luci-app-forkop_* "$output_dir"/luci-i18n-forkop-ru_* \
+  rm -f "$output_dir"/nexroute_* "$output_dir"/luci-app-nexroute_* "$output_dir"/luci-i18n-nexroute-ru_* \
     "$output_dir/install.sh" "$output_dir/release.json" "$output_dir/SHA256SUMS"
 
   ipk_archive="$(download_sdk_archive "$IPK_SDK_URL")"
@@ -757,74 +758,74 @@ main() {
   # skips a file whose dependencies fail; without that name they stop before downloading anything.
   build_ipk_package \
     "$ipkg_build_bin" \
-    "forkop" \
+    "nexroute" \
     "$backend_root" \
     "$backend_control" \
-    "$output_dir/forkop_${RELEASE_VERSION}_all.ipk"
+    "$output_dir/nexroute_${RELEASE_VERSION}_all.ipk"
 
   build_ipk_package \
     "$ipkg_build_bin" \
-    "luci-app-forkop" \
+    "luci-app-nexroute" \
     "$app_root" \
     "$app_control" \
-    "$output_dir/luci-app-forkop_${RELEASE_VERSION}_all.ipk"
+    "$output_dir/luci-app-nexroute_${RELEASE_VERSION}_all.ipk"
 
   build_ipk_package \
     "$ipkg_build_bin" \
-    "luci-i18n-forkop-ru" \
+    "luci-i18n-nexroute-ru" \
     "$i18n_root" \
     "$i18n_control" \
-    "$output_dir/luci-i18n-forkop-ru_${RELEASE_VERSION}_all.ipk"
+    "$output_dir/luci-i18n-nexroute-ru_${RELEASE_VERSION}_all.ipk"
 
-  generate_apk_metadata_files "forkop" "$backend_root" "/etc/config/forkop"
-  generate_apk_metadata_files "luci-app-forkop" "$app_root"
-  generate_apk_metadata_files "luci-i18n-forkop-ru" "$i18n_root"
+  generate_apk_metadata_files "nexroute" "$backend_root" "/etc/config/nexroute"
+  generate_apk_metadata_files "luci-app-nexroute" "$app_root"
+  generate_apk_metadata_files "luci-i18n-nexroute-ru" "$i18n_root"
   write_backend_apk_scripts "$apk_scripts"
   write_app_apk_scripts "$apk_scripts"
   write_i18n_apk_scripts "$apk_scripts"
 
   build_apk_package \
     "$apk_bin" \
-    "forkop" \
+    "nexroute" \
     "$APK_INTERNAL_VERSION" \
     "$BACKEND_DESCRIPTION" \
     "$BACKEND_DEPENDS_APK" \
     "$backend_root" \
     "$apk_scripts" \
     "backend" \
-    "$output_dir/forkop_${RELEASE_VERSION}_all.apk" \
+    "$output_dir/nexroute_${RELEASE_VERSION}_all.apk" \
     "$MAINTAINER"
 
   build_apk_package \
     "$apk_bin" \
-    "luci-app-forkop" \
+    "luci-app-nexroute" \
     "$APK_INTERNAL_VERSION" \
     "$APP_DESCRIPTION" \
     "$APP_DEPENDS_APK" \
     "$app_root" \
     "$apk_scripts" \
     "app" \
-    "$output_dir/luci-app-forkop_${RELEASE_VERSION}_all.apk" \
+    "$output_dir/luci-app-nexroute_${RELEASE_VERSION}_all.apk" \
     "$MAINTAINER"
 
   build_apk_package \
     "$apk_bin" \
-    "luci-i18n-forkop-ru" \
+    "luci-i18n-nexroute-ru" \
     "$APK_INTERNAL_VERSION" \
     "$I18N_DESCRIPTION" \
-    "libc luci-app-forkop>=${RELEASE_VERSION}" \
+    "libc luci-app-nexroute>=${RELEASE_VERSION}" \
     "$i18n_root" \
     "$apk_scripts" \
     "i18n" \
-    "$output_dir/luci-i18n-forkop-ru_${RELEASE_VERSION}_all.apk" \
+    "$output_dir/luci-i18n-nexroute-ru_${RELEASE_VERSION}_all.apk" \
     "$MAINTAINER"
 
-  verify_ipk_metadata "$output_dir/forkop_${RELEASE_VERSION}_all.ipk" "forkop" "$RELEASE_VERSION"
-  verify_ipk_metadata "$output_dir/luci-app-forkop_${RELEASE_VERSION}_all.ipk" "luci-app-forkop" "$RELEASE_VERSION"
-  verify_ipk_metadata "$output_dir/luci-i18n-forkop-ru_${RELEASE_VERSION}_all.ipk" "luci-i18n-forkop-ru" "$RELEASE_VERSION"
-  verify_apk_metadata "$apk_bin" "$output_dir/forkop_${RELEASE_VERSION}_all.apk" "forkop" "$APK_INTERNAL_VERSION"
-  verify_apk_metadata "$apk_bin" "$output_dir/luci-app-forkop_${RELEASE_VERSION}_all.apk" "luci-app-forkop" "$APK_INTERNAL_VERSION"
-  verify_apk_metadata "$apk_bin" "$output_dir/luci-i18n-forkop-ru_${RELEASE_VERSION}_all.apk" "luci-i18n-forkop-ru" "$APK_INTERNAL_VERSION"
+  verify_ipk_metadata "$output_dir/nexroute_${RELEASE_VERSION}_all.ipk" "nexroute" "$RELEASE_VERSION"
+  verify_ipk_metadata "$output_dir/luci-app-nexroute_${RELEASE_VERSION}_all.ipk" "luci-app-nexroute" "$RELEASE_VERSION"
+  verify_ipk_metadata "$output_dir/luci-i18n-nexroute-ru_${RELEASE_VERSION}_all.ipk" "luci-i18n-nexroute-ru" "$RELEASE_VERSION"
+  verify_apk_metadata "$apk_bin" "$output_dir/nexroute_${RELEASE_VERSION}_all.apk" "nexroute" "$APK_INTERNAL_VERSION"
+  verify_apk_metadata "$apk_bin" "$output_dir/luci-app-nexroute_${RELEASE_VERSION}_all.apk" "luci-app-nexroute" "$APK_INTERNAL_VERSION"
+  verify_apk_metadata "$apk_bin" "$output_dir/luci-i18n-nexroute-ru_${RELEASE_VERSION}_all.apk" "luci-i18n-nexroute-ru" "$APK_INTERNAL_VERSION"
 
   write_release_files "$output_dir"
   cleanup_work_dir

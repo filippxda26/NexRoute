@@ -1,8 +1,8 @@
 #!/bin/sh
 # shellcheck shell=dash
 #
-# Installs, updates and removes Forkop and its core, sing-box-forkop, on OpenWrt 24.10 and newer.
-# Its options and exit codes are the interface Forkop's page runs it through, so they change only
+# Installs, updates and removes NexRoute and its core, sing-box-forkop, on OpenWrt 24.10 and newer.
+# Its options and exit codes are the interface NexRoute's page runs it through, so they change only
 # in ways an older page understands.
 #
 # Options: --variant base|full|tiny, the core's build (the installed one, or base, by default),
@@ -10,39 +10,39 @@
 # --quiet, the package manager's output in the log alone, as the page has it; --lang ru|en, by
 # default LuCI's language, Russian while that is auto, since a console has no browser to follow.
 # Exit codes: 0 done or nothing to do, 1 failed before anything changed, 2 bad options, 3 failed
-# after changes began, 4 installed but Forkop did not start.
+# after changes began, 4 installed but NexRoute did not start.
 # Colors follow whether stdout is a terminal, questions whether /dev/tty opens: a page that runs it
 # on a pseudo-terminal without making it the controlling one gets colors and no questions.
 #
 # The releases come through api.github.com, which takes 60 requests an hour from an address
-# without an account; FORKOP_DOWNLOAD_URL names a mirror with github.com's release paths instead.
+# without an account; NEXROUTE_DOWNLOAD_URL names a mirror with github.com's release paths instead.
 # https_proxy and http_proxy are honored, NO_COLOR turns colors off.
 #
 # Every release carries release.json beside its packages, install.sh and SHA256SUMS:
-#   {"schema":1,"name":"forkop","version":"2.0.0","tag":"2.0.0","page":URL,
+#   {"schema":1,"name":"nexroute","version":"2.0.0","tag":"2.0.0","page":URL,
 #    "requires":{"sing-box-forkop":"1.14.4-r1"},"min_config_version":"1.0.2"}
-# The core's says "name":"sing-box-forkop" and requires the oldest Forkop it works with. An
+# The core's says "name":"sing-box-forkop" and requires the oldest NexRoute it works with. An
 # "install_command" field says the release installs only with that command, not from the page.
 
 set -u
 
-FORKOP_REPO=ushan0v/forkop
+NEXROUTE_REPO=filippxda26/NexRoute
 CORE_REPO=ushan0v/sing-box-forkop
 # github.com answers a release link with a header line longer than uclient-fetch reads
 API_URL=https://api.github.com
-MIRROR=${FORKOP_DOWNLOAD_URL:-}
-LOG=/tmp/forkop-install.log
-LOCK_DIR=/var/lock/forkop-install.lock
-OUR_PACKAGES="forkop luci-app-forkop luci-i18n-forkop-ru sing-box-forkop"
+MIRROR=${NEXROUTE_DOWNLOAD_URL:-}
+LOG=/tmp/nexroute-install.log
+LOCK_DIR=/var/lock/nexroute-install.lock
+OUR_PACKAGES="nexroute luci-app-nexroute luci-i18n-nexroute-ru sing-box-forkop"
 # The other packages known to install /usr/bin/sing-box; any other package that owns it counts too.
 FOREIGN_CORES="sing-box sing-box-tiny sing-box-extended podkop-engine podkop-engine-full sing-box-lx sing-box-x rust-x steer-box-connector"
 # What sing-box-forkop provides: a package that needs it stays when a foreign core goes.
 CORE_PROVIDES=sing-box
-# What a core outside the package managers leaves: Forkop 1.0.x's binary builds and the installer
+# What a core outside the package managers leaves: NexRoute 1.0.x's binary builds and the installer
 # of EikeiDev/OpenWRT-sing-box-extended, whose wrapper runs the core from /usr/libexec.
 FOREIGN_CORE_FILES="/usr/bin/sing-box /etc/init.d/sing-box /usr/libexec/sing-box-core /etc/sing-box-version.cache /usr/lib/libcronet.so"
-# Forkop 1.0.x's own state about its cores, and the backups its updater left when it failed.
-LEGACY_FILES="/etc/forkop/sing-box-variant /etc/forkop/sing-box-version /usr/bin/sing-box.forkop-backup.* /usr/lib/libcronet.so.forkop-backup.* /etc/init.d/sing-box.forkop.*"
+# NexRoute 1.0.x's own state about its cores, and the backups its updater left when it failed.
+LEGACY_FILES="/etc/nexroute/sing-box-variant /etc/nexroute/sing-box-version /usr/bin/sing-box.nexroute-backup.* /usr/lib/libcronet.so.nexroute-backup.* /etc/init.d/sing-box.nexroute.*"
 # What the builds of the core speak, by the variants of its build.sh: tiny, what base adds to it,
 # and what full adds to base (full_adds).
 TINY_HAS='VLESS, Trojan, Shadowsocks, Hysteria, Hysteria2, TUIC, SOCKS, HTTP'
@@ -50,22 +50,29 @@ BASE_ADDS='WireGuard, AmneziaWG, WARP, OpenVPN, TrustTunnel, VMess, AnyTLS'
 # apk offline still opens every feed's index and warns for each one no apk update fetched since boot.
 APK_OFFLINE="--no-network --repositories-file /dev/null"
 # The defaults a package manager leaves beside a config it keeps.
-CONFFILE_COPIES="/etc/config/forkop-opkg /etc/config/forkop.apk-new /etc/config/sing-box-opkg /etc/config/sing-box.apk-new /etc/sing-box/config.json-opkg /etc/sing-box/config.json.apk-new"
+CONFFILE_COPIES="/etc/config/nexroute-opkg /etc/config/nexroute.apk-new /etc/config/sing-box-opkg /etc/config/sing-box.apk-new /etc/sing-box/config.json-opkg /etc/sing-box/config.json.apk-new"
 
 MODE=install VARIANT='' ASK_VARIANT=0 PURGE=0 QUIET=0 LANG_OPT='' BAD_ARG=''
 RU=0 INTERACTIVE=0 ASKED=0 PROMPTING=0 ANSWER='' C_STEP='' C_OK='' C_WARN='' C_ERR='' C_BOLD='' C_OFF=''
 WORK='' LOCKED=0
 PM='' PM_DB='' EXT='' ARCH='' RELEASE='' FLASH_MOUNT=/ FLASH_FS=''
-FORKOP_OLD='' APP_OLD='' I18N_OLD='' CORE_OLD='' CORE_OLD_VARIANT='' CONFIG_VERSION='' FORK_URL=''
-FORKOP_ENABLED=0 FORKOP_RUNNING=0 STARTED=0
+NEXROUTE_OLD='' APP_OLD='' I18N_OLD='' CORE_OLD='' CORE_OLD_VARIANT='' CONFIG_VERSION='' FORK_URL=''
+NEXROUTE_ENABLED=0 NEXROUTE_RUNNING=0 STARTED=0
 FOREIGN_PKGS='' FOREIGN_WORLD='' FOREIGN_FILES='' LEFTOVERS=''
-F_VERSION='' F_TAG='' F_CORE_MIN='' C_VERSION='' C_TAG='' C_FORKOP_MIN=''
-I18N=0 NEED_FORKOP=0 NEED_APP=0 NEED_I18N=0
+F_VERSION='' F_TAG='' F_CORE_MIN='' C_VERSION='' C_TAG='' C_NEXROUTE_MIN=''
+I18N=0 NEED_NEXROUTE=0 NEED_APP=0 NEED_I18N=0
 CORE_ACTION=none CORE_VARIANT='' CORE_REINSTALL=0
-FILE_FORKOP='' FILE_APP='' FILE_I18N='' FILE_CORE='' FILE_IP='' GOT=''
+FILE_NEXROUTE='' FILE_APP='' FILE_I18N='' FILE_CORE='' FILE_IP='' GOT=''
 CONFIG_PLAN=none CONFIG_FROM='' CONFIG_REASON=''
+LEGACY_PKGS='' LEGACY_MIGRATE=0 LEGACY_BACKUP=''
+LEGACY_CONFIG=/etc/config/forkop
+LEGACY_DATA=/etc/forkop
+NEW_CONFIG=/etc/config/nexroute
+NEW_DATA=/etc/nexroute
+NEW_DEFAULT_CONFIG=/usr/share/nexroute/default-config
+MIGRATION_PARENT=/etc
 REMOVE_PKGS='' REMOVE_FILES='' DEPS_MISSING='' DEPS_KB=0 LISTS_FAILED=0 PREDELETE_CORE=0 OPKG_FLAGS='' OPKG_DB_COPY=''
-RESULT_FORKOP='' RESULT_CORE='' RESULT_VARIANT='' BACKUP=''
+RESULT_NEXROUTE='' RESULT_CORE='' RESULT_VARIANT='' BACKUP=''
 
 # --- output ---------------------------------------------------------------------------------
 
@@ -127,6 +134,7 @@ fail() { # fail EXIT CODE TEXT [HINT]...
 finish() { # finish EXIT [CODE]
 	if [ "$1" = 3 ] || [ "$1" = 4 ] ||
 		{ [ "$1" = 1 ] && contains "${2:-}" "network release checksum migration check package_manager no_memory"; }; then
+		[ -z "$LEGACY_BACKUP" ] || detail "Forkop backup: $LEGACY_BACKUP" >&2
 		[ -z "$BACKUP" ] || detail "$(t 'The old config is kept as %s' 'Прежний конфиг сохранён как %s' "$BACKUP")" >&2
 		detail "$(t 'Installer log: %s' 'Журнал установщика: %s' "$LOG")" >&2
 	fi
@@ -217,7 +225,7 @@ choose_variant() { # choose_variant [KEEP]: CORE_VARIANT from a menu at the term
 	question_block
 	{
 		if [ -z "$CORE_OLD" ]; then
-			printf '%s\n\n' "$(t 'Forkop runs on its own core, sing-box-forkop' 'Forkop работает на собственном ядре sing-box-forkop')"
+			printf '%s\n\n' "$(t 'NexRoute runs on its own core, sing-box-forkop' 'NexRoute работает на собственном ядре sing-box-forkop')"
 		elif [ "$CORE_VARIANT" != custom ]; then
 			printf '%s\n\n' "$(t 'Installed: sing-box-forkop %s (%s)' 'Установлен sing-box-forkop %s (%s)' "$CORE_OLD" "$CORE_VARIANT")"
 		fi
@@ -238,10 +246,10 @@ choose_variant() { # choose_variant [KEEP]: CORE_VARIANT from a menu at the term
 	log "build chosen: $CORE_VARIANT"
 }
 
-ask_translation() { # a first install asks whether Forkop's page gets its Russian translation
-	[ -z "$FORKOP_OLD" ] && may_ask || return 0
+ask_translation() { # a first install asks whether NexRoute's page gets its Russian translation
+	[ -z "$NEXROUTE_OLD" ] && may_ask || return 0
 	question_block
-	if ask "$(t 'Install the Russian translation of the Forkop page?' 'Установить русский перевод страницы Forkop?')" "$I18N"; then
+	if ask "$(t 'Install the Russian translation of the NexRoute page?' 'Установить русский перевод страницы NexRoute?')" "$I18N"; then
 		I18N=1
 	else
 		I18N=0
@@ -464,7 +472,7 @@ dependents() { # the installed packages in $1 and every installed package that n
 		}' "$WORK/db"
 }
 
-needed_by() { # needed_by NAME...: the installed packages other than Forkop's that depend on one of NAMES
+needed_by() { # needed_by NAME...: the installed packages other than NexRoute's that depend on one of NAMES
 	awk -F '\t' -v want=" $* " -v ours=" $OUR_PACKAGES " '
 		index(ours, " " $1 " ") { next }
 		{
@@ -594,9 +602,9 @@ release_url() { # release_url REPO TAG FILE: FILE at the mirror, TAG empty for t
 	fi
 }
 
-asset_url() { # asset_url forkop|core FILE: where FILE of the release is, empty when the release has none
+asset_url() { # asset_url nexroute|core FILE: where FILE of the release is, empty when the release has none
 	if [ -n "$MIRROR" ]; then
-		if [ "$1" = core ]; then release_url "$CORE_REPO" "$C_TAG" "$2"; else release_url "$FORKOP_REPO" "$F_TAG" "$2"; fi
+		if [ "$1" = core ]; then release_url "$CORE_REPO" "$C_TAG" "$2"; else release_url "$NEXROUTE_REPO" "$F_TAG" "$2"; fi
 	else
 		jsonfilter -i "$WORK/$1.release" -e "@.assets[@.name=\"$2\"].url" 2>/dev/null
 	fi
@@ -627,7 +635,7 @@ network_hint() {
 	host=${host#*://}
 	host=${host%%/*}
 	host=${host%:*}
-	if [ "$FORKOP_ENABLED" = 0 ] && pidof sing-box sing-box-core >/dev/null 2>&1; then
+	if [ "$NEXROUTE_ENABLED" = 0 ] && pidof sing-box sing-box-core >/dev/null 2>&1; then
 		t 'Another application runs sing-box, and the internet of the router may go through it: stop it and run the installer again' \
 			'Работает sing-box другого приложения, и интернет роутера может идти через него: остановите его и запустите установщик снова'
 	elif ! resolves "$host"; then
@@ -708,7 +716,7 @@ identify_system() {
 	RELEASE=$(openwrt_value DISTRIB_RELEASE)
 	ARCH=$(package_arch)
 	[ -n "$ARCH" ] || ARCH=$(openwrt_value DISTRIB_ARCH)
-	printf '%s%s%s · OpenWrt %s · %s\n\n' "$C_STEP" "$(t 'Forkop installer' 'Установщик Forkop')" "$C_OFF" "${RELEASE:-?}" "${ARCH:-?}"
+	printf '%s%s%s · OpenWrt %s · %s\n\n' "$C_STEP" "$(t 'NexRoute installer' 'Установщик NexRoute')" "$C_OFF" "${RELEASE:-?}" "${ARCH:-?}"
 }
 
 check_system() {
@@ -722,18 +730,18 @@ check_system() {
 	*)
 		if ! is_number "$major" || ! is_number "$minor" || [ "$major" -lt 24 ] ||
 			{ [ "$major" -eq 24 ] && [ "$minor" -lt 10 ]; }; then
-			fail 1 unsupported_openwrt "$(t 'Forkop needs OpenWrt 24.10 or newer' 'Для Forkop нужна OpenWrt 24.10 или новее')"
+			fail 1 unsupported_openwrt "$(t 'NexRoute needs OpenWrt 24.10 or newer' 'Для NexRoute нужна OpenWrt 24.10 или новее')"
 		fi
 		;;
 	esac
 	reason=$(unbuilt_reason "$ARCH")
-	[ -z "$reason" ] || fail 1 unsupported_arch "$(t 'Forkop does not run on this processor: %s' 'Forkop не работает на этом процессоре: %s' "$reason")"
+	[ -z "$reason" ] || fail 1 unsupported_arch "$(t 'NexRoute does not run on this processor: %s' 'NexRoute не работает на этом процессоре: %s' "$reason")"
 	grep -q ' /overlay ' /proc/mounts && FLASH_MOUNT=/overlay
 	FLASH_FS=$(awk -v m="$FLASH_MOUNT" '$2 == m { t = $3 } END { print t }' /proc/mounts)
 	ram=$(awk '/^MemTotal:/ { printf "%d", $2 / 1024 }' /proc/meminfo)
 	log "OpenWrt $RELEASE, $ARCH, $PM; flash $(free_kb "$FLASH_MOUNT") KB free ($FLASH_FS); RAM $ram MB, $(mem_available_kb) KB available"
 	if [ "$ram" -lt 100 ] 2>/dev/null; then
-		warn low_memory "$(t 'Forkop needs about 128 MB of RAM, and this router has %s MB' 'Для Forkop нужно около 128 МБ оперативной памяти, а у роутера %s МБ' "$ram")"
+		warn low_memory "$(t 'NexRoute needs about 128 MB of RAM, and this router has %s MB' 'Для NexRoute нужно около 128 МБ оперативной памяти, а у роутера %s МБ' "$ram")"
 	fi
 
 	year=$(date +%Y)
@@ -762,35 +770,65 @@ check_system() {
 
 # --- what is installed ----------------------------------------------------------------------
 
-forkop_status() { # running or enabled, from the installed Forkop
+nexroute_status() { # running or enabled, from the installed NexRoute
 	local status
-	[ -x /etc/init.d/forkop ] && /etc/init.d/forkop enabled 2>/dev/null && FORKOP_ENABLED=1
-	[ -x /usr/bin/forkop ] || return 0
-	status=$(deadline 15 /usr/bin/forkop get_status 2>/dev/null)
-	log "forkop get_status: $status"
-	case "$(printf '%s' "$status" | jsonfilter -e '@.running' 2>/dev/null)" in 1 | true) FORKOP_RUNNING=1 ;; esac
+	[ -x /etc/init.d/nexroute ] && /etc/init.d/nexroute enabled 2>/dev/null && NEXROUTE_ENABLED=1
+	[ -x /usr/bin/nexroute ] || return 0
+	status=$(deadline 15 /usr/bin/nexroute get_status 2>/dev/null)
+	log "nexroute get_status: $status"
+	case "$(printf '%s' "$status" | jsonfilter -e '@.running' 2>/dev/null)" in 1 | true) NEXROUTE_RUNNING=1 ;; esac
 	# get_status counts a core that started less than two seconds ago, or a capture being set up
-	# again, as stopped; procd runs Forkop's core as its sing-box service all the same
-	if [ "$FORKOP_RUNNING" = 0 ] && [ "$FORKOP_ENABLED" = 1 ] &&
+	# again, as stopped; procd runs NexRoute's core as its sing-box service all the same
+	if [ "$NEXROUTE_RUNNING" = 0 ] && [ "$NEXROUTE_ENABLED" = 1 ] &&
 		ubus call service list '{"name":"sing-box"}' 2>/dev/null | jsonfilter -e '@["sing-box"].instances[*].running' 2>/dev/null | grep -q true; then
-		FORKOP_RUNNING=1
+		NEXROUTE_RUNNING=1
 	fi
-	log "forkop: enabled $FORKOP_ENABLED, running $FORKOP_RUNNING"
+	log "nexroute: enabled $NEXROUTE_ENABLED, running $NEXROUTE_RUNNING"
+}
+
+read_legacy_state() {
+	local name users status
+	for name in forkop luci-app-forkop luci-i18n-forkop-ru; do
+		[ -z "$(pkg_version "$name")" ] || LEGACY_PKGS="$LEGACY_PKGS $name"
+	done
+	if [ -n "$LEGACY_PKGS" ] && [ -n "$NEXROUTE_OLD" ]; then
+		fail 1 migration 'Both Forkop and NexRoute are installed; resolve the conflict before proceeding.'
+	fi
+	[ -z "$NEXROUTE_OLD" ] || return 0
+	if [ -n "$LEGACY_PKGS" ] && [ ! -f "$LEGACY_CONFIG" ]; then
+		fail 1 migration 'Forkop is installed, but its configuration is missing; migration stopped.'
+	fi
+	[ -f "$LEGACY_CONFIG" ] || return 0
+	[ ! -e "$NEW_CONFIG" ] && [ ! -e "$NEW_DATA" ] ||
+		fail 1 migration 'NexRoute configuration or data already exists; migration stopped to avoid overwriting it.'
+	users=$(needed_by forkop luci-app-forkop luci-i18n-forkop-ru)
+	for name in $users; do
+		contains "$name" "$LEGACY_PKGS" || fail 1 migration "Package $name depends on Forkop; migration stopped."
+	done
+	LEGACY_MIGRATE=1
+	CONFIG_VERSION=$(uci -q get forkop.settings.config_version)
+	[ ! -x /etc/init.d/forkop ] || ! /etc/init.d/forkop enabled 2>/dev/null || NEXROUTE_ENABLED=1
+	if [ -x /usr/bin/forkop ]; then
+		status=$(deadline 15 /usr/bin/forkop get_status 2>/dev/null)
+		case "$(printf '%s' "$status" | jsonfilter -e '@.running' 2>/dev/null)" in 1 | true) NEXROUTE_RUNNING=1 ;; esac
+	fi
+	[ -z "$(pkg_version luci-i18n-forkop-ru)" ] || I18N=1
 }
 
 read_state() {
 	local name file owner
 	refresh_db
-	FORKOP_OLD=$(pkg_version forkop)
-	# every release of Forkop names this project; a fork built under its package names names its own
-	FORK_URL=$(pkg_url forkop)
-	[ -n "$FORKOP_OLD" ] && [ "$FORK_URL" != "https://github.com/$FORKOP_REPO" ] || FORK_URL=''
-	APP_OLD=$(pkg_version luci-app-forkop)
-	I18N_OLD=$(pkg_version luci-i18n-forkop-ru)
+	NEXROUTE_OLD=$(pkg_version nexroute)
+	# every release of NexRoute names this project; a fork built under its package names names its own
+	FORK_URL=$(pkg_url nexroute)
+	[ -n "$NEXROUTE_OLD" ] && [ "$FORK_URL" != "https://github.com/$NEXROUTE_REPO" ] || FORK_URL=''
+	APP_OLD=$(pkg_version luci-app-nexroute)
+	I18N_OLD=$(pkg_version luci-i18n-nexroute-ru)
 	CORE_OLD=$(pkg_version sing-box-forkop)
 	[ -z "$CORE_OLD" ] || CORE_OLD_VARIANT=$(cat /usr/share/sing-box-forkop/variant 2>/dev/null)
-	[ ! -f /etc/config/forkop ] || CONFIG_VERSION=$(uci -q get forkop.settings.config_version)
-	forkop_status
+	[ ! -f /etc/config/nexroute ] || CONFIG_VERSION=$(uci -q get nexroute.settings.config_version)
+	nexroute_status
+	[ "$MODE" != install ] || read_legacy_state
 
 	for name in $FOREIGN_CORES; do
 		if [ -n "$(pkg_version "$name")" ]; then
@@ -813,7 +851,7 @@ read_state() {
 	if [ -n "$owner" ] && ! contains "$owner" "$OUR_PACKAGES $FOREIGN_PKGS"; then
 		FOREIGN_PKGS="$FOREIGN_PKGS $owner"
 	fi
-	log "installed: forkop ${FORKOP_OLD:-none}${FORK_URL:+ from $FORK_URL}, sing-box-forkop ${CORE_OLD:-none} ${CORE_OLD_VARIANT}," \
+	log "installed: nexroute ${NEXROUTE_OLD:-none}${FORK_URL:+ from $FORK_URL}, sing-box-forkop ${CORE_OLD:-none} ${CORE_OLD_VARIANT}," \
 		"other cores:${FOREIGN_PKGS:- none}, files of no package:${FOREIGN_FILES:- none}, config ${CONFIG_VERSION:-none}"
 }
 
@@ -826,7 +864,7 @@ read_manifest() { # read_manifest FILE NAME: prints version, tag and requirement
 	[ "$name" = "$2" ] && [ "$schema" = 1 ] || return 1
 	jsonfilter -i "$1" -e '@.version' 2>/dev/null || return 1
 	jsonfilter -i "$1" -e '@.tag' 2>/dev/null || echo
-	if [ "$2" = forkop ]; then
+	if [ "$2" = nexroute ]; then
 		jsonfilter -i "$1" -e '@.requires["sing-box-forkop"]' 2>/dev/null || echo
 	else
 		jsonfilter -i "$1" -e '@.requires.forkop' 2>/dev/null || echo
@@ -844,9 +882,9 @@ fetch_or_fail() { # fetch_or_fail URL FILE NAME RELEASE: a file of a release, or
 	fail 1 network "$(t 'Cannot download %s' 'Не удалось скачать %s' "$3")" "$(network_hint)"
 }
 
-fetch_release() { # fetch_release forkop|core: the latest release's manifest, and from the API its files
-	local repo=$FORKOP_REPO name=Forkop package=forkop manifest="$WORK/$1.json" url status=0
-	[ "$1" = forkop ] || repo=$CORE_REPO name=sing-box-forkop package=sing-box-forkop
+fetch_release() { # fetch_release nexroute|core: the latest release's manifest, and from the API its files
+	local repo=$NEXROUTE_REPO name=NexRoute package=nexroute manifest="$WORK/$1.json" url status=0
+	[ "$1" = nexroute ] || repo=$CORE_REPO name=sing-box-forkop package=sing-box-forkop
 	if [ -z "$MIRROR" ]; then
 		download "$API_URL/repos/$repo/releases/latest" "$WORK/$1.release"
 		status=$?
@@ -868,18 +906,18 @@ fetch_release() { # fetch_release forkop|core: the latest release's manifest, an
 	read_manifest "$manifest" "$package" >"$WORK/$1.fields" ||
 		fail 1 release "$(t 'Cannot read the information on the %s release' 'Не удалось прочитать сведения о релизе %s' "$name")" \
 			"$(t 'Download the latest install.sh' 'Скачайте свежий install.sh')"
-	if [ "$1" = forkop ]; then
+	if [ "$1" = nexroute ]; then
 		{
 			read -r F_VERSION
 			read -r F_TAG
 			read -r F_CORE_MIN
-		} <"$WORK/forkop.fields"
+		} <"$WORK/nexroute.fields"
 		F_TAG=${F_TAG:-$F_VERSION}
 	else
 		{
 			read -r C_VERSION
 			read -r C_TAG
-			read -r C_FORKOP_MIN
+			read -r C_NEXROUTE_MIN
 		} <"$WORK/core.fields"
 		C_TAG=${C_TAG:-v$C_VERSION}
 	fi
@@ -887,39 +925,39 @@ fetch_release() { # fetch_release forkop|core: the latest release's manifest, an
 
 resolve_release() {
 	step release "$(t 'Looking for the latest version' 'Поиск последней версии')"
-	fetch_release forkop
+	fetch_release nexroute
 	fetch_release core
-	decide_forkop
+	decide_nexroute
 	decide_core
 	ask_translation
 	[ "$ASKED" = 0 ] || printf '\n' >/dev/tty
 	# opkg keeps an installed package of the version it is given and refuses an older one: a fork's
-	# go and Forkop's come in, whatever versions the fork took
+	# go and NexRoute's come in, whatever versions the fork took
 	[ -z "$FORK_URL" ] || OPKG_FLAGS='--force-downgrade --force-reinstall'
 }
 
-decide_forkop() { # the Forkop packages to install, NEED_*, and the Forkop that will run
-	if [ -n "$FORKOP_OLD" ]; then
+decide_nexroute() { # the NexRoute packages to install, NEED_*, and the NexRoute that will run
+	if [ -n "$NEXROUTE_OLD" ]; then
 		[ -z "$I18N_OLD" ] || I18N=1
 	else
 		# a first install brings the page's Russian translation unless LuCI is set to another language
 		case "$(uci -q get luci.main.lang)" in '' | auto | ru*) I18N=1 ;; esac
 	fi
-	RESULT_FORKOP=$F_VERSION
+	RESULT_NEXROUTE=$F_VERSION
 	if [ -n "$FORK_URL" ]; then
-		# a fork goes whatever its version says: Forkop's packages take its place
-		NEED_FORKOP=1 NEED_APP=1 NEED_I18N=$I18N
+		# a fork goes whatever its version says: NexRoute's packages take its place
+		NEED_NEXROUTE=1 NEED_APP=1 NEED_I18N=$I18N
 		return 0
 	fi
-	if [ -n "$FORKOP_OLD" ] && [ "$(vercmp "$FORKOP_OLD" "$F_VERSION")" = 1 ]; then
-		info "$(t 'forkop %s is newer than the latest release %s and stays' 'forkop %s новее последнего релиза %s и остаётся' "$FORKOP_OLD" "$F_VERSION")"
-		RESULT_FORKOP=$FORKOP_OLD
-		F_CORE_MIN=$(core_requirement "$(pkg_depends forkop)")
+	if [ -n "$NEXROUTE_OLD" ] && [ "$(vercmp "$NEXROUTE_OLD" "$F_VERSION")" = 1 ]; then
+		info "$(t 'nexroute %s is newer than the latest release %s and stays' 'nexroute %s новее последнего релиза %s и остаётся' "$NEXROUTE_OLD" "$F_VERSION")"
+		RESULT_NEXROUTE=$NEXROUTE_OLD
+		F_CORE_MIN=$(core_requirement "$(pkg_depends nexroute)")
 		return 0
 	fi
 	# the page and its translation go with the backend they talk to
-	[ "$FORKOP_OLD" = "$F_VERSION" ] || NEED_FORKOP=1
-	[ "$NEED_FORKOP" = 0 ] && [ "$APP_OLD" = "$F_VERSION" ] || NEED_APP=1
+	[ "$NEXROUTE_OLD" = "$F_VERSION" ] || NEED_NEXROUTE=1
+	[ "$NEED_NEXROUTE" = 0 ] && [ "$APP_OLD" = "$F_VERSION" ] || NEED_APP=1
 	[ "$I18N" = 0 ] || { [ "$NEED_APP" = 0 ] && [ "$I18N_OLD" = "$F_VERSION" ]; } || NEED_I18N=1
 }
 
@@ -936,7 +974,7 @@ decide_core() { # the build, the core release and whether the core is installed
 	fi
 	if [ "$CORE_VARIANT" = custom ]; then
 		if [ -n "$F_CORE_MIN" ] && older "$CORE_OLD" "$F_CORE_MIN"; then
-			text=$(t 'The custom build of sing-box-forkop %s is too old: forkop %s needs %s or newer' 'Кастомная сборка sing-box-forkop %s слишком старая: forkop %s требует %s или новее' "$CORE_OLD" "$RESULT_FORKOP" "$F_CORE_MIN")
+			text=$(t 'The custom build of sing-box-forkop %s is too old: nexroute %s needs %s or newer' 'Кастомная сборка sing-box-forkop %s слишком старая: nexroute %s требует %s или новее' "$CORE_OLD" "$RESULT_NEXROUTE" "$F_CORE_MIN")
 			may_ask || fail 1 incompatible "$text" "$(t 'Install an official build: --variant base, full or tiny' 'Поставьте официальную сборку: --variant base, full или tiny')"
 			warn custom_outdated "$text"
 			choose_variant
@@ -967,20 +1005,20 @@ decide_core() { # the build, the core release and whether the core is installed
 	check_compatible
 }
 
-check_compatible() { # the Forkop and the core that will run work together
-	# what a core needs of Forkop only its release says
-	if [ "$RESULT_CORE" = "$C_VERSION" ] && [ -n "$C_FORKOP_MIN" ] && older "$RESULT_FORKOP" "$C_FORKOP_MIN"; then
-		fail 1 incompatible "$(t 'sing-box-forkop %s needs forkop %s or newer, and forkop %s would run' 'sing-box-forkop %s требует forkop %s или новее, а будет forkop %s' "$C_VERSION" "$C_FORKOP_MIN" "$RESULT_FORKOP")"
+check_compatible() { # the NexRoute and the core that will run work together
+	# what a core needs of NexRoute only its release says
+	if [ "$RESULT_CORE" = "$C_VERSION" ] && [ -n "$C_NEXROUTE_MIN" ] && older "$RESULT_NEXROUTE" "$C_NEXROUTE_MIN"; then
+		fail 1 incompatible "$(t 'sing-box-forkop %s needs nexroute %s or newer, and nexroute %s would run' 'sing-box-forkop %s требует nexroute %s или новее, а будет nexroute %s' "$C_VERSION" "$C_NEXROUTE_MIN" "$RESULT_NEXROUTE")"
 	fi
 	if [ -n "$F_CORE_MIN" ] && older "$RESULT_CORE" "$F_CORE_MIN"; then
-		fail 1 incompatible "$(t 'forkop %s needs sing-box-forkop %s or newer, and the latest is %s' 'forkop %s требует sing-box-forkop %s или новее, а последний релиз — %s' "$RESULT_FORKOP" "$F_CORE_MIN" "$C_VERSION")" \
+		fail 1 incompatible "$(t 'nexroute %s needs sing-box-forkop %s or newer, and the latest is %s' 'nexroute %s требует sing-box-forkop %s или новее, а последний релиз — %s' "$RESULT_NEXROUTE" "$F_CORE_MIN" "$C_VERSION")" \
 			"$(t 'That release is not out yet: run the installer later' 'Этот релиз ещё не вышел, запустите установщик позже')"
 	fi
 }
 
 stop_if_current() { # nothing to install: the installed versions, and the run ends
-	[ "$NEED_FORKOP$NEED_APP$NEED_I18N" = 000 ] && [ "$CORE_ACTION" = none ] || return 0
-	info "$(t 'Up to date: forkop %s, sing-box-forkop %s (%s)' 'Обновлений нет: forkop %s, sing-box-forkop %s (%s)' "$RESULT_FORKOP" "$RESULT_CORE" "$RESULT_VARIANT")"
+	[ "$NEED_NEXROUTE$NEED_APP$NEED_I18N" = 000 ] && [ "$CORE_ACTION" = none ] || return 0
+	info "$(t 'Up to date: nexroute %s, sing-box-forkop %s (%s)' 'Обновлений нет: nexroute %s, sing-box-forkop %s (%s)' "$RESULT_NEXROUTE" "$RESULT_CORE" "$RESULT_VARIANT")"
 	finish 0
 }
 
@@ -990,12 +1028,12 @@ core_file() { # core_file VARIANT
 	printf 'sing-box-forkop_%s_%s_%s.%s' "$C_VERSION" "$1" "$ARCH" "$EXT"
 }
 
-get_package() { # get_package forkop|core FILE: GOT is FILE of that release, checked against its SHA256SUMS
-	local sums="$WORK/$1.sums" file="$WORK/$2" url name="Forkop $F_VERSION"
-	[ "$1" = forkop ] || name="sing-box-forkop $C_VERSION"
+get_package() { # get_package nexroute|core FILE: GOT is FILE of that release, checked against its SHA256SUMS
+	local sums="$WORK/$1.sums" file="$WORK/$2" url name="NexRoute $F_VERSION"
+	[ "$1" = nexroute ] || name="sing-box-forkop $C_VERSION"
 	[ -s "$sums" ] || fetch_or_fail "$(asset_url "$1" SHA256SUMS)" "$sums" SHA256SUMS "$name"
 	if [ -z "$(checksum_of "$2" "$sums")" ]; then
-		[ "$1" = forkop ] || fail 1 release "$(t 'Release sing-box-forkop %s has no %s build for %s' 'В релизе sing-box-forkop %s нет сборки %s для %s' "$C_VERSION" "$CORE_VARIANT" "$ARCH")"
+		[ "$1" = nexroute ] || fail 1 release "$(t 'Release sing-box-forkop %s has no %s build for %s' 'В релизе sing-box-forkop %s нет сборки %s для %s' "$C_VERSION" "$CORE_VARIANT" "$ARCH")"
 		fail 1 release "$(t 'Release %s has no %s' 'В релизе %s нет %s' "$name" "$2")"
 	fi
 	url=$(asset_url "$1" "$2")
@@ -1009,10 +1047,10 @@ get_package() { # get_package forkop|core FILE: GOT is FILE of that release, che
 	GOT=$file
 }
 
-need_ram_kb() { # what the run puts in RAM while Forkop still runs: the downloads, the core's as the largest
+need_ram_kb() { # what the run puts in RAM while NexRoute still runs: the downloads, the core's as the largest
 	# package of its build, and the largest of the checks run beside them
 	local kb=6144
-	[ "$NEED_FORKOP$NEED_APP$NEED_I18N" = 000 ] || kb=$((kb + 1024))
+	[ "$NEED_NEXROUTE$NEED_APP$NEED_I18N" = 000 ] || kb=$((kb + 1024))
 	if [ "$CORE_ACTION" = install ]; then
 		case "$CORE_VARIANT" in full) kb=$((kb + 24576)) ;; tiny) kb=$((kb + 11264)) ;; *) kb=$((kb + 13312)) ;; esac
 	fi
@@ -1030,25 +1068,25 @@ enough_ram() { # enough_ram KB downloads|dependencies: the run stops here unless
 	else
 		text=$(t 'Not enough RAM to install the dependencies: %s MB needed, %s MB free' 'Не хватает оперативной памяти для установки зависимостей: нужно %s МБ, свободно %s МБ' "$(mb "$1")" "$(mb "$free")")
 	fi
-	[ "$FORKOP_RUNNING" = 0 ] || fail 1 no_memory "$text" \
-		"$(t 'Stop Forkop: /etc/init.d/forkop stop' 'Остановите Forkop: /etc/init.d/forkop stop')" \
-		"$(t 'Run the installer again, then start Forkop: /etc/init.d/forkop start' 'Запустите установщик снова, затем Forkop: /etc/init.d/forkop start')"
+	[ "$NEXROUTE_RUNNING" = 0 ] || fail 1 no_memory "$text" \
+		"$(t 'Stop NexRoute: /etc/init.d/nexroute stop' 'Остановите NexRoute: /etc/init.d/nexroute stop')" \
+		"$(t 'Run the installer again, then start NexRoute: /etc/init.d/nexroute start' 'Запустите установщик снова, затем NexRoute: /etc/init.d/nexroute start')"
 	fail 1 no_memory "$text" "$(t 'Free some RAM and run the installer again' 'Освободите память и запустите установщик снова')"
 }
 
 download_packages() {
 	enough_ram "$(need_ram_kb)" downloads
 	step download "$(t 'Downloading the packages' 'Загрузка пакетов')"
-	if [ "$NEED_FORKOP" = 1 ]; then
-		get_package forkop "forkop_${F_VERSION}_all.$EXT"
-		FILE_FORKOP=$GOT
+	if [ "$NEED_NEXROUTE" = 1 ]; then
+		get_package nexroute "nexroute_${F_VERSION}_all.$EXT"
+		FILE_NEXROUTE=$GOT
 	fi
 	if [ "$NEED_APP" = 1 ]; then
-		get_package forkop "luci-app-forkop_${F_VERSION}_all.$EXT"
+		get_package nexroute "luci-app-nexroute_${F_VERSION}_all.$EXT"
 		FILE_APP=$GOT
 	fi
 	if [ "$NEED_I18N" = 1 ]; then
-		get_package forkop "luci-i18n-forkop-ru_${F_VERSION}_all.$EXT"
+		get_package nexroute "luci-i18n-nexroute-ru_${F_VERSION}_all.$EXT"
 		FILE_I18N=$GOT
 	fi
 	if [ "$CORE_ACTION" = install ]; then
@@ -1069,11 +1107,11 @@ check_packages() {
 	preflight
 }
 
-# apk keeps an ip-full an older Forkop pulled in, as it is the new one's ip: ip-tiny replaces it
+# apk keeps an ip-full an older NexRoute pulled in, as it is the new one's ip: ip-tiny replaces it
 plan_ip_swap() {
 	local depends file
 	[ "$PM" = apk ] && [ -n "$(pkg_version ip-full)" ] && ! in_world ip-full && [ -z "$(needed_by ip-full)" ] || return 0
-	if [ -n "$FILE_FORKOP" ]; then depends=$(field "$(control_of "$FILE_FORKOP")" Depends); else depends=$(pkg_depends forkop); fi
+	if [ -n "$FILE_NEXROUTE" ]; then depends=$(field "$(control_of "$FILE_NEXROUTE")" Depends); else depends=$(pkg_depends nexroute); fi
 	contains ip "$(dep_names "$depends" | tr '\n' ' ')" || return 0
 	# apk reads the feed indexes to fetch it, as for a dependency, and fetches none on its own
 	if [ "$(mem_available_kb)" -lt 19456 ] 2>/dev/null; then
@@ -1131,15 +1169,16 @@ installed_kb() { # installed_kb SIMULATION: what the packages a simulated instal
 
 plan_removals() {
 	local name file control
-	for file in $FILE_CORE $FILE_FORKOP $FILE_APP $FILE_I18N; do
+	for file in $FILE_CORE $FILE_NEXROUTE $FILE_APP $FILE_I18N; do
 		control=$(control_of "$file")
 		for name in $(dep_names "$(field "$control" Depends)"); do
 			contains "$name" "$OUR_PACKAGES $DEPS_MISSING" || provided "$name" || DEPS_MISSING="$DEPS_MISSING $name"
 		done
 	done
 	DEPS_MISSING=${DEPS_MISSING# }
+	REMOVE_PKGS=${LEGACY_PKGS# }
 	[ "$CORE_ACTION" = install ] || [ -n "$FOREIGN_PKGS$FOREIGN_FILES" ] || return 0
-	REMOVE_PKGS=$(dependents "$FOREIGN_PKGS")
+	REMOVE_PKGS=$(dependents "$FOREIGN_PKGS $LEGACY_PKGS")
 	REMOVE_PKGS=${REMOVE_PKGS% }
 	REMOVE_FILES=${FOREIGN_FILES# }
 	# a core whose package stays owns these files and goes on running
@@ -1153,7 +1192,7 @@ compression() { # percent of its size a package takes on the flash
 check_space() { # whether the packages and their dependencies fit the flash; may plan freeing the old core
 	local percent need=0 free credit=0 file size core_credit=0
 	percent=$(compression)
-	for file in $FILE_FORKOP $FILE_APP $FILE_I18N $FILE_CORE; do
+	for file in $FILE_NEXROUTE $FILE_APP $FILE_I18N $FILE_CORE; do
 		size=$(field "$(control_of "$file")" Installed-Size)
 		is_number "$size" || size=$(($(file_kb "$file") * 1024 * 3))
 		need=$((need + size * percent / 100 / 1024))
@@ -1182,21 +1221,22 @@ check_space() { # whether the packages and their dependencies fit the flash; may
 		"$(t 'Free some space and run the installer again' 'Освободите место и запустите установщик снова')"
 }
 
-check_config() { # what the new package does with /etc/config/forkop, from its own migration code
-	local root="$WORK/new" verdict='' status=1 note
-	[ "$NEED_FORKOP" = 1 ] && [ -f /etc/config/forkop ] || return 0
-	# a fork's config follows its own schema under the labels of Forkop's releases
+check_config() { # what the new package does with /etc/config/nexroute, from its own migration code
+	local root="$WORK/new" verdict='' status=1 note source="$NEW_CONFIG"
+	[ "$LEGACY_MIGRATE" = 0 ] || source="$LEGACY_CONFIG"
+	[ "$NEED_NEXROUTE" = 1 ] && [ -f "$source" ] || return 0
+	# a fork's config follows its own schema under the labels of NexRoute's releases
 	if [ -n "$FORK_URL" ]; then
 		CONFIG_PLAN=reset CONFIG_FROM=foreign CONFIG_REASON=foreign
 		return 0
 	fi
-	if mkdir -p "$root" "$WORK/check" && cp /etc/config/forkop "$WORK/check/forkop"; then
+	if mkdir -p "$root" "$WORK/check" && cp "$source" "$WORK/check/nexroute"; then
 		if [ "$EXT" = apk ]; then
-			apk extract --allow-untrusted --no-chown --destination "$root" "$FILE_FORKOP" >>"$LOG" 2>&1
+			apk extract --allow-untrusted --no-chown --destination "$root" "$FILE_NEXROUTE" >>"$LOG" 2>&1
 		else
-			tar -xzOf "$FILE_FORKOP" ./data.tar.gz 2>/dev/null | tar -xzf - -C "$root" >>"$LOG" 2>&1
+			tar -xzOf "$FILE_NEXROUTE" ./data.tar.gz 2>/dev/null | tar -xzf - -C "$root" >>"$LOG" 2>&1
 		fi
-		verdict=$(ucode -L "$root/usr/lib/forkop" "$root/usr/lib/forkop/config/migration.uc" check "$WORK/check/forkop" 2>>"$LOG")
+		verdict=$(ucode -L "$root/usr/lib/nexroute" "$root/usr/lib/nexroute/config/migration.uc" check "$WORK/check/nexroute" 2>>"$LOG")
 		status=$?
 	fi
 	log "migration check: $status $verdict"
@@ -1211,11 +1251,14 @@ check_config() { # what the new package does with /etc/config/forkop, from its o
 		;;
 	esac
 	[ -n "$CONFIG_FROM" ] || CONFIG_FROM=${CONFIG_VERSION:-unknown}
-	if [ "$CONFIG_PLAN" = fail ]; then
-		fail 1 migration "$(t 'Forkop %s cannot migrate this config: %s' 'Forkop %s не сможет перенести этот конфиг: %s' "$F_VERSION" "$CONFIG_REASON")" \
-			"$(t 'Report it in the Forkop chat. To start from a clean config, rename /etc/config/forkop' 'Сообщите об этом в чат Forkop. Чтобы начать с чистого конфига, переименуйте /etc/config/forkop')"
+	if [ "$LEGACY_MIGRATE" = 1 ]; then
+		[ "$CONFIG_PLAN" = current ] || fail 1 migration 'Forkop configuration must use the supported 2.0.0 schema; nothing was migrated. Upgrade Forkop first.'
 	fi
-	# the notes are Forkop's own log lines, in English, which its log keeps: the text output leaves them out
+	if [ "$CONFIG_PLAN" = fail ]; then
+		fail 1 migration "$(t 'NexRoute %s cannot migrate this config: %s' 'NexRoute %s не сможет перенести этот конфиг: %s' "$F_VERSION" "$CONFIG_REASON")" \
+			"$(t 'Report it in the NexRoute chat. To start from a clean config, rename /etc/config/nexroute' 'Сообщите об этом в чат NexRoute. Чтобы начать с чистого конфига, переименуйте /etc/config/nexroute')"
+	fi
+	# the notes are NexRoute's own log lines, in English, which its log keeps: the text output leaves them out
 	printf '%s' "$verdict" | jsonfilter -e '@.warnings[*]' 2>/dev/null | while IFS= read -r note; do
 		[ -n "$note" ] || continue
 		log "migration note: $note"
@@ -1241,16 +1284,16 @@ apk_constraints() { # what the world gets for apk to drop the packages that go
 
 packages_in_transaction() {
 	[ -z "$FILE_CORE" ] || [ "$CORE_REINSTALL" = 1 ] || echo sing-box-forkop
-	[ -z "$FILE_FORKOP" ] || echo forkop
-	[ -z "$FILE_APP" ] || echo luci-app-forkop
-	[ -z "$FILE_I18N" ] || echo luci-i18n-forkop-ru
+	[ -z "$FILE_NEXROUTE" ] || echo nexroute
+	[ -z "$FILE_APP" ] || echo luci-app-nexroute
+	[ -z "$FILE_I18N" ] || echo luci-i18n-nexroute-ru
 }
 
 preflight() { # every package manager command apply runs, simulated
 	local out="$WORK/preflight" name hint=''
 	[ "$LISTS_FAILED" = 0 ] || hint=$(network_hint)
 	set --
-	for name in "$FILE_CORE" "$FILE_FORKOP" "$FILE_APP" "$FILE_I18N" "$FILE_IP"; do [ -z "$name" ] || set -- "$@" "$name"; done
+	for name in "$FILE_CORE" "$FILE_NEXROUTE" "$FILE_APP" "$FILE_I18N" "$FILE_IP"; do [ -z "$name" ] || set -- "$@" "$name"; done
 	if [ "$PM" = apk ]; then
 		for name in $(apk_constraints); do set -- "$@" "$name"; done
 		# as the transaction runs once the dependencies are in
@@ -1280,8 +1323,8 @@ preflight() { # every package manager command apply runs, simulated
 
 # --- changes --------------------------------------------------------------------------------
 
-config_copies() { # the copies of /etc/config/forkop there are now, one per line
-	ls -d /etc/config/forkop.* 2>/dev/null
+config_copies() { # the copies of /etc/config/nexroute there are now, one per line
+	ls -d /etc/config/nexroute.* 2>/dev/null
 }
 
 file_label() { # a config version as the package writes it into the name of a copy
@@ -1291,13 +1334,13 @@ file_label() { # a config version as the package writes it into the name of a co
 backup_config() { # a copy that guards the transaction; the package keeps its own where it should
 	local copy
 	config_copies >"$WORK/copies"
-	[ -f /etc/config/forkop ] && [ "$NEED_FORKOP" = 1 ] || return 0
-	copy="/etc/config/forkop.$(file_label "${CONFIG_FROM:-unknown}")-$(date +%Y%m%d-%H%M%S)"
+	[ -f /etc/config/nexroute ] && [ "$NEED_NEXROUTE" = 1 ] || return 0
+	copy="/etc/config/nexroute.$(file_label "${CONFIG_FROM:-unknown}")-$(date +%Y%m%d-%H%M%S)"
 	if [ -n "$FORK_URL" ]; then
-		# Forkop's package would read a fork's config as one of its own releases: it starts from its defaults
-		mv /etc/config/forkop "$copy" 2>>"$LOG" || fail 1 backup "$(t 'Cannot set /etc/config/forkop aside' 'Не удалось отложить /etc/config/forkop')"
+		# NexRoute's package would read a fork's config as one of its own releases: it starts from its defaults
+		mv /etc/config/nexroute "$copy" 2>>"$LOG" || fail 1 backup "$(t 'Cannot set /etc/config/nexroute aside' 'Не удалось отложить /etc/config/nexroute')"
 	else
-		cp -p /etc/config/forkop "$copy" 2>>"$LOG" || fail 1 backup "$(t 'Cannot copy /etc/config/forkop' 'Не удалось скопировать /etc/config/forkop')"
+		cp -p /etc/config/nexroute "$copy" 2>>"$LOG" || fail 1 backup "$(t 'Cannot copy /etc/config/nexroute' 'Не удалось скопировать /etc/config/nexroute')"
 	fi
 	BACKUP=$copy
 	log "config copy: $BACKUP"
@@ -1308,7 +1351,7 @@ install_dependencies() {
 	step dependencies "$(t 'Installing dependencies: %s' 'Установка зависимостей: %s' "$(commas "$DEPS_MISSING")")"
 	# shellcheck disable=SC2086
 	run detached "$PM" "$([ "$PM" = apk ] && echo add || echo install)" $DEPS_MISSING ||
-		fail 3 dependencies "$(t 'Cannot install the dependencies; forkop and sing-box-forkop were not touched' 'Не удалось установить зависимости, forkop и sing-box-forkop не тронуты')" "$(network_hint)"
+		fail 3 dependencies "$(t 'Cannot install the dependencies; nexroute and sing-box-forkop were not touched' 'Не удалось установить зависимости, nexroute и sing-box-forkop не тронуты')" "$(network_hint)"
 	# shellcheck disable=SC2086
 	pulled_in $DEPS_MISSING
 	refresh_db
@@ -1328,12 +1371,12 @@ stop_cores() {
 }
 
 stop_services() {
-	if [ "$FORKOP_RUNNING" = 1 ]; then
-		step stop "$(t 'Stopping Forkop' 'Остановка Forkop')"
+	if [ "$NEXROUTE_RUNNING" = 1 ]; then
+		step stop "$(t 'Stopping NexRoute' 'Остановка NexRoute')"
 	elif pidof sing-box sing-box-core >/dev/null 2>&1; then
 		step stop "$(t 'Stopping sing-box' 'Остановка sing-box')"
 	fi
-	[ ! -x /etc/init.d/forkop ] || deadline 90 /etc/init.d/forkop stop >>"$LOG" 2>&1
+	[ ! -x /etc/init.d/nexroute ] || deadline 90 /etc/init.d/nexroute stop >>"$LOG" 2>&1
 	[ ! -x /etc/init.d/sing-box ] || deadline 30 /etc/init.d/sing-box stop >>"$LOG" 2>&1
 	stop_cores
 }
@@ -1369,7 +1412,7 @@ restore_core() {
 
 removals() { # "name version" a line: what the transaction takes away, a fork's own packages first
 	local name version
-	[ -z "$FORK_URL" ] || for name in forkop luci-app-forkop luci-i18n-forkop-ru; do
+	[ -z "$FORK_URL" ] || for name in nexroute luci-app-nexroute luci-i18n-nexroute-ru; do
 		version=$(pkg_version "$name")
 		[ -z "$version" ] || printf '%s %s\n' "$name" "$version"
 	done
@@ -1383,14 +1426,14 @@ gone() { # gone LINES: each "name version" of LINES no longer installed
 	local name version source
 	printf '%s\n' "$1" | while read -r name version; do
 		[ -n "$name" ] || continue
-		if [ -n "$FORK_URL" ] && contains "$name" "forkop luci-app-forkop luci-i18n-forkop-ru"; then
-			# a fork's packages are gone once Forkop's take their place, of the same version or not
-			[ "$(pkg_url forkop)" != "$FORK_URL" ] || continue
+		if [ -n "$FORK_URL" ] && contains "$name" "nexroute luci-app-nexroute luci-i18n-nexroute-ru"; then
+			# a fork's packages are gone once NexRoute's take their place, of the same version or not
+			[ "$(pkg_url nexroute)" != "$FORK_URL" ] || continue
 		else
 			[ "$(pkg_version "$name")" != "$version" ] || continue
 		fi
 		source=''
-		[ "$name" != forkop ] || [ -z "$FORK_URL" ] || source=" (${FORK_URL#*://})"
+		[ "$name" != nexroute ] || [ -z "$FORK_URL" ] || source=" (${FORK_URL#*://})"
 		removed "$name $version$source"
 	done
 }
@@ -1449,10 +1492,10 @@ pulled_in() {
 		ours && $0 == "Auto-Installed: yes" { auto = 1 }
 		ours && $0 == "" { if (!auto) print "Auto-Installed: yes"; ours = 0 }
 		{ print }
-		END { if (ours && !auto) print "Auto-Installed: yes" }' /usr/lib/opkg/status >/usr/lib/opkg/status.forkop; then
-		mv /usr/lib/opkg/status.forkop /usr/lib/opkg/status
+		END { if (ours && !auto) print "Auto-Installed: yes" }' /usr/lib/opkg/status >/usr/lib/opkg/status.nexroute; then
+		mv /usr/lib/opkg/status.nexroute /usr/lib/opkg/status
 	else
-		rm -f /usr/lib/opkg/status.forkop
+		rm -f /usr/lib/opkg/status.nexroute
 	fi
 }
 
@@ -1461,10 +1504,10 @@ transaction() {
 	before=$(removals)
 	cp "$WORK/db" "$WORK/db.before"
 	set --
-	for name in "$FILE_CORE" "$FILE_FORKOP" "$FILE_APP" "$FILE_I18N" "$FILE_IP"; do [ -z "$name" ] || set -- "$@" "$name"; done
+	for name in "$FILE_CORE" "$FILE_NEXROUTE" "$FILE_APP" "$FILE_I18N" "$FILE_IP"; do [ -z "$name" ] || set -- "$@" "$name"; done
 	if [ "$PM" = apk ]; then
 		for name in $(apk_constraints); do set -- "$@" "$name"; done
-		# the dependencies are in: the feed indexes would take RAM and the network while Forkop is down
+		# the dependencies are in: the feed indexes would take RAM and the network while NexRoute is down
 		# shellcheck disable=SC2086
 		perform "$out" detached apk add --allow-untrusted $APK_OFFLINE "$@" || status=$?
 		# shellcheck disable=SC2046
@@ -1501,7 +1544,7 @@ repair_opkg_db() { # opkg leaves its status file cut short when the flash runs o
 		log "restored /usr/lib/opkg/status from before the transaction"
 		refresh_db
 	else
-		OPKG_DB_COPY=/tmp/opkg-status.before-forkop
+		OPKG_DB_COPY=/tmp/opkg-status.before-nexroute
 		cp "$WORK/opkg-status" "$OPKG_DB_COPY" 2>/dev/null
 		log "opkg cannot read /usr/lib/opkg/status, and putting it back failed: its copy is $OPKG_DB_COPY"
 	fi
@@ -1511,10 +1554,10 @@ check_installed() { # what the transaction left, against what it was to install
 	local problems='' name reason db_hint=''
 	[ -z "$FILE_CORE" ] || [ "$(pkg_version sing-box-forkop)" = "$(field "$(control_of "$FILE_CORE")" Version)" ] || problems="$problems sing-box-forkop"
 	[ -z "$FILE_CORE" ] || [ "$(cat /usr/share/sing-box-forkop/variant 2>/dev/null)" = "$CORE_VARIANT" ] || contains sing-box-forkop "$problems" || problems="$problems sing-box-forkop"
-	[ -z "$FILE_FORKOP" ] || [ "$(pkg_version forkop)" = "$F_VERSION" ] || problems="$problems forkop"
-	[ -z "$FORK_URL" ] || [ "$(pkg_url forkop)" != "$FORK_URL" ] || contains forkop "$problems" || problems="$problems forkop"
-	[ -z "$FILE_APP" ] || [ "$(pkg_version luci-app-forkop)" = "$F_VERSION" ] || problems="$problems luci-app-forkop"
-	[ -z "$FILE_I18N" ] || [ "$(pkg_version luci-i18n-forkop-ru)" = "$F_VERSION" ] || problems="$problems luci-i18n-forkop-ru"
+	[ -z "$FILE_NEXROUTE" ] || [ "$(pkg_version nexroute)" = "$F_VERSION" ] || problems="$problems nexroute"
+	[ -z "$FORK_URL" ] || [ "$(pkg_url nexroute)" != "$FORK_URL" ] || contains nexroute "$problems" || problems="$problems nexroute"
+	[ -z "$FILE_APP" ] || [ "$(pkg_version luci-app-nexroute)" = "$F_VERSION" ] || problems="$problems luci-app-nexroute"
+	[ -z "$FILE_I18N" ] || [ "$(pkg_version luci-i18n-nexroute-ru)" = "$F_VERSION" ] || problems="$problems luci-i18n-nexroute-ru"
 	[ -z "$FILE_IP" ] || [ -n "$(pkg_version ip-tiny)" ] || problems="$problems ip-tiny"
 	for name in $REMOVE_PKGS; do
 		[ -z "$(pkg_version "$name")" ] || problems="$problems $name"
@@ -1523,10 +1566,10 @@ check_installed() { # what the transaction left, against what it was to install
 	restore_core
 	repair_opkg_db
 	[ -z "$OPKG_DB_COPY" ] || db_hint=$(t "opkg's database is damaged; its copy from before is %s" 'База opkg повреждена, её копия до установки — %s' "$OPKG_DB_COPY")
-	if [ -n "$FILE_FORKOP" ] && { opkg_unpacked forkop || { [ "$(pkg_version forkop)" = "$F_VERSION" ] && [ "$1" != 0 ]; }; }; then
-		reason=$(logread -e forkop 2>/dev/null | grep '\[error\]' | tail -n 1 | sed 's/.*\[error\] *//')
-		fail 3 transaction "$(t 'Forkop %s is installed, but its setup failed: %s' 'Forkop %s установлен, но не настроился: %s' "$F_VERSION" "${reason:-$(t 'see logread -e forkop' 'см. logread -e forkop')}")" \
-			"$(t 'Its config is left as it was. Report it in the Forkop chat with the output of logread -e forkop' 'Конфиг оставлен как был. Сообщите об этом в чат Forkop, приложив вывод logread -e forkop')" \
+	if [ -n "$FILE_NEXROUTE" ] && { opkg_unpacked nexroute || { [ "$(pkg_version nexroute)" = "$F_VERSION" ] && [ "$1" != 0 ]; }; }; then
+		reason=$(logread -e nexroute 2>/dev/null | grep '\[error\]' | tail -n 1 | sed 's/.*\[error\] *//')
+		fail 3 transaction "$(t 'NexRoute %s is installed, but its setup failed: %s' 'NexRoute %s установлен, но не настроился: %s' "$F_VERSION" "${reason:-$(t 'see logread -e nexroute' 'см. logread -e nexroute')}")" \
+			"$(t 'Its config is left as it was. Report it in the NexRoute chat with the output of logread -e nexroute' 'Конфиг оставлен как был. Сообщите об этом в чат NexRoute, приложив вывод logread -e nexroute')" \
 			"$(start_again)" "$db_hint"
 	fi
 	fail 3 transaction "$(t 'The installation did not complete: %s' 'Установка не завершилась: %s' "$(commas "$problems")")" \
@@ -1534,12 +1577,16 @@ check_installed() { # what the transaction left, against what it was to install
 		"$(start_again)" "$db_hint"
 }
 
-start_again() { # after a failed transaction a Forkop that ran before runs again on what is installed now
-	[ "$FORKOP_RUNNING" = 1 ] && [ -x /etc/init.d/forkop ] || return 0
-	if deadline 150 /etc/init.d/forkop start >>"$LOG" 2>&1; then
-		t 'Forkop runs again' 'Forkop снова запущен'
+start_again() { # after a failed transaction a NexRoute that ran before runs again on what is installed now
+	if [ "$LEGACY_MIGRATE" = 1 ]; then
+		printf 'Forkop migration backup: %s\n' "$LEGACY_BACKUP"
+		return 0
+	fi
+	[ "$NEXROUTE_RUNNING" = 1 ] && [ -x /etc/init.d/nexroute ] || return 0
+	if deadline 150 /etc/init.d/nexroute start >>"$LOG" 2>&1; then
+		t 'NexRoute runs again' 'NexRoute снова запущен'
 	else
-		t 'Forkop did not start again: logread -e forkop' 'Forkop не запустился снова: logread -e forkop'
+		t 'NexRoute did not start again: logread -e nexroute' 'NexRoute не запустился снова: logread -e nexroute'
 	fi
 }
 
@@ -1557,49 +1604,49 @@ clean_up_after() {
 	[ "$PM" != apk ] || [ -z "$DEPS_MISSING" ] || world_drop $DEPS_MISSING
 	# a package added from its file stays in the world pinned to it
 	[ -z "$FILE_IP" ] || world_drop "$(grep '^ip-tiny><' /etc/apk/world)"
-	# /tmp is RAM, which the start of Forkop needs more than these files
+	# /tmp is RAM, which the start of NexRoute needs more than these files
 	rm -rf "$WORK/new" "$WORK/sing-box.old.gz"
-	for file in "$FILE_FORKOP" "$FILE_APP" "$FILE_I18N" "$FILE_CORE" "$FILE_IP"; do
+	for file in "$FILE_NEXROUTE" "$FILE_APP" "$FILE_I18N" "$FILE_CORE" "$FILE_IP"; do
 		[ -z "$file" ] || rm -f "$file"
 	done
 }
 
-forkop_up() { # start Forkop and wait for it to run: 0 once it does
+nexroute_up() { # start NexRoute and wait for it to run: 0 once it does
 	local waited=0
-	deadline 150 /etc/init.d/forkop start >>"$LOG" 2>&1
+	deadline 150 /etc/init.d/nexroute start >>"$LOG" 2>&1
 	while :; do
-		case "$(deadline 15 /usr/bin/forkop get_status 2>/dev/null | jsonfilter -e '@.running' 2>/dev/null)" in 1 | true) return 0 ;; esac
+		case "$(deadline 15 /usr/bin/nexroute get_status 2>/dev/null | jsonfilter -e '@.running' 2>/dev/null)" in 1 | true) return 0 ;; esac
 		[ "$waited" -lt 30 ] || return 1
 		sleep 3
 		waited=$((waited + 3))
 	done
 }
 
-start_forkop() { # a Forkop that ran before runs again, unless its config starts clean and has nothing to run
+start_nexroute() { # a NexRoute that ran before runs again, unless its config starts clean and has nothing to run
 	local pid exe hint
-	[ -x /etc/init.d/forkop ] || return 0
-	[ "$FORKOP_ENABLED" = 0 ] || run /etc/init.d/forkop enable
-	[ "$FORKOP_RUNNING" = 1 ] || return 0
+	[ -x /etc/init.d/nexroute ] || return 0
+	[ "$NEXROUTE_ENABLED" = 0 ] || run /etc/init.d/nexroute enable
+	[ "$NEXROUTE_RUNNING" = 1 ] || return 0
 	! clean_config || return 0
-	step start "$(t 'Starting Forkop' 'Запуск Forkop')"
-	hint=$(t 'Details: logread -e forkop' 'Подробности: logread -e forkop')
-	forkop_up || fail 4 service "$(t 'Forkop is installed but did not start: %s' 'Forkop установлен, но не запустился: %s' \
-		"$(logread -e forkop 2>/dev/null | grep -i error | tail -n 1 | sed 's/.*\]: //; s/^\[error\] *//')")" "$hint"
+	step start "$(t 'Starting NexRoute' 'Запуск NexRoute')"
+	hint=$(t 'Details: logread -e nexroute' 'Подробности: logread -e nexroute')
+	nexroute_up || fail 4 service "$(t 'NexRoute is installed but did not start: %s' 'NexRoute установлен, но не запустился: %s' \
+		"$(logread -e nexroute 2>/dev/null | grep -i error | tail -n 1 | sed 's/.*\]: //; s/^\[error\] *//')")" "$hint"
 	pid=$(pidof sing-box | awk '{ print $1 }')
 	exe=$(readlink "/proc/$pid/exe" 2>/dev/null)
 	if [ -z "$pid" ] || [ "$exe" != /usr/bin/sing-box ]; then
-		fail 4 service "$(t 'Forkop runs, but sing-box does not' 'Forkop работает, а sing-box — нет')" "$hint"
+		fail 4 service "$(t 'NexRoute runs, but sing-box does not' 'NexRoute работает, а sing-box — нет')" "$hint"
 	fi
 	STARTED=1
 }
 
-clean_config() { # Forkop's config is the package's own default, which has nothing to run
-	cmp -s /etc/config/forkop /usr/share/forkop/default-config
+clean_config() { # NexRoute's config is the package's own default, which has nothing to run
+	cmp -s /etc/config/nexroute /usr/share/nexroute/default-config
 }
 
 package_names() { # the packages the transaction installs, by name
 	local file names=''
-	for file in $FILE_FORKOP $FILE_APP $FILE_I18N $FILE_CORE; do
+	for file in $FILE_NEXROUTE $FILE_APP $FILE_I18N $FILE_CORE; do
 		file=${file##*/}
 		names="${names:+$names, }${file%%_*}"
 	done
@@ -1607,17 +1654,53 @@ package_names() { # the packages the transaction installs, by name
 	printf '%s' "$names"
 }
 
+backup_legacy() {
+	[ "$LEGACY_MIGRATE" = 1 ] || return 0
+	[ -f "$LEGACY_CONFIG" ] && [ ! -e "$NEW_CONFIG" ] && [ ! -e "$NEW_DATA" ] || return 1
+	LEGACY_BACKUP=$(umask 077; mktemp -d "$MIGRATION_PARENT/nexroute-migration.XXXXXX") || return 1
+	cp -p "$LEGACY_CONFIG" "$LEGACY_BACKUP/config" && chmod 600 "$LEGACY_BACKUP/config" || return 1
+	if [ -d "$LEGACY_DATA" ]; then
+		cp -a "$LEGACY_DATA" "$LEGACY_BACKUP/data" || return 1
+	fi
+	info "Forkop backup: $LEGACY_BACKUP"
+}
+
+restore_legacy() {
+	[ "$LEGACY_MIGRATE" = 1 ] || return 0
+	[ -f "$LEGACY_BACKUP/config" ] || return 1
+	# Replace the package's default, never an unrelated existing user configuration.
+	cmp -s "$NEW_CONFIG" "$NEW_DEFAULT_CONFIG" || return 1
+	if [ -d "$LEGACY_BACKUP/data" ]; then
+		[ ! -e "$NEW_DATA" ] || return 1
+		cp -a "$LEGACY_BACKUP/data" "$NEW_DATA" || return 1
+	fi
+	local temporary
+	temporary=$(mktemp "$NEW_CONFIG.migration.XXXXXX") || return 1
+	if ! cp -p "$LEGACY_BACKUP/config" "$temporary" || ! chmod 600 "$temporary" || ! mv -f "$temporary" "$NEW_CONFIG"; then
+		rm -f "$temporary"
+		return 1
+	fi
+	NEXROUTE_LIB=/usr/lib/nexroute ucode -L /usr/lib/nexroute /usr/lib/nexroute/config/migration.uc migrate || return 1
+	info "Forkop configuration migrated; backup kept at $LEGACY_BACKUP"
+}
+
 apply() {
 	trap '' INT TERM HUP PIPE
+	backup_legacy || fail 1 backup "Cannot back up Forkop configuration: $LEGACY_BACKUP"
 	backup_config
 	install_dependencies
+	if [ "$LEGACY_MIGRATE" = 1 ] && [ -x /etc/init.d/forkop ]; then
+		deadline 90 /etc/init.d/forkop stop >>"$LOG" 2>&1 || fail 3 migration "Cannot stop Forkop; backup: $LEGACY_BACKUP"
+		/etc/init.d/forkop disable >>"$LOG" 2>&1 || fail 3 migration "Cannot disable Forkop; backup: $LEGACY_BACKUP"
+	fi
 	stop_services
 	remove_files
 	predelete_core
 	step install "$(t 'Installing packages: %s' 'Установка пакетов: %s' "$(package_names)")"
 	transaction
+	restore_legacy || fail 3 migration "Cannot restore Forkop configuration automatically; backup: $LEGACY_BACKUP"
 	clean_up_after
-	start_forkop
+	start_nexroute
 	summary
 }
 
@@ -1629,28 +1712,28 @@ finale() { # the closing line, set apart: what the run achieved
 summary() {
 	local result runs
 	runs=$(t ' and running' ' и запущен')
-	if [ -n "$FORK_URL" ] || [ -z "$FORKOP_OLD" ]; then
-		result=$(t 'Forkop %s is installed' 'Forkop %s установлен' "$RESULT_FORKOP")
-	elif [ "$NEED_FORKOP" = 1 ]; then
-		result=$(t 'Forkop is updated to %s' 'Forkop обновлён до %s' "$RESULT_FORKOP")
+	if [ -n "$FORK_URL" ] || [ -z "$NEXROUTE_OLD" ]; then
+		result=$(t 'NexRoute %s is installed' 'NexRoute %s установлен' "$RESULT_NEXROUTE")
+	elif [ "$NEED_NEXROUTE" = 1 ]; then
+		result=$(t 'NexRoute is updated to %s' 'NexRoute обновлён до %s' "$RESULT_NEXROUTE")
 	elif [ "$CORE_ACTION" = install ]; then
 		if [ -n "$CORE_OLD" ] && [ "$CORE_REINSTALL" = 0 ]; then
 			result=$(t 'sing-box-forkop is updated to %s (%s)' 'sing-box-forkop обновлён до %s (%s)' "$RESULT_CORE" "$RESULT_VARIANT")
 		else
 			result=$(t 'sing-box-forkop %s (%s) is installed' 'sing-box-forkop %s (%s) установлен' "$RESULT_CORE" "$RESULT_VARIANT")
 		fi
-		runs=$(t ', Forkop is running' ', Forkop запущен')
+		runs=$(t ', NexRoute is running' ', NexRoute запущен')
 	else
-		result=$(t 'Forkop %s is installed' 'Forkop %s установлен' "$RESULT_FORKOP")
+		result=$(t 'NexRoute %s is installed' 'NexRoute %s установлен' "$RESULT_NEXROUTE")
 	fi
 	[ "$STARTED" = 1 ] || runs=''
-	! starts_over || runs="$runs$(t '. Set it up in LuCI: Services → Forkop' '. Настройте его в LuCI: Службы → Forkop')"
+	! starts_over || runs="$runs$(t '. Set it up in LuCI: Services → NexRoute' '. Настройте его в LuCI: Службы → NexRoute')"
 	finale "$result$runs"
 	finish 0
 }
 
-starts_over() { # Forkop starts from its default config: a first install, a config it could not keep, a fork's
-	{ [ -z "$FORKOP_OLD" ] || [ -n "$FORK_URL" ] || [ "$CONFIG_PLAN" = reset ]; } && clean_config
+starts_over() { # NexRoute starts from its default config: a first install, a config it could not keep, a fork's
+	{ [ -z "$NEXROUTE_OLD" ] || [ -n "$FORK_URL" ] || [ "$CONFIG_PLAN" = reset ]; } && clean_config
 }
 
 # --- removal --------------------------------------------------------------------------------
@@ -1658,9 +1741,9 @@ starts_over() { # Forkop starts from its default config: a first install, a conf
 uninstall() {
 	local packages='' name file out="$WORK/remove" before='' users
 	refresh_db
-	# podkop and the like stay beside Forkop on its core, which provides sing-box: the core goes with them
+	# podkop and the like stay beside NexRoute on its core, which provides sing-box: the core goes with them
 	users=$(needed_by sing-box-forkop "$CORE_PROVIDES")
-	for name in luci-i18n-forkop-ru luci-app-forkop forkop sing-box-forkop; do
+	for name in luci-i18n-nexroute-ru luci-app-nexroute nexroute sing-box-forkop; do
 		[ -n "$(pkg_version "$name")" ] || continue
 		[ "$name" != sing-box-forkop ] || [ -z "$users" ] || continue
 		packages="$packages $name"
@@ -1669,16 +1752,16 @@ uninstall() {
 	done
 	packages=${packages# }
 	if [ -z "$packages" ]; then
-		info "$(t 'Forkop is not installed' 'Forkop не установлен')"
+		info "$(t 'NexRoute is not installed' 'NexRoute не установлен')"
 		finish 0
 	fi
 	if [ "$PURGE" = 0 ] && may_ask; then
-		ask "$(t 'Delete the settings of Forkop too?' 'Удалить и настройки Forkop?')" && PURGE=1
+		ask "$(t 'Delete the settings of NexRoute too?' 'Удалить и настройки NexRoute?')" && PURGE=1
 		printf '\n' >/dev/tty
 	fi
 	trap '' INT TERM HUP PIPE
 	step remove "$(t 'Removing the packages' 'Удаление пакетов')"
-	[ ! -x /etc/init.d/forkop ] || deadline 90 /etc/init.d/forkop stop >>"$LOG" 2>&1
+	[ ! -x /etc/init.d/nexroute ] || deadline 90 /etc/init.d/nexroute stop >>"$LOG" 2>&1
 	# a core that stays goes on running for what needs it
 	[ -n "$users" ] || [ ! -x /etc/init.d/sing-box ] || deadline 30 /etc/init.d/sing-box stop >>"$LOG" 2>&1
 	cp "$WORK/db" "$WORK/db.before"
@@ -1689,7 +1772,7 @@ uninstall() {
 		perform "$out" detached opkg remove $packages && drop_dependencies
 	fi
 	# opkg leaves the directories it emptied
-	find /usr/lib/forkop /usr/share/forkop /usr/share/sing-box-forkop /www/luci-static/resources/view/forkop -type d 2>/dev/null |
+	find /usr/lib/nexroute /usr/share/nexroute /usr/share/sing-box-forkop /www/luci-static/resources/view/nexroute -type d 2>/dev/null |
 		sort -r | while read -r dir; do rmdir "$dir" 2>/dev/null; done
 	refresh_db
 	before=$(printf '%s' "$before" | sort)
@@ -1702,14 +1785,14 @@ uninstall() {
 	[ -z "$users" ] || [ -z "$(pkg_version sing-box-forkop)" ] ||
 		warn core_kept "$(t 'sing-box-forkop stays for %s' 'sing-box-forkop остаётся для %s' "$(commas "$users")")"
 	if [ "$PURGE" = 1 ]; then
-		for file in /etc/config/forkop /etc/config/forkop.* /etc/config/forkop-opkg /etc/forkop; do
+		for file in /etc/config/nexroute /etc/config/nexroute.* /etc/config/nexroute-opkg /etc/nexroute; do
 			[ ! -e "$file" ] || rm -rf "$file"
 		done
 		[ -n "$users" ] || for file in /etc/config/sing-box /etc/config/sing-box-opkg /etc/sing-box; do
 			[ ! -e "$file" ] || rm -rf "$file"
 		done
 	fi
-	finale "$(t 'Forkop is removed' 'Forkop удалён')"
+	finale "$(t 'NexRoute is removed' 'NexRoute удалён')"
 	finish 0
 }
 
@@ -1756,7 +1839,7 @@ main() {
 	[ "$(id -u)" = 0 ] || fail 1 not_root "$(t 'Run the installer as root' 'Запустите установщик от имени root')"
 	[ -r /etc/openwrt_release ] || fail 1 not_openwrt "$(t 'This installer runs only on OpenWrt' 'Установщик работает только на OpenWrt')"
 	detect_package_manager
-	WORK=$(mktemp -d /tmp/forkop-install.XXXXXX) || fail 1 no_memory "$(t 'Cannot create a directory in /tmp' 'Не удалось создать папку в /tmp')"
+	WORK=$(mktemp -d /tmp/nexroute-install.XXXXXX) || fail 1 no_memory "$(t 'Cannot create a directory in /tmp' 'Не удалось создать папку в /tmp')"
 	identify_system
 	lock
 	[ "$MODE" = install ] || uninstall

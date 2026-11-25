@@ -1,0 +1,128 @@
+name: Verify APK packages
+
+# Test builds only. Does not create a tag or a GitHub Release.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'nexroute/**'
+      - 'fe-app-nexroute/**'
+      - 'luci-app-nexroute/**'
+      - 'tests/**'
+      - 'build.sh'
+      - 'install.sh'
+      - '.github/workflows/verify-ech-apk.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'nexroute/**'
+      - 'fe-app-nexroute/**'
+      - 'luci-app-nexroute/**'
+      - 'tests/**'
+      - 'build.sh'
+      - '.github/workflows/verify-ech-apk.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Test and build OpenWrt 25.12.5 APK packages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5.0.0
+
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake curl fakeroot file gawk git libjson-c-dev patch perl pkg-config tar unzip util-linux xz-utils zstd
+
+      - name: Build ucode for backend tests
+        shell: bash
+        run: |
+          git clone --depth 1 --branch v0.0.20250529 https://github.com/jow-/ucode.git /tmp/ucode
+          cmake -S /tmp/ucode -B /tmp/ucode/build \
+            -DUBUS_SUPPORT=OFF \
+            -DUCI_SUPPORT=OFF \
+            -DULOOP_SUPPORT=OFF
+          cmake --build /tmp/ucode/build --parallel
+          sudo cmake --install /tmp/ucode/build
+          sudo ldconfig
+
+      - name: Validate ucode and run backend tests
+        shell: bash
+        run: |
+          find nexroute/files/usr/lib -name '*.uc' -print0 | xargs -0 -n1 ucode -c -o /dev/null
+          find nexroute/files/usr/lib -name '*.uc' -print0 | xargs -0 -n1 ucode -S -c -o /dev/null
+          tests/run.sh
+          tests/migration-rebrand.sh
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5.0.0
+        with:
+          node-version: '22'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install frontend dependencies
+        working-directory: fe-app-nexroute
+        run: yarn install --frozen-lockfile
+
+      - name: Test and regenerate LuCI frontend
+        working-directory: fe-app-nexroute
+        run: |
+          yarn test --run
+          yarn build
+
+      - name: Check ECH setting is in the compiled LuCI bundle
+        shell: bash
+        run: |
+          grep -q 'dns_https_records_enabled' luci-app-nexroute/htdocs/luci-static/resources/view/nexroute/main.js
+
+      - name: Build test packages
+        shell: bash
+        run: |
+          # Test-only version; no release is published by this workflow.
+          ./build.sh 2.1.0 "$PWD/test-release"
+
+      - name: Verify APK files and checksums
+        shell: bash
+        run: |
+          test -s test-release/nexroute_2.1.0_all.apk
+          test -s test-release/luci-app-nexroute_2.1.0_all.apk
+          test -s test-release/luci-i18n-nexroute-ru_2.1.0_all.apk
+          (
+            cd test-release
+            sha256sum ./*.apk > APK-SHA256SUMS
+            sha256sum -c APK-SHA256SUMS
+          )
+
+      - name: Upload generated LuCI bundle for review
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: generated-luci-bundle
+          path: luci-app-nexroute/htdocs/luci-static/resources/view/nexroute/main.js
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Upload test APKs
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: nexroute-2.1.0-apk-openwrt-25.12.5
+          path: |
+            test-release/*.apk
+            test-release/APK-SHA256SUMS
+          retention-days: 7
+          if-no-files-found: error

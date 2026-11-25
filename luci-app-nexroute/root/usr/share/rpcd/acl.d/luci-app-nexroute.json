@@ -1,0 +1,63 @@
+{
+  "luci-app-nexroute": {
+    "description": "Grant UCI and RPC access to LuCI app NexRoute",
+    "read": {
+      "file": {
+        "/usr/bin/nexroute": [
+          "exec"
+        ]
+      },
+      "ubus": {
+        "nexroute": [
+          "state",
+          "state_wait",
+          "config",
+          "system_info",
+          "logs",
+          "log_text",
+          "usage",
+          "refresh"
+        ],
+        "nexroute.installer": [
+          "read",
+          "input",
+          "stop"
+        ],
+        "luci-rpc": [
+          "getDHCPLeases",
+          "getHostHints"
+        ],
+        "network.interface": [
+          "dump"
+        ]
+      },
+      "uci": [
+        "dhcp",
+        "firewall",
+        "nexroute",
+        "network"
+      ]
+    },
+    "write": {
+      "cgi-io": [
+        "upload"
+      ],
+      "file": {
+        "/tmp/nexroute-import.conf": [
+          "write"
+        ]
+      },
+      "ubus": {
+        "file": [
+          "remove"
+        ],
+        "nexroute": [
+          "import_config"
+        ]
+      },
+      "uci": [
+        "nexroute"
+      ]
+    }
+  }
+}

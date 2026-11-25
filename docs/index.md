@@ -1,10 +1,10 @@
 ---
 layout: home
-title: Forkop
+title: NexRoute
 titleTemplate: Маршрутизация трафика OpenWrt по правилам
 
 hero:
-  name: Forkop
+  name: NexRoute
   tagline: Маршрутизация трафика OpenWrt по правилам
   actions:
     - theme: brand

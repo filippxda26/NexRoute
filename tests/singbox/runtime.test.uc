@@ -102,7 +102,7 @@ t.test("a configuration the core refuses is reported by its first line and never
     stub.restore();
     t.eq(e.message, "sing-box refused the generated configuration: FATAL[0000] route: missing outbound tag");
     t.ok(fs.stat(dir + "/etc/sing-box/config.json") == null);
-    t.eq(filter(fs.lsdir("/tmp"), (name) => substr(name, 0, 22) == "forkop-sing-box-check." && index(name, ".json") > 0), [],
+    t.eq(filter(fs.lsdir("/tmp"), (name) => substr(name, 0, 22) == "nexroute-sing-box-check." && index(name, ".json") > 0), [],
         "the file checked is removed");
 });
 
@@ -128,7 +128,7 @@ t.test("a LAN without an IPv4 address is a warning of the configuration, not of 
     t.eq(logs, [], "a diagnostics check asking for it");
     runtime.write_config(false);
     stub.restore();
-    t.eq(logs, [ "[warn] No IPv4 address found on the LAN, so the Clash API listens on 127.0.0.1 only; set forkop.settings.service_listen_address to choose one" ]);
+    t.eq(logs, [ "[warn] No IPv4 address found on the LAN, so the Clash API listens on 127.0.0.1 only; set nexroute.settings.service_listen_address to choose one" ]);
 });
 
 t.test("a checked configuration is checked even when it did not change", () => {
@@ -151,7 +151,7 @@ t.test("the service runs the generated file as root, committed only when somethi
     core_uci.reset();
     t.eq([ core_uci.get("sing-box.main.enabled"), core_uci.get("sing-box.main.user"), core_uci.get("sing-box.main.conffile") ],
         [ "1", "root", dir + "/etc/sing-box/config.json" ]);
-    t.eq(logs, [ "[info] Set up the sing-box service for Forkop: enabled=1, user=root, conffile=" + dir + "/etc/sing-box/config.json" ]);
+    t.eq(logs, [ "[info] Set up the sing-box service for NexRoute: enabled=1, user=root, conffile=" + dir + "/etc/sing-box/config.json" ]);
     let commits = length(uci.__commits());
     runtime.configure_service();
     t.eq(length(uci.__commits()), commits, "a configured service is not committed again");
@@ -230,7 +230,7 @@ t.test("a WARP registration that cannot reach its section says so, and never goe
     let result = generate();
     stub.restore();
     let message = "Failed to generate WARP profile: profiles are requested through section 'Proxy', " +
-        "and its service proxy is not running. Apply the settings or start Forkop";
+        "and its service proxy is not running. Apply the settings or start NexRoute";
     t.eq([ result.result, result.stderr ], [ 1, message + "\n" ]);
     t.eq(logs, [ "[error] " + message ]);
 });

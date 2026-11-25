@@ -3,7 +3,7 @@ name: Build packages
 # Run by hand (Actions, Build packages, Run workflow) from an X.Y.Z tag: it builds the release's
 # packages and drafts its GitHub release with them, install.sh, release.json and SHA256SUMS.
 # Publishing the draft by hand makes it the latest release, the one install.sh installs and every
-# Forkop's update check offers.
+# NexRoute's update check offers.
 on:
   workflow_dispatch:
     inputs:
@@ -36,7 +36,50 @@ jobs:
         run: |
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           sudo apt-get update
-          sudo apt-get install -y build-essential curl fakeroot file gawk git patch perl tar unzip util-linux xz-utils zstd
+          sudo apt-get install -y build-essential cmake curl fakeroot file gawk git libjson-c-dev patch perl pkg-config tar unzip util-linux xz-utils zstd
+
+      - name: Build ucode for backend tests
+        shell: bash
+        run: |
+          git clone --depth 1 --branch v0.0.20250529 https://github.com/jow-/ucode.git /tmp/ucode
+          cmake -S /tmp/ucode -B /tmp/ucode/build \
+            -DUBUS_SUPPORT=OFF \
+            -DUCI_SUPPORT=OFF \
+            -DULOOP_SUPPORT=OFF
+          cmake --build /tmp/ucode/build --parallel
+          sudo cmake --install /tmp/ucode/build
+          sudo ldconfig
+
+      - name: Validate backend and run tests
+        shell: bash
+        run: |
+          find nexroute/files/usr/lib -name '*.uc' -print0 | xargs -0 -n1 ucode -c -o /dev/null
+          find nexroute/files/usr/lib -name '*.uc' -print0 | xargs -0 -n1 ucode -S -c -o /dev/null
+          tests/run.sh
+          tests/migration-rebrand.sh
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5.0.0
+        with:
+          node-version: '22'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install frontend dependencies
+        working-directory: fe-app-nexroute
+        run: yarn install --frozen-lockfile
+
+      - name: Test and build LuCI frontend
+        working-directory: fe-app-nexroute
+        run: |
+          yarn test --run
+          yarn build
+
+      - name: Verify ECH control is present in the release UI
+        shell: bash
+        run: |
+          grep -q 'dns_https_records_enabled' luci-app-nexroute/htdocs/luci-static/resources/view/nexroute/main.js
 
       - name: Build
         env:

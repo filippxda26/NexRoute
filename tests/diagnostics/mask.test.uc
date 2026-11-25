@@ -1,8 +1,8 @@
 let t = require("t");
 let mask = require("diagnostics.mask");
 
-t.test("the masked Forkop configuration keeps its shape and loses every secret", () => {
-    let masked = mask.forkop_config(
+t.test("the masked NexRoute configuration keeps its shape and loses every secret", () => {
+    let masked = mask.nexroute_config(
         "config settings 'main'\n        option hwid 'device-secret'\n        option proxy_string 'vless://secret@example.com:443'\n" +
         "        option yacd_secret_key 'clash-api-secret'\n" +
         "config subscription_url 'sub1'\n        option url 'https://user:password@example.com/subscription?token=secret'\n" +
@@ -21,7 +21,7 @@ t.test("the masked Forkop configuration keeps its shape and loses every secret",
 });
 
 t.test("hand-written outbounds are masked, however many lines they take", () => {
-    let masked = mask.forkop_config("config section 'main'\n        list outbound_jsons '{\"type\":\"vless\",\"server\":\"secret.example\"}'\n" +
+    let masked = mask.nexroute_config("config section 'main'\n        list outbound_jsons '{\"type\":\"vless\",\"server\":\"secret.example\"}'\n" +
         "        list outbound_jsons '{\n            \"type\": \"trojan\",\n            \"password\": \"trojan-secret\"\n        }'\n        option label 'Main'\n");
     t.excludes(masked, "secret.example");
     t.excludes(masked, "trojan-secret");
@@ -30,7 +30,7 @@ t.test("hand-written outbounds are masked, however many lines they take", () => 
 });
 
 t.test("what a section routes is masked, however many lines it takes", () => {
-    let masked = mask.forkop_config("config section 'main'\n\toption destinations 'keyword:private\nsite.example\n203.0.113.0/24'\n" +
+    let masked = mask.nexroute_config("config section 'main'\n\toption destinations 'keyword:private\nsite.example\n203.0.113.0/24'\n" +
         "\toption label 'Main'\n\tlist community_lists 'telegram'\n");
     for (let secret in [ "private", "site.example", "203.0.113.0/24" ])
         t.excludes(masked, secret);
@@ -145,7 +145,7 @@ const TUNNELS_AND_SERVERS = join("\n", [
 ]);
 
 t.test("tunnels, their peers and JSON servers lose their keys and addresses and keep their settings", () => {
-    let masked = mask.forkop_config(TUNNELS_AND_SERVERS);
+    let masked = mask.nexroute_config(TUNNELS_AND_SERVERS);
     for (let secret in [
         "e9f13cd5-37ec-442f-b288-5833ad86b9e5", "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "10.8.1.9/32",
         "zz5/p+jwYqPFlg9mWcOP5ad8xXa4XfOOlrzouVD6E1w=", "peer.example.com", "47132",
@@ -173,11 +173,11 @@ t.test("the credentials of a native endpoint are masked in the sing-box dump wit
 });
 
 t.test("a VLESS server loses its VLESS Encryption keys in both dumps", () => {
-    let forkop = mask.forkop_config("config server 'srv'\n        option vless_encryption 'native'\n" +
+    let nexroute = mask.nexroute_config("config server 'srv'\n        option vless_encryption 'native'\n" +
         "        option vless_encryption_private_key 'enc-private-secret'\n        option vless_encryption_public_key 'enc-public-secret'\n");
-    t.excludes(forkop, "enc-private-secret");
-    t.excludes(forkop, "enc-public-secret");
-    t.contains(forkop, "option vless_encryption 'native'");
+    t.excludes(nexroute, "enc-private-secret");
+    t.excludes(nexroute, "enc-public-secret");
+    t.contains(nexroute, "option vless_encryption 'native'");
     let core = sprintf("%J", mask.sing_box_config({
         inbounds: [ { type: "vless", decryption: "mlkem768x25519plus.native.600s.enc-private-secret" } ],
         outbounds: [ { type: "vless", encryption: "mlkem768x25519plus.native.0rtt.enc-public-secret" } ]
@@ -218,11 +218,11 @@ t.test("a host name is masked as a name, with its subdomains, never inside anoth
 
 t.test("free text loses URL paths and credentials, the given hosts and public addresses, and keeps the rest readable", () => {
     let log = join("\n", [
-        "Mon Oct 19 17:05:01 2026 user.err forkop: [error] Failed to download https://user:pw@panel.example/sub?token=secret for 'Main'",
+        "Mon Oct 19 17:05:01 2026 user.err nexroute: [error] Failed to download https://user:pw@panel.example/sub?token=secret for 'Main'",
         "Mon Oct 19 17:05:02 2026 daemon.err sing-box[42]: ERROR[0330] outbound/vless[Main/node.example]: dial tcp 185.199.108.9:443: i/o timeout",
         "Mon Oct 19 17:05:03 2026 daemon.err sing-box[42]: ERROR[0331] dial [2a00:1450::1]:443 from 192.168.1.140 via 127.0.0.42:53",
-        "Mon Oct 19 17:05:04 2026 user.info forkop: [info] Loaded 1.14.1 rule sets from https://github.com/",
-        "Mon Oct 19 17:05:05 2026 user.err forkop: [error] Failed to download https://lists.example?key=query-secret#part"
+        "Mon Oct 19 17:05:04 2026 user.info nexroute: [info] Loaded 1.14.1 rule sets from https://github.com/",
+        "Mon Oct 19 17:05:05 2026 user.err nexroute: [error] Failed to download https://lists.example?key=query-secret#part"
     ]);
     let masked = mask.text(log, [ "panel.example", "node.example" ]);
     for (let secret in [ "secret", "user:pw", "panel.example", "node.example", "185.199.108.9", "2a00:1450::1", "query-secret", "#part" ])

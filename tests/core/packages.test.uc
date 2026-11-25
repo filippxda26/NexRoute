@@ -8,13 +8,13 @@ packages.paths.opkg_status = dir + "/missing-status";
 packages.paths.sing_box_version = dir + "/sing-box-forkop.version";
 
 const STATUS = "Package: libc\nVersion: 1.2.5-r4\nStatus: install ok installed\n\n" +
-    "Package: forkop\nVersion: 1.0.5\nDepends: libc, curl\nStatus: install user installed\n\n" +
+    "Package: nexroute\nVersion: 1.0.5\nDepends: libc, curl\nStatus: install user installed\n\n" +
     "Package: luci-app-passwall\nVersion: 4.0.0\nStatus: install ok not-installed\n\n" +
     "Package: zapret\nVersion: 72.20260307-r1\nStatus: install hold installed\n\n" +
     "Package: byedpi\nVersion: 0.17\nStatus: install prefer,user not-installed\n";
 
 t.test("the opkg status file answers for installed stanzas only", () => {
-    t.eq(packages.opkg_status_version(STATUS, "forkop"), "1.0.5");
+    t.eq(packages.opkg_status_version(STATUS, "nexroute"), "1.0.5");
     t.eq(packages.opkg_status_version(STATUS, "libc"), "1.2.5-r4", "the first stanza is read");
     t.eq(packages.opkg_status_version(STATUS, "zapret"), "72.20260307-r1", "a held package is still installed");
     t.eq(packages.opkg_status_version(STATUS, "luci-app-passwall"), "", "not-installed ends in installed");
@@ -55,7 +55,7 @@ t.test("an apk version comes from the installed list, whatever the description s
 t.test("the sing-box-forkop version is the one the core records, and only a well-formed one", () => {
     let installed = [ [ "apk list --installed sing-box-forkop", { stdout: "<sing-box> sing-box-forkop-1.13.14.2.5.3.1-r0 aarch64 {local} [installed]\n" } ] ];
     apk(installed);
-    for (let recorded in [ "1.13.14-extended-2.5.3-f1", "1.13.14-extended-2.5.2-forkop.14" ]) {
+    for (let recorded in [ "1.13.14-extended-2.5.3-f1", "1.13.14-extended-2.5.2-nexroute.14" ]) {
         fs.writefile(packages.paths.sing_box_version, recorded + "\n");
         t.eq(packages.version("sing-box-forkop"), recorded);
     }
