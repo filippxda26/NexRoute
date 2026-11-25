@@ -255,14 +255,9 @@ function traffic(
 }
 
 describe('the traffic check', () => {
-  it('shows the exit of the first section beside the direct one', () => {
+  it('shows only the router and device before the dual-stack checks', () => {
     expect(presentTraffic(traffic(), { fakeip: true })).toEqual([
       { state: 'success', key: 'Router', value: 'goes through NexRoute' },
-      {
-        state: 'success',
-        key: 'Exit via "Main"',
-        value: '38.107.233.96, direct 46.138.78.196',
-      },
       { state: 'success', key: 'This device', value: 'goes through NexRoute' },
     ]);
   });
@@ -398,26 +393,39 @@ describe('the traffic check', () => {
     );
   });
 
-  it('warns when the section leaves from the direct address', () => {
+  it('warns when a family uses the same exit as direct', () => {
+    const items = presentDualStackTraffic({
+      direct: {
+        outbound: 'direct-out',
+        ipv4: { address: '203.0.113.10' },
+      },
+      exits: [
+        {
+          section: 'Main',
+          result: {
+            outbound: 'Main',
+            ipv4: { address: '203.0.113.10' },
+          },
+        },
+      ],
+      displaySection: 'Main',
+      sectionsComplete: true,
+      browser: { ipv4: '203.0.113.10', ipv6: '' },
+    });
     expect(
-      presentTraffic(
-        traffic({
-          exit: { section: 'Main', answered: true, ip: '46.138.78.196' },
-        }),
-        { fakeip: true },
-      )[1],
+      items.find((item) => item.key === 'Exit via "Main" (IPv4)'),
     ).toMatchObject({
       state: 'warning',
-      value: '46.138.78.196, the same as direct',
+      value: '203.0.113.10, the same as direct',
     });
   });
 
   it('tells a device that bypasses the router DNS from one that could not be checked', () => {
-    expect(presentTraffic(traffic(), { fakeip: false })[2]).toMatchObject({
+    expect(presentTraffic(traffic(), { fakeip: false })[1]).toMatchObject({
       state: 'warning',
       value: "does not use the router's DNS",
     });
-    expect(presentTraffic(traffic(), null)[2]).toMatchObject({
+    expect(presentTraffic(traffic(), null)[1]).toMatchObject({
       state: 'warning',
       value: 'not checked: no answer',
     });

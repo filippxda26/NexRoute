@@ -39,24 +39,6 @@ function routerItem(router: NexRoute.TrafficCheckResult['router']) {
   );
 }
 
-function exitItem(data: NexRoute.TrafficCheckResult) {
-  const exit = data.exit!;
-  const key = _('Exit via "%s"').format(exit.section);
-  const direct = data.router.answered ? data.router.ip : '';
-
-  if (!exit.answered) {
-    return finding('warning', key, _('no answer'));
-  }
-  if (direct && direct === exit.ip) {
-    return finding('warning', key, _('%s, the same as direct').format(exit.ip));
-  }
-  return finding(
-    'success',
-    key,
-    direct ? _('%s, direct %s').format(exit.ip, direct) : exit.ip,
-  );
-}
-
 function deviceItem(browser: BrowserCheck) {
   const key = _('This device');
 
@@ -220,11 +202,7 @@ export function presentTraffic(
   data: NexRoute.TrafficCheckResult,
   browser: BrowserCheck,
 ): IDiagnosticsChecksItem[] {
-  return [
-    routerItem(data.router),
-    ...(data.exit ? [exitItem(data)] : []),
-    deviceItem(browser),
-  ];
+  return [routerItem(data.router), deviceItem(browser)];
 }
 
 // The router's side and the browser's run at once; each can take seconds when something is wrong.
