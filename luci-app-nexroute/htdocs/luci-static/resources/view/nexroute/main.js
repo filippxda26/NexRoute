@@ -1736,22 +1736,71 @@ var CLASH_API_TRANSPORT_TIMEOUT_MS = 65e3;
 var DIAGNOSTIC_CHECK_RPC_TIMEOUT_MS = 3 * 60 * 1e3;
 var checkLogsRequest = null;
 var servedLog = null;
+async function readLogPages(first) {
+  const { size, generation } = first;
+  if (typeof size !== "number" || !generation) {
+    return null;
+  }
+  const decoder = new TextDecoder();
+  const parts = [];
+  let offset = 0;
+  let page = first;
+  try {
+    while (offset < size) {
+      if (page.generation !== generation || page.size !== size || typeof page.chunk !== "string" || typeof page.next !== "number" || page.next <= offset || page.next > size) {
+        return null;
+      }
+      const bytes = Uint8Array.from(atob(page.chunk), (c) => c.charCodeAt(0));
+      if (bytes.length !== page.next - offset) {
+        return null;
+      }
+      parts.push(decoder.decode(bytes, { stream: true }));
+      offset = page.next;
+      if (offset < size) {
+        const result = await callUbus({
+          object: "nexroute",
+          method: "log_text",
+          params: { offset, size, generation },
+          timeoutMs: LOG_TEXT_UBUS_TIMEOUT_MS
+        });
+        if (!result.success || result.data.changed) {
+          return null;
+        }
+        page = result.data;
+      }
+    }
+    parts.push(decoder.decode());
+    return parts.join("");
+  } catch {
+    return null;
+  }
+}
 async function readLogs() {
   const served = await callUbus({
     object: "nexroute",
     method: "log_text",
-    params: servedLog ? { cursor: servedLog.cursor } : {},
+    params: servedLog ? {
+      cursor: servedLog.cursor,
+      ...servedLog.generation ? { generation: servedLog.generation } : {}
+    } : {},
     timeoutMs: LOG_TEXT_UBUS_TIMEOUT_MS
   });
   const reply = served.success ? served.data : null;
   if (typeof reply?.cursor === "number") {
-    const text8 = reply.unchanged ? servedLog?.text : reply.text;
+    const text8 = reply.unchanged ? servedLog?.text : reply.text ?? await readLogPages(reply);
     if (typeof text8 === "string") {
-      servedLog = { cursor: reply.cursor, text: text8 };
+      servedLog = {
+        cursor: reply.cursor,
+        text: text8,
+        generation: reply.generation ?? servedLog?.generation
+      };
       return { success: true, data: text8 };
     }
   }
   servedLog = null;
+  if (served.success) {
+    return { success: false, error: _("Failed to load logs") };
+  }
   const response = await executeShellCommand({
     command: "/usr/bin/nexroute",
     args: [NexRoute.AvailableMethods.CHECK_LOGS],
@@ -1835,6 +1884,18 @@ var NexRouteShellMethods = {
   enable: async () => callBaseMethod(NexRoute.AvailableMethods.ENABLE),
   disable: async () => callBaseMethod(NexRoute.AvailableMethods.DISABLE),
   checkLogs,
+  clearLogs: async () => {
+    if (checkLogsRequest) {
+      await checkLogsRequest;
+    }
+    const result = await callUbus({
+      object: "nexroute",
+      method: "clear_logs",
+      timeoutMs: LOG_TEXT_UBUS_TIMEOUT_MS
+    });
+    servedLog = null;
+    return result.success && result.data.success ? { success: true, data: null } : { success: false, error: _("Failed to clear logs") };
+  },
   // The state service holds the versions until the installed packages change; the CLI answers
   // when it is not running.
   getSystemInfo: async () => {
@@ -2198,11 +2259,11 @@ function getClashApiConnections() {
     CLASH_API_FETCH_TIMEOUT_MS
   );
 }
-function summarizeConnections(snapshot2) {
+function summarizeConnections(snapshot) {
   return {
-    downloadTotal: snapshot2?.downloadTotal || 0,
-    uploadTotal: snapshot2?.uploadTotal || 0,
-    connections: snapshot2?.connections?.length || 0
+    downloadTotal: snapshot?.downloadTotal || 0,
+    uploadTotal: snapshot?.uploadTotal || 0,
+    connections: snapshot?.connections?.length || 0
   };
 }
 async function getClashApiConnectionsSummary() {
@@ -3048,7 +3109,9 @@ async function createBaseApiRequest(fetchFn, options) {
 async function getFakeIpCheck() {
   return createBaseApiRequest(
     () => fetch(`https://${FAKEIP_CHECK_DOMAIN}/check`, {
-      method: "GET"
+      method: "GET",
+      cache: "no-store",
+      signal: AbortSignal.timeout(5e3)
     }),
     {
       operationName: "getFakeIpCheck",
@@ -3360,11 +3423,11 @@ var installerApi = {
       args: [NexRoute.AvailableMethods.INSTALLER_STATUS, String(offset)],
       timeout: STATUS_TIMEOUT_MS
     });
-    const snapshot2 = parseJson(response.stdout);
-    if ((response.code ?? 0) !== 0 || !snapshot2 || typeof snapshot2.id !== "string") {
+    const snapshot = parseJson(response.stdout);
+    if ((response.code ?? 0) !== 0 || !snapshot || typeof snapshot.id !== "string") {
       throw new Error(response.stderr || _("Failed to execute"));
     }
-    return snapshot2;
+    return snapshot;
   },
   async log() {
     const response = await executeShellCommand({
@@ -3549,34 +3612,34 @@ function createInstallerRun(options) {
     state.after = after;
     setTimeout(() => options.onAfterRun(after), AFTER_RUN_MS);
   }
-  function apply(snapshot2) {
-    follow(snapshot2.id);
-    const from = snapshot2.offset ?? 0;
+  function apply(snapshot) {
+    follow(snapshot.id);
+    const from = snapshot.offset ?? 0;
     catchingUp = false;
-    if (from === offset && snapshot2.data) {
-      options.terminal.write(snapshot2.data);
-      offset = snapshot2.next ?? offset;
+    if (from === offset && snapshot.data) {
+      options.terminal.write(snapshot.data);
+      offset = snapshot.next ?? offset;
       catchingUp = true;
     } else if (from !== offset) {
       catchingUp = true;
     }
-    const wasRunning = state.running && state.id === snapshot2.id;
+    const wasRunning = state.running && state.id === snapshot.id;
     state = {
       ...state,
-      id: snapshot2.id,
-      action: snapshot2.action ?? null,
+      id: snapshot.id,
+      action: snapshot.action ?? null,
       loaded: true,
-      running: snapshot2.running,
-      interactive: Boolean(snapshot2.interactive),
-      exit: snapshot2.exit ?? null,
-      interrupted: Boolean(snapshot2.interrupted),
-      stopping: Boolean(snapshot2.stop_requested) || stopAsked,
-      changed: Boolean(snapshot2.changed),
-      startedAt: snapshot2.started_at ?? null,
-      finishedAt: snapshot2.finished_at ?? null,
-      log: Boolean(snapshot2.log)
+      running: snapshot.running,
+      interactive: Boolean(snapshot.interactive),
+      exit: snapshot.exit ?? null,
+      interrupted: Boolean(snapshot.interrupted),
+      stopping: Boolean(snapshot.stop_requested) || stopAsked,
+      changed: Boolean(snapshot.changed),
+      startedAt: snapshot.started_at ?? null,
+      finishedAt: snapshot.finished_at ?? null,
+      log: Boolean(snapshot.log)
     };
-    if (snapshot2.running) {
+    if (snapshot.running) {
       watched = true;
       hot = true;
     } else if (wasRunning) {
@@ -3585,13 +3648,13 @@ function createInstallerRun(options) {
   }
   async function poll() {
     try {
-      let snapshot2 = null;
+      let snapshot = null;
       if (hot && state.id) {
         const read = await options.api.read(state.id, offset);
         hot = !read.gone;
-        snapshot2 = read.snapshot;
+        snapshot = read.snapshot;
       }
-      apply(snapshot2 ?? await options.api.status(offset));
+      apply(snapshot ?? await options.api.status(offset));
       failingSince = null;
     } catch {
       failingSince ?? (failingSince = Date.now());
@@ -12966,6 +13029,389 @@ function canonicalDeviceIp(ip) {
   return "";
 }
 
+// src/nexroute/cbi/listValues.ts
+function normalizeDynamicListItems(value) {
+  if (!value) {
+    return [];
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => `${item || ""}`.trim()).filter((item) => item.length);
+  }
+  const normalized = `${value}`.trim();
+  return normalized.length ? [normalized] : [];
+}
+function normalizeOptionValues(value) {
+  if (!value) {
+    return [];
+  }
+  if (Array.isArray(value)) {
+    return value.filter(Boolean).map((item) => `${item}`.trim()).filter(Boolean);
+  }
+  return `${value}`.split(/\s+/).map((item) => item.trim()).filter(Boolean);
+}
+function uniqueDynamicListItems(value) {
+  const seen = /* @__PURE__ */ new Set();
+  const result = [];
+  normalizeDynamicListItems(value).forEach((item) => {
+    if (!seen.has(item)) {
+      seen.add(item);
+      result.push(item);
+    }
+  });
+  return result;
+}
+
+// src/nexroute/cbi/localDevices.ts
+var callHostHints = rpc.declare({
+  object: "luci-rpc",
+  method: "getHostHints",
+  expect: { "": {} }
+});
+var callDHCPLeases = rpc.declare({
+  object: "luci-rpc",
+  method: "getDHCPLeases",
+  expect: { "": {} }
+});
+var callNetworkInterfaceDump2 = rpc.declare({
+  object: "network.interface",
+  method: "dump",
+  expect: { interface: [] }
+});
+var SYSTEM_DEVICE_VALUE = "@system";
+function isMacDeviceValue(value) {
+  return /^@mac:(?:[0-9a-f]{2}:){5}[0-9a-f]{2}$/i.test(value);
+}
+var NO_LOCAL_DEVICES = {
+  choices: {},
+  order: [],
+  names: {},
+  macChoices: {},
+  macs: {},
+  macNames: {}
+};
+var localDevicesCache = null;
+var localDevicesPromise = null;
+function normalizeLocalDeviceName(name) {
+  return `${name || ""}`.trim().replace(/\.lan$/i, "");
+}
+function normalizeLocalDeviceIp(ip) {
+  const normalizedIp = `${ip || ""}`.trim();
+  return validateIP(normalizedIp) === true ? normalizedIp : "";
+}
+function addLocalDeviceName(names, ip, name) {
+  const normalizedName = normalizeLocalDeviceName(name);
+  if (ip && normalizedName) {
+    names[ip] = normalizedName;
+  }
+}
+function addOfferedAddress(offered, ip, mac) {
+  if (ip) {
+    offered[ip] = offered[ip] || (normalizeOptionValues(mac)[0] || "").toUpperCase();
+  }
+}
+function addRouterIp(routerIps, ip) {
+  const normalizedIp = `${ip || ""}`.trim();
+  if (!normalizedIp || validateIP(normalizedIp) !== true) {
+    return;
+  }
+  routerIps[normalizedIp] = true;
+}
+function buildRouterIpMap(networkInterfaces) {
+  const routerIps = {};
+  if (!Array.isArray(networkInterfaces)) {
+    return routerIps;
+  }
+  networkInterfaces.forEach((networkInterface) => {
+    const ipAddresses = [];
+    const ipv4Addresses = networkInterface && typeof networkInterface === "object" && Array.isArray(networkInterface["ipv4-address"]) ? networkInterface["ipv4-address"] : [];
+    const ipv6Addresses = networkInterface && typeof networkInterface === "object" && Array.isArray(networkInterface["ipv6-address"]) ? networkInterface["ipv6-address"] : [];
+    ipAddresses.push(...ipv4Addresses, ...ipv6Addresses);
+    ipAddresses.forEach((address) => {
+      addRouterIp(
+        routerIps,
+        address && typeof address === "object" ? address.address : address
+      );
+    });
+  });
+  return routerIps;
+}
+function buildLocalDevices(hostHints, dhcpLeases, networkInterfaces, staticHosts) {
+  const names = {};
+  const offered = {};
+  const macs = {};
+  const macNames = {};
+  const routerIps = buildRouterIpMap(networkInterfaces);
+  function rememberMac(ip, rawMac, name) {
+    const values = normalizeOptionValues(rawMac);
+    const mac = values.length === 1 ? values[0].toLowerCase() : "";
+    const address = canonicalDeviceIp(ip);
+    if (!address || !isMacDeviceValue("@mac:" + mac)) {
+      return;
+    }
+    if (!macs[address]) {
+      macs[address] = mac;
+    }
+    const label = normalizeLocalDeviceName(name);
+    if (macs[address] === mac && label) {
+      macNames[mac] = label;
+    }
+  }
+  if (hostHints && typeof hostHints === "object") {
+    Object.entries(hostHints).forEach(([mac, hint]) => {
+      if (!hint || typeof hint !== "object") {
+        return;
+      }
+      normalizeOptionValues(hint.ipaddrs).forEach((address) => {
+        const ip = normalizeLocalDeviceIp(address);
+        addLocalDeviceName(names, ip, hint.name);
+        rememberMac(ip, mac, hint.name);
+        if (names[ip]) {
+          addOfferedAddress(offered, ip, mac);
+        }
+      });
+      normalizeOptionValues(hint.ip6addrs).forEach((address) => {
+        const ip = normalizeLocalDeviceIp(address);
+        addLocalDeviceName(names, ip, hint.name);
+        rememberMac(ip, mac, hint.name);
+      });
+    });
+  }
+  if (dhcpLeases && typeof dhcpLeases === "object" && Array.isArray(dhcpLeases.dhcp_leases)) {
+    dhcpLeases.dhcp_leases.forEach((lease) => {
+      if (!lease || typeof lease !== "object") {
+        return;
+      }
+      const entry = lease;
+      const ip = normalizeLocalDeviceIp(entry.ipaddr);
+      addLocalDeviceName(names, ip, entry.hostname);
+      addOfferedAddress(offered, ip, entry.macaddr);
+      rememberMac(ip, entry.macaddr, entry.hostname);
+    });
+  }
+  if (Array.isArray(staticHosts)) {
+    staticHosts.forEach((host) => {
+      if (!host || typeof host !== "object") {
+        return;
+      }
+      normalizeOptionValues(host.ip).forEach((address) => {
+        const ip = normalizeLocalDeviceIp(address);
+        addLocalDeviceName(names, ip, host.name);
+        addOfferedAddress(offered, ip, host.mac);
+        rememberMac(ip, host.mac, host.name);
+      });
+    });
+  }
+  Object.keys(routerIps).forEach((ip) => {
+    delete names[ip];
+    delete offered[ip];
+    delete macs[canonicalDeviceIp(ip)];
+  });
+  const addresses = Object.keys(offered);
+  const named = addresses.filter((ip) => names[ip]).sort((a, b) => names[a].localeCompare(names[b]) || a.localeCompare(b));
+  const nameless = addresses.filter((ip) => !names[ip]).sort((a, b) => a.localeCompare(b, void 0, { numeric: true }));
+  const choices = {
+    [SYSTEM_DEVICE_VALUE]: _("System")
+  };
+  const nameCounts = {};
+  [choices[SYSTEM_DEVICE_VALUE], ...named.map((ip) => names[ip])].forEach(
+    (name) => {
+      const key = name.toLowerCase();
+      nameCounts[key] = (nameCounts[key] || 0) + 1;
+    }
+  );
+  named.forEach((ip) => {
+    choices[ip] = nameCounts[names[ip].toLowerCase()] > 1 ? "%s (%s)".format(names[ip], ip) : names[ip];
+  });
+  nameless.forEach((ip) => {
+    choices[ip] = offered[ip] ? "%s (%s)".format(ip, offered[ip]) : ip;
+  });
+  const macChoices = {};
+  [...named, ...nameless].forEach((ip) => {
+    const mac = offered[ip].toLowerCase();
+    const value = "@mac:" + mac;
+    if (isMacDeviceValue(value) && !macChoices[value]) {
+      macChoices[value] = names[ip] ? "%s (MAC %s)".format(names[ip], mac) : mac;
+    }
+  });
+  return {
+    choices,
+    order: [SYSTEM_DEVICE_VALUE, ...named, ...nameless],
+    names,
+    macChoices,
+    macs,
+    macNames
+  };
+}
+function loadLocalDevices(refresh = false) {
+  if (localDevicesCache && !refresh) {
+    return Promise.resolve(localDevicesCache);
+  }
+  if (localDevicesPromise) {
+    return localDevicesPromise;
+  }
+  localDevicesPromise = Promise.all([
+    callHostHints().catch(() => ({})),
+    callDHCPLeases().catch(() => ({})),
+    callNetworkInterfaceDump2().catch(() => []),
+    uci.load("dhcp").then(() => uci.sections("dhcp", "host")).catch(() => [])
+  ]).then(([hostHints, dhcpLeases, networkInterfaces, staticHosts]) => {
+    localDevicesCache = buildLocalDevices(
+      hostHints,
+      dhcpLeases,
+      networkInterfaces,
+      staticHosts
+    );
+    return localDevicesCache;
+  }).finally(() => {
+    localDevicesPromise = null;
+  });
+  return localDevicesPromise;
+}
+function namesALocalDevice(values) {
+  return normalizeOptionValues(values).some(
+    (value) => value === SYSTEM_DEVICE_VALUE || validateIP(value) === true || isMacDeviceValue(value)
+  );
+}
+function localDevicePickerOptions(data, macOnly = false) {
+  if (!macOnly) {
+    return { choices: data.choices, order: data.order };
+  }
+  const choices = {};
+  if (data.choices[SYSTEM_DEVICE_VALUE]) {
+    choices[SYSTEM_DEVICE_VALUE] = data.choices[SYSTEM_DEVICE_VALUE];
+  }
+  Object.assign(choices, data.macChoices);
+  return { choices, order: Object.keys(choices) };
+}
+function createLocalDeviceDynamicListWidget(option2, section_id, cfgvalue, macOnly = false) {
+  const values = normalizeOptionValues(
+    cfgvalue != null ? cfgvalue : option2.default
+  );
+  const shouldResolveExistingLabels = namesALocalDevice(values);
+  return (shouldResolveExistingLabels ? loadLocalDevices() : Promise.resolve(NO_LOCAL_DEVICES)).then((initialDevices) => {
+    const devices = localDevicesCache || initialDevices;
+    const picker = localDevicePickerOptions(devices, macOnly);
+    const widget = new ui.DynamicList(values, picker.choices, {
+      id: option2.cbid(section_id),
+      sort: picker.order,
+      optional: option2.optional || option2.rmempty,
+      datatype: option2.datatype,
+      placeholder: option2.placeholder,
+      validate: option2.validate.bind(option2, section_id),
+      disabled: option2.readonly != null ? option2.readonly : option2.map.readonly
+    });
+    const node = widget.render();
+    const onWidgetReady = option2.onDeviceWidgetReady;
+    const onListChange = option2.onDeviceListChange;
+    if (typeof onWidgetReady === "function") {
+      onWidgetReady(section_id, widget);
+    }
+    if (typeof onListChange === "function") {
+      node.addEventListener("cbi-dynlist-change", () => {
+        onListChange(section_id, widget.getValue());
+      });
+    }
+    let choicesLoaded = Boolean(localDevicesCache);
+    let choicesLoading = false;
+    const loadChoices = () => {
+      if (choicesLoaded || choicesLoading) {
+        return;
+      }
+      choicesLoading = true;
+      loadLocalDevices().then((loadedDevices) => {
+        widget.clearChoices();
+        const picker2 = localDevicePickerOptions(loadedDevices, macOnly);
+        widget.addChoices(picker2.order, picker2.choices);
+        choicesLoaded = true;
+      }).finally(() => {
+        choicesLoading = false;
+      });
+    };
+    const maybeLoadChoices = (ev) => {
+      const target2 = ev.target;
+      if (target2 && typeof target2.closest === "function" && target2.closest(".cbi-dropdown")) {
+        loadChoices();
+      }
+    };
+    node.addEventListener("mousedown", maybeLoadChoices, true);
+    node.addEventListener("focusin", maybeLoadChoices, true);
+    return node;
+  });
+}
+
+// src/nexroute/tabs/diagnostic/checks/deviceRoute.ts
+var PROBE_HOSTS = {
+  fakeip: FAKEIP_CHECK_DOMAIN,
+  ipv4: "api.ipify.org",
+  ipv6: "api6.ipify.org"
+};
+function probeConnections(value) {
+  const connections = value?.connections;
+  return Array.isArray(connections) ? connections.filter(
+    (item) => item && typeof item === "object"
+  ) : null;
+}
+function clientAddresses(ip, macs) {
+  const address = canonicalDeviceIp(ip);
+  if (!address || address === "::1" || address.startsWith("127.")) {
+    return /* @__PURE__ */ new Set();
+  }
+  const mac = macs[address];
+  return /* @__PURE__ */ new Set([
+    address,
+    ...Object.keys(macs).filter((candidate) => mac && macs[candidate] === mac)
+  ]);
+}
+function routeTag(connection, tags) {
+  const known = ["direct-out", ...tags].sort((a, b) => b.length - a.length);
+  const resolve = (tag) => known.find((section2) => tag === section2 || tag.startsWith(section2 + "/"));
+  const chain = Array.isArray(connection.chains) ? connection.chains : [];
+  const route = connection.rule?.match(/=>\s*route\(([^)]+)\)/)?.[1] || "";
+  return [...chain].reverse().map(resolve).find(Boolean) || resolve(route.replace(/^['"]|['"]$/g, "")) || "";
+}
+function observedProbeRoutes(baseline, snapshots, addresses, tags) {
+  const before = new Map(baseline.map((item) => [item.id, item]));
+  const candidates = {
+    fakeip: /* @__PURE__ */ new Set(),
+    ipv4: /* @__PURE__ */ new Set(),
+    ipv6: /* @__PURE__ */ new Set()
+  };
+  for (const snapshot of snapshots) {
+    for (const connection of snapshot) {
+      if (!connection.id || !connection.metadata) {
+        continue;
+      }
+      const source = canonicalDeviceIp(connection.metadata.sourceIP || "");
+      const type = connection.metadata.type || "";
+      if (!addresses.has(source) || /(?:^|\/)system6?-in$/.test(type)) {
+        continue;
+      }
+      const host = (connection.metadata.host || "").toLowerCase().replace(/\.$/, "");
+      const kind = Object.keys(PROBE_HOSTS).find(
+        (key) => PROBE_HOSTS[key] === host
+      );
+      if (!kind) {
+        continue;
+      }
+      const old = before.get(connection.id);
+      if (old && (connection.upload || 0) <= (old.upload || 0) && (connection.download || 0) <= (old.download || 0)) {
+        continue;
+      }
+      candidates[kind].add(routeTag(connection, tags));
+    }
+  }
+  const result = {};
+  for (const kind of Object.keys(candidates)) {
+    if (candidates[kind].size === 1) {
+      const [tag] = candidates[kind];
+      if (tag) {
+        result[kind] = tag;
+      }
+    }
+  }
+  return result;
+}
+
 // src/nexroute/tabs/diagnostic/checks/traffic.ts
 function routerItem(router) {
   const key = _("Router");
@@ -13003,7 +13449,7 @@ function familyAddress(value, family) {
   return valid ? canonicalDeviceIp(value) : "";
 }
 async function browserAddress(family) {
-  const host = family === "ipv4" ? "api.ipify.org" : "api6.ipify.org";
+  const host = PROBE_HOSTS[family];
   const result = await createBaseApiRequest(
     () => fetch(`https://${host}/?format=json`, {
       cache: "no-store",
@@ -13030,50 +13476,56 @@ function matchingSections(dual, family) {
   ).map(({ section: section2 }) => section2);
 }
 function deviceSectionSummary(dual) {
-  if (!dual.sectionsComplete) {
-    return "";
-  }
-  const candidates = (family) => {
+  const confirmed = (family) => {
+    const actual = dual.routes?.[family];
     const direct = familyAddress(dual.direct?.[family]?.address, family);
     const browser = familyAddress(dual.browser[family], family);
-    return direct && browser !== direct ? [...new Set(matchingSections(dual, family))] : [];
+    return actual && actual !== "direct-out" && direct && browser !== direct && matchingSections(dual, family).includes(actual) ? actual : "";
   };
-  const ipv4 = candidates("ipv4");
-  const ipv6 = candidates("ipv6");
-  const same = ipv4.length > 0 && ipv4.length === ipv6.length && ipv4.every((section2) => ipv6.includes(section2));
-  if (same) {
-    return ipv4.length === 1 ? _('goes through section "%s"').format(ipv4[0]) : _("matches exits of sections: %s").format(ipv4.join(", "));
+  const ipv4 = confirmed("ipv4");
+  const ipv6 = confirmed("ipv6");
+  if (ipv4 && ipv4 === ipv6) {
+    return _('goes through section "%s"').format(ipv4);
   }
-  const describe2 = (matches, label) => {
-    if (!matches.length) {
-      return "";
-    }
-    return matches.length === 1 ? _('goes through section "%s" (%s)').format(matches[0], label) : _("matches exits of sections (%s): %s").format(
-      label,
-      matches.join(", ")
-    );
-  };
-  return [describe2(ipv4, "IPv4"), describe2(ipv6, "IPv6")].filter(Boolean).join("; ");
+  return [
+    ipv4 && _('goes through section "%s" (%s)').format(ipv4, "IPv4"),
+    ipv6 && _('goes through section "%s" (%s)').format(ipv6, "IPv6")
+  ].filter(Boolean).join("; ");
 }
 function presentDualStackTraffic(dual) {
-  const items = [];
+  const direct4 = familyAddress(dual.direct?.ipv4?.address, "ipv4");
+  const direct6 = familyAddress(dual.direct?.ipv6?.address, "ipv6");
+  const items = [
+    {
+      ...finding(
+        direct4 ? "success" : "warning",
+        _("Direct exit (%s)").format("IPv4"),
+        direct4 || _("not checked: no answer")
+      ),
+      layout: "direct-exit"
+    },
+    {
+      ...finding(
+        direct6 ? "success" : "warning",
+        _("Direct exit (%s)").format("IPv6"),
+        direct6 || _("not checked: no answer")
+      ),
+      layout: "direct-exit"
+    }
+  ];
   const families = ["ipv4", "ipv6"];
   const shown2 = dual.exits.find(
     ({ section: section2 }) => section2 === dual.displaySection
   );
-  const direct4 = familyAddress(dual.direct?.ipv4?.address, "ipv4");
   const matchesExit4 = !!direct4 && dual.browser.ipv4 !== direct4 && matchingSections(dual, "ipv4").length > 0;
   for (const family of families) {
     const label = family === "ipv4" ? "IPv4" : "IPv6";
     const direct = familyAddress(dual.direct?.[family]?.address, family);
     const browser = familyAddress(dual.browser[family], family);
     const matches = matchingSections(dual, family);
+    const actual = dual.routes?.[family];
     const complete = dual.sectionsComplete && dual.exits.length > 0 && dual.exits.every(
       ({ result }) => Boolean(familyAddress(result?.[family]?.address, family))
-    );
-    const directKey = _("Direct exit (%s)").format(label);
-    items.push(
-      direct ? finding("success", directKey, direct) : finding("warning", directKey, _("not checked: no answer"))
     );
     if (dual.displaySection) {
       const exit = familyAddress(shown2?.result?.[family]?.address, family);
@@ -13096,7 +13548,10 @@ function presentDualStackTraffic(dual) {
         finding(
           "success",
           key,
-          _("%s, matches exit of %s").format(browser, matches.join(", "))
+          _("%s, matches exit of %s").format(
+            browser,
+            actual && matches.includes(actual) ? actual : matches.join(", ")
+          )
         )
       );
     } else if (matches.length) {
@@ -13121,12 +13576,59 @@ function presentDualStackTraffic(dual) {
 function presentTraffic(data, browser, dual) {
   return [routerItem(data.router), deviceItem(browser, dual)];
 }
-async function runTrafficCheck() {
-  const [response, browser, ipv4, ipv6, direct, sections] = await Promise.all([
-    NexRouteShellMethods.checkTraffic(),
+async function connectionSnapshot() {
+  try {
+    const response = await CustomNexRouteMethods.getClashApiConnections();
+    return response.success ? probeConnections(response.data) : null;
+  } catch {
+    return null;
+  }
+}
+async function browserProbes() {
+  const [client, devices] = await Promise.all([
+    createBaseApiRequest(
+      () => fetch("/cgi-bin/nexroute-client", {
+        cache: "no-store",
+        credentials: "same-origin",
+        signal: AbortSignal.timeout(2e3)
+      }),
+      { operationName: "diagnostic local client", timeoutMs: 2e3 }
+    ),
+    loadLocalDevices(true).catch(() => null)
+  ]);
+  const addresses = clientAddresses(
+    client.success ? client.data?.ip || "" : "",
+    devices?.macs || {}
+  );
+  const baseline = addresses.size ? await connectionSnapshot() : null;
+  let finished = false;
+  const probes = Promise.all([
     RemoteFakeIPMethods.getFakeIpCheck(),
     browserAddress("ipv4"),
-    browserAddress("ipv6"),
+    browserAddress("ipv6")
+  ]).finally(() => {
+    finished = true;
+  });
+  const snapshots = [];
+  if (baseline) {
+    for (let i = 0; i < 8 && !finished; i++) {
+      const snapshot = await connectionSnapshot();
+      if (!snapshot) {
+        break;
+      }
+      snapshots.push(snapshot);
+      if (!finished) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+    }
+  }
+  const [browser, ipv4, ipv6] = await probes;
+  return { browser, ipv4, ipv6, addresses, baseline, snapshots };
+}
+async function runTrafficCheck() {
+  const [response, probes, direct, sections] = await Promise.all([
+    NexRouteShellMethods.checkTraffic(),
+    browserProbes(),
     outboundAddresses("direct-out"),
     getDashboardSections().catch(() => null)
   ]);
@@ -13152,12 +13654,20 @@ async function runTrafficCheck() {
     );
     exits.push(...batch);
   }
+  const { browser, ipv4, ipv6 } = probes;
+  const routes = probes.baseline && sections?.success ? observedProbeRoutes(
+    probes.baseline,
+    probes.snapshots,
+    probes.addresses,
+    targets.map(({ section: section2 }) => section2)
+  ) : {};
   const dual = {
     direct,
     exits,
     displaySection: response.data.exit?.section,
     sectionsComplete: sections?.success === true,
-    browser: { ipv4, ipv6 }
+    browser: { ipv4, ipv6 },
+    routes
   };
   return outcome([
     ...presentTraffic(
@@ -13570,7 +14080,21 @@ function renderCheckSummary(items) {
       ]
     );
   });
-  return textE("div", { class: "fkp_diagnostic_alert__summary" }, renderedItems);
+  const rows = [];
+  for (let i = 0; i < items.length; i++) {
+    if (items[i].layout === "direct-exit" && items[i + 1]?.layout === "direct-exit") {
+      rows.push(
+        textE("div", { class: "fkp_diagnostic_alert__direct_exits" }, [
+          renderedItems[i],
+          renderedItems[i + 1]
+        ])
+      );
+      i++;
+    } else {
+      rows.push(renderedItems[i]);
+    }
+  }
+  return textE("div", { class: "fkp_diagnostic_alert__summary" }, rows);
 }
 function renderCheckSection(props, { expanded = true, onToggle } = {}) {
   const iconWrap = textE("span", { class: "fkp_diagnostic_alert__icon" });
@@ -13621,7 +14145,9 @@ function renderCheckSection(props, { expanded = true, onToggle } = {}) {
   );
   return textE(
     "div",
-    { class: `fkp_diagnostic_alert fkp_diagnostic_alert--${props.state}` },
+    {
+      class: `fkp_diagnostic_alert fkp_diagnostic_alert--${props.state}${props.code.toLowerCase() === "traffic" ? " fkp_diagnostic_alert--traffic" : ""}`
+    },
     [
       header,
       ...props.items.length && (expanded || !foldable) ? [renderCheckSummary(props.items)] : []
@@ -14511,6 +15037,45 @@ controls. */
     overflow-wrap: anywhere;
 }
 
+/* Each address belongs to its own heading, with equal-width columns. */
+.fkp_diagnostic_alert__direct_exits {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+    margin: 4px 0;
+    align-items: start;
+}
+
+.fkp_diagnostic_alert__direct_exits .fkp_diagnostic_alert__summary__item__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2px;
+}
+
+/* Narrow cards: keep addresses and section names below their labels. */
+@container (max-width: 599px) {
+    .fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__summary {
+        margin-left: 0;
+    }
+
+    .fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__summary__item {
+        grid-column-gap: 6px;
+        margin-top: 4px;
+    }
+
+    .fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__summary__item__body {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        row-gap: 2px;
+    }
+
+    .fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__direct_exits {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
+        margin: 0;
+    }
+}
+
 .fkp_diagnostic_alert__summary__item--error {
     color: var(--error-color-medium, red);
 }
@@ -14660,316 +15225,6 @@ function shouldCopyFullMonitoringValue(element3, selectedText, fullText) {
     element3.clientWidth / Math.max(element3.scrollWidth, 1) * compactFull.length
   );
   return compactSelected.length >= Math.max(4, visibleChars - 2);
-}
-
-// src/nexroute/cbi/listValues.ts
-function normalizeDynamicListItems(value) {
-  if (!value) {
-    return [];
-  }
-  if (Array.isArray(value)) {
-    return value.map((item) => `${item || ""}`.trim()).filter((item) => item.length);
-  }
-  const normalized = `${value}`.trim();
-  return normalized.length ? [normalized] : [];
-}
-function normalizeOptionValues(value) {
-  if (!value) {
-    return [];
-  }
-  if (Array.isArray(value)) {
-    return value.filter(Boolean).map((item) => `${item}`.trim()).filter(Boolean);
-  }
-  return `${value}`.split(/\s+/).map((item) => item.trim()).filter(Boolean);
-}
-function uniqueDynamicListItems(value) {
-  const seen = /* @__PURE__ */ new Set();
-  const result = [];
-  normalizeDynamicListItems(value).forEach((item) => {
-    if (!seen.has(item)) {
-      seen.add(item);
-      result.push(item);
-    }
-  });
-  return result;
-}
-
-// src/nexroute/cbi/localDevices.ts
-var callHostHints = rpc.declare({
-  object: "luci-rpc",
-  method: "getHostHints",
-  expect: { "": {} }
-});
-var callDHCPLeases = rpc.declare({
-  object: "luci-rpc",
-  method: "getDHCPLeases",
-  expect: { "": {} }
-});
-var callNetworkInterfaceDump2 = rpc.declare({
-  object: "network.interface",
-  method: "dump",
-  expect: { interface: [] }
-});
-var SYSTEM_DEVICE_VALUE = "@system";
-function isMacDeviceValue(value) {
-  return /^@mac:(?:[0-9a-f]{2}:){5}[0-9a-f]{2}$/i.test(value);
-}
-var NO_LOCAL_DEVICES = {
-  choices: {},
-  order: [],
-  names: {},
-  macChoices: {},
-  macs: {},
-  macNames: {}
-};
-var localDevicesCache = null;
-var localDevicesPromise = null;
-function normalizeLocalDeviceName(name) {
-  return `${name || ""}`.trim().replace(/\.lan$/i, "");
-}
-function normalizeLocalDeviceIp(ip) {
-  const normalizedIp = `${ip || ""}`.trim();
-  return validateIP(normalizedIp) === true ? normalizedIp : "";
-}
-function addLocalDeviceName(names, ip, name) {
-  const normalizedName = normalizeLocalDeviceName(name);
-  if (ip && normalizedName) {
-    names[ip] = normalizedName;
-  }
-}
-function addOfferedAddress(offered, ip, mac) {
-  if (ip) {
-    offered[ip] = offered[ip] || (normalizeOptionValues(mac)[0] || "").toUpperCase();
-  }
-}
-function addRouterIp(routerIps, ip) {
-  const normalizedIp = `${ip || ""}`.trim();
-  if (!normalizedIp || validateIP(normalizedIp) !== true) {
-    return;
-  }
-  routerIps[normalizedIp] = true;
-}
-function buildRouterIpMap(networkInterfaces) {
-  const routerIps = {};
-  if (!Array.isArray(networkInterfaces)) {
-    return routerIps;
-  }
-  networkInterfaces.forEach((networkInterface) => {
-    const ipAddresses = [];
-    const ipv4Addresses = networkInterface && typeof networkInterface === "object" && Array.isArray(networkInterface["ipv4-address"]) ? networkInterface["ipv4-address"] : [];
-    const ipv6Addresses = networkInterface && typeof networkInterface === "object" && Array.isArray(networkInterface["ipv6-address"]) ? networkInterface["ipv6-address"] : [];
-    ipAddresses.push(...ipv4Addresses, ...ipv6Addresses);
-    ipAddresses.forEach((address) => {
-      addRouterIp(
-        routerIps,
-        address && typeof address === "object" ? address.address : address
-      );
-    });
-  });
-  return routerIps;
-}
-function buildLocalDevices(hostHints, dhcpLeases, networkInterfaces, staticHosts) {
-  const names = {};
-  const offered = {};
-  const macs = {};
-  const macNames = {};
-  const routerIps = buildRouterIpMap(networkInterfaces);
-  function rememberMac(ip, rawMac, name) {
-    const values = normalizeOptionValues(rawMac);
-    const mac = values.length === 1 ? values[0].toLowerCase() : "";
-    const address = canonicalDeviceIp(ip);
-    if (!address || !isMacDeviceValue("@mac:" + mac)) {
-      return;
-    }
-    if (!macs[address]) {
-      macs[address] = mac;
-    }
-    const label = normalizeLocalDeviceName(name);
-    if (macs[address] === mac && label) {
-      macNames[mac] = label;
-    }
-  }
-  if (hostHints && typeof hostHints === "object") {
-    Object.entries(hostHints).forEach(([mac, hint]) => {
-      if (!hint || typeof hint !== "object") {
-        return;
-      }
-      normalizeOptionValues(hint.ipaddrs).forEach((address) => {
-        const ip = normalizeLocalDeviceIp(address);
-        addLocalDeviceName(names, ip, hint.name);
-        rememberMac(ip, mac, hint.name);
-        if (names[ip]) {
-          addOfferedAddress(offered, ip, mac);
-        }
-      });
-      normalizeOptionValues(hint.ip6addrs).forEach((address) => {
-        const ip = normalizeLocalDeviceIp(address);
-        addLocalDeviceName(names, ip, hint.name);
-        rememberMac(ip, mac, hint.name);
-      });
-    });
-  }
-  if (dhcpLeases && typeof dhcpLeases === "object" && Array.isArray(dhcpLeases.dhcp_leases)) {
-    dhcpLeases.dhcp_leases.forEach((lease) => {
-      if (!lease || typeof lease !== "object") {
-        return;
-      }
-      const entry = lease;
-      const ip = normalizeLocalDeviceIp(entry.ipaddr);
-      addLocalDeviceName(names, ip, entry.hostname);
-      addOfferedAddress(offered, ip, entry.macaddr);
-      rememberMac(ip, entry.macaddr, entry.hostname);
-    });
-  }
-  if (Array.isArray(staticHosts)) {
-    staticHosts.forEach((host) => {
-      if (!host || typeof host !== "object") {
-        return;
-      }
-      normalizeOptionValues(host.ip).forEach((address) => {
-        const ip = normalizeLocalDeviceIp(address);
-        addLocalDeviceName(names, ip, host.name);
-        addOfferedAddress(offered, ip, host.mac);
-        rememberMac(ip, host.mac, host.name);
-      });
-    });
-  }
-  Object.keys(routerIps).forEach((ip) => {
-    delete names[ip];
-    delete offered[ip];
-    delete macs[canonicalDeviceIp(ip)];
-  });
-  const addresses = Object.keys(offered);
-  const named = addresses.filter((ip) => names[ip]).sort((a, b) => names[a].localeCompare(names[b]) || a.localeCompare(b));
-  const nameless = addresses.filter((ip) => !names[ip]).sort((a, b) => a.localeCompare(b, void 0, { numeric: true }));
-  const choices = {
-    [SYSTEM_DEVICE_VALUE]: _("System")
-  };
-  const nameCounts = {};
-  [choices[SYSTEM_DEVICE_VALUE], ...named.map((ip) => names[ip])].forEach(
-    (name) => {
-      const key = name.toLowerCase();
-      nameCounts[key] = (nameCounts[key] || 0) + 1;
-    }
-  );
-  named.forEach((ip) => {
-    choices[ip] = nameCounts[names[ip].toLowerCase()] > 1 ? "%s (%s)".format(names[ip], ip) : names[ip];
-  });
-  nameless.forEach((ip) => {
-    choices[ip] = offered[ip] ? "%s (%s)".format(ip, offered[ip]) : ip;
-  });
-  const macChoices = {};
-  [...named, ...nameless].forEach((ip) => {
-    const mac = offered[ip].toLowerCase();
-    const value = "@mac:" + mac;
-    if (isMacDeviceValue(value) && !macChoices[value]) {
-      macChoices[value] = names[ip] ? "%s (MAC %s)".format(names[ip], mac) : mac;
-    }
-  });
-  return {
-    choices,
-    order: [SYSTEM_DEVICE_VALUE, ...named, ...nameless],
-    names,
-    macChoices,
-    macs,
-    macNames
-  };
-}
-function loadLocalDevices(refresh = false) {
-  if (localDevicesCache && !refresh) {
-    return Promise.resolve(localDevicesCache);
-  }
-  if (localDevicesPromise) {
-    return localDevicesPromise;
-  }
-  localDevicesPromise = Promise.all([
-    callHostHints().catch(() => ({})),
-    callDHCPLeases().catch(() => ({})),
-    callNetworkInterfaceDump2().catch(() => []),
-    uci.load("dhcp").then(() => uci.sections("dhcp", "host")).catch(() => [])
-  ]).then(([hostHints, dhcpLeases, networkInterfaces, staticHosts]) => {
-    localDevicesCache = buildLocalDevices(
-      hostHints,
-      dhcpLeases,
-      networkInterfaces,
-      staticHosts
-    );
-    return localDevicesCache;
-  }).finally(() => {
-    localDevicesPromise = null;
-  });
-  return localDevicesPromise;
-}
-function namesALocalDevice(values) {
-  return normalizeOptionValues(values).some(
-    (value) => value === SYSTEM_DEVICE_VALUE || validateIP(value) === true || isMacDeviceValue(value)
-  );
-}
-function localDevicePickerOptions(data, macOnly = false) {
-  if (!macOnly) {
-    return { choices: data.choices, order: data.order };
-  }
-  const choices = {};
-  if (data.choices[SYSTEM_DEVICE_VALUE]) {
-    choices[SYSTEM_DEVICE_VALUE] = data.choices[SYSTEM_DEVICE_VALUE];
-  }
-  Object.assign(choices, data.macChoices);
-  return { choices, order: Object.keys(choices) };
-}
-function createLocalDeviceDynamicListWidget(option2, section_id, cfgvalue, macOnly = false) {
-  const values = normalizeOptionValues(
-    cfgvalue != null ? cfgvalue : option2.default
-  );
-  const shouldResolveExistingLabels = namesALocalDevice(values);
-  return (shouldResolveExistingLabels ? loadLocalDevices() : Promise.resolve(NO_LOCAL_DEVICES)).then((initialDevices) => {
-    const devices = localDevicesCache || initialDevices;
-    const picker = localDevicePickerOptions(devices, macOnly);
-    const widget = new ui.DynamicList(values, picker.choices, {
-      id: option2.cbid(section_id),
-      sort: picker.order,
-      optional: option2.optional || option2.rmempty,
-      datatype: option2.datatype,
-      placeholder: option2.placeholder,
-      validate: option2.validate.bind(option2, section_id),
-      disabled: option2.readonly != null ? option2.readonly : option2.map.readonly
-    });
-    const node = widget.render();
-    const onWidgetReady = option2.onDeviceWidgetReady;
-    const onListChange = option2.onDeviceListChange;
-    if (typeof onWidgetReady === "function") {
-      onWidgetReady(section_id, widget);
-    }
-    if (typeof onListChange === "function") {
-      node.addEventListener("cbi-dynlist-change", () => {
-        onListChange(section_id, widget.getValue());
-      });
-    }
-    let choicesLoaded = Boolean(localDevicesCache);
-    let choicesLoading = false;
-    const loadChoices = () => {
-      if (choicesLoaded || choicesLoading) {
-        return;
-      }
-      choicesLoading = true;
-      loadLocalDevices().then((loadedDevices) => {
-        widget.clearChoices();
-        const picker2 = localDevicePickerOptions(loadedDevices, macOnly);
-        widget.addChoices(picker2.order, picker2.choices);
-        choicesLoaded = true;
-      }).finally(() => {
-        choicesLoading = false;
-      });
-    };
-    const maybeLoadChoices = (ev) => {
-      const target2 = ev.target;
-      if (target2 && typeof target2.closest === "function" && target2.closest(".cbi-dropdown")) {
-        loadChoices();
-      }
-    };
-    node.addEventListener("mousedown", maybeLoadChoices, true);
-    node.addEventListener("focusin", maybeLoadChoices, true);
-    return node;
-  });
 }
 
 // src/nexroute/tabs/monitoring/source.ts
@@ -16904,7 +17159,7 @@ function render5() {
             id: "logs-clear",
             class: "btn cbi-button",
             type: "button",
-            title: _("Clear displayed logs; system logs are kept"),
+            title: _("Clear the NexRoute log file; system logs are kept"),
             disabled: true
           },
           _("Clear logs")
@@ -16938,28 +17193,6 @@ function filterLogText(text8, query) {
     return !normalizedQuery || line.toLowerCase().includes(normalizedQuery);
   }).join("\n");
 }
-function retainedLogLines(previous, next) {
-  const prefix = Array(next.length).fill(0);
-  for (let i = 1, matched2 = 0; i < next.length; i += 1) {
-    while (matched2 && next[i] !== next[matched2]) {
-      matched2 = prefix[matched2 - 1];
-    }
-    if (next[i] === next[matched2]) {
-      matched2 += 1;
-    }
-    prefix[i] = matched2;
-  }
-  let matched = 0;
-  for (const line of previous) {
-    while (matched && (matched === next.length || line !== next[matched])) {
-      matched = prefix[matched - 1];
-    }
-    if (line === next[matched]) {
-      matched += 1;
-    }
-  }
-  return matched;
-}
 
 // src/nexroute/tabs/logs/initController.ts
 var AUTO_REFRESH_INTERVAL_MS = 2e3;
@@ -16967,8 +17200,6 @@ var controllerInitialized2 = false;
 var loading2 = false;
 var rawLogs = "";
 var logsLoaded = false;
-var snapshot = [];
-var hiddenLines = 0;
 function logsTabShown() {
   return !document.hidden && (store.get().tabService.current === "logs" || isActiveLuciTab("logs"));
 }
@@ -17029,13 +17260,7 @@ async function refreshLogs() {
     if (!response.success) {
       throw new Error(response.error);
     }
-    const next = String(response.data ?? "").split(/\r?\n/).filter(Boolean);
-    if (hiddenLines) {
-      const retained = retainedLogLines(snapshot, next);
-      hiddenLines = Math.max(0, hiddenLines - (snapshot.length - retained));
-    }
-    snapshot = next;
-    const nextLogs = next.slice(hiddenLines).join("\n");
+    const nextLogs = String(response.data ?? "").split(/\r?\n/).filter(Boolean).join("\n");
     if (logsLoaded && nextLogs === rawLogs) {
       return;
     }
@@ -17055,13 +17280,24 @@ async function refreshLogs() {
     setLoading(false);
   }
 }
-function clearVisibleLogs() {
+async function clearLogs() {
   if (loading2 || !rawLogs) {
     return;
   }
-  hiddenLines = snapshot.length;
-  rawLogs = "";
-  renderLogs(true);
+  setLoading(true);
+  try {
+    const response = await NexRouteShellMethods.clearLogs();
+    if (!response.success) {
+      throw new Error(response.error);
+    }
+    rawLogs = "";
+    renderLogs(true);
+  } catch (error) {
+    console.error("[LOGS] Failed to clear logs", error);
+    element2("logs-output").textContent = _("Failed to clear logs");
+  } finally {
+    setLoading(false);
+  }
 }
 function copyVisibleLogs() {
   const visibleLogs = getVisibleLogs();
@@ -17091,7 +17327,7 @@ async function initController5() {
       void refreshLogs();
     }
   });
-  element2("logs-clear").addEventListener("click", clearVisibleLogs);
+  element2("logs-clear").addEventListener("click", clearLogs);
   element2("logs-copy").addEventListener("click", copyVisibleLogs);
   element2("logs-download").addEventListener("click", downloadVisibleLogs);
   store.subscribe((next, prev) => {
