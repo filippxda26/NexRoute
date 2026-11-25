@@ -154,6 +154,21 @@ export const NexRouteShellMethods = {
   disable: async () =>
     callBaseMethod<unknown>(NexRoute.AvailableMethods.DISABLE),
   checkLogs,
+  clearLogs: async (): Promise<NexRoute.MethodResponse<null>> => {
+    // Do not allow a stale in-flight read to restore the cached log.
+    if (checkLogsRequest) {
+      await checkLogsRequest;
+    }
+    const result = await callUbus<{ success?: boolean }>({
+      object: 'nexroute',
+      method: 'clear_logs',
+      timeoutMs: LOG_TEXT_UBUS_TIMEOUT_MS,
+    });
+    servedLog = null;
+    return result.success && result.data.success
+      ? { success: true, data: null }
+      : { success: false, error: _('Failed to clear logs') };
+  },
   // The state service holds the versions until the installed packages change; the CLI answers
   // when it is not running.
   getSystemInfo: async () => {

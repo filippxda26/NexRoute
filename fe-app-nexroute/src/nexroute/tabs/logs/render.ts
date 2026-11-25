@@ -44,7 +44,7 @@ export function render() {
             id: 'logs-clear',
             class: 'btn cbi-button',
             type: 'button',
-            title: _('Clear displayed logs; system logs are kept'),
+            title: _('Clear the NexRoute log file; system logs are kept'),
             disabled: true,
           },
           _('Clear logs'),

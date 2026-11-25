@@ -134,7 +134,7 @@ const COMMANDS = {
     check_dns: { help: "Check the DNS servers sing-box resolves with in JSON format", run: json(() => checks().dns()) },
     check_traffic: { help: "Check that the router's own traffic goes through NexRoute in JSON format", run: json(() => checks().traffic()) },
     check_servers: { help: "Check the listeners of the enabled servers in JSON format", run: json(() => checks().servers()) },
-    check_logs: { help: "Show NexRoute logs from system journal", run: () => {
+    check_logs: { help: "Show the NexRoute journal file", run: () => {
         print(diagnostics().logs());
         return 0;
     } },

@@ -5,7 +5,7 @@ import { renderSearchIcon24 } from '../../../icons';
 import { NexRouteShellMethods } from '../../methods';
 import { isActiveLuciTab } from '../../helpers/isActiveLuciTab';
 import { store } from '../../services/store.service';
-import { filterLogText, retainedLogLines } from './filterLogs';
+import { filterLogText } from './filterLogs';
 
 const AUTO_REFRESH_INTERVAL_MS = 2000;
 
@@ -13,8 +13,6 @@ let controllerInitialized = false;
 let loading = false;
 let rawLogs = '';
 let logsLoaded = false;
-let snapshot: string[] = [];
-let hiddenLines = 0;
 
 // The theme lays an inactive tab out at zero height instead of hiding it, so the tab service
 // says which tab is shown.
@@ -100,15 +98,10 @@ async function refreshLogs() {
       throw new Error(response.error);
     }
 
-    const next = String(response.data ?? '')
+    const nextLogs = String(response.data ?? '')
       .split(/\r?\n/)
-      .filter(Boolean);
-    if (hiddenLines) {
-      const retained = retainedLogLines(snapshot, next);
-      hiddenLines = Math.max(0, hiddenLines - (snapshot.length - retained));
-    }
-    snapshot = next;
-    const nextLogs = next.slice(hiddenLines).join('\n');
+      .filter(Boolean)
+      .join('\n');
     if (logsLoaded && nextLogs === rawLogs) {
       return;
     }
@@ -130,14 +123,25 @@ async function refreshLogs() {
   }
 }
 
-function clearVisibleLogs() {
+async function clearLogs() {
   if (loading || !rawLogs) {
     return;
   }
 
-  hiddenLines = snapshot.length;
-  rawLogs = '';
-  renderLogs(true);
+  setLoading(true);
+  try {
+    const response = await NexRouteShellMethods.clearLogs();
+    if (!response.success) {
+      throw new Error(response.error);
+    }
+    rawLogs = '';
+    renderLogs(true);
+  } catch (error) {
+    console.error('[LOGS] Failed to clear logs', error);
+    element('logs-output').textContent = _('Failed to clear logs');
+  } finally {
+    setLoading(false);
+  }
 }
 
 function copyVisibleLogs() {
@@ -175,7 +179,7 @@ export async function initController(): Promise<void> {
       void refreshLogs();
     }
   });
-  element('logs-clear').addEventListener('click', clearVisibleLogs);
+  element('logs-clear').addEventListener('click', clearLogs);
   element('logs-copy').addEventListener('click', copyVisibleLogs);
   element('logs-download').addEventListener('click', downloadVisibleLogs);
 

@@ -7,7 +7,10 @@ let ui = require("service.ui");
 let health = require("service.health");
 let features = require("singbox.features");
 
+let journal = require("service.journal");
+
 function fresh_service() {
+    journal.paths.file = stub.tmpdir() + "/nexroute.log";
     return stub.fresh("service.state_service");
 }
 
@@ -146,24 +149,23 @@ t.test("the first log answer says where the log stands and carries none of it", 
     t.eq(reply, { cursor: 2 });
 });
 
-t.test("the Logs tab gets the whole log, read again only once a line arrived past its cursor", () => {
+t.test("the Logs tab reads the same private file and clearing persists across a new service", () => {
     let service = fresh_service();
-    let exec = require("core.exec");
-    let real_parallel = exec.capture_parallel;
-    let full_reads = 0;
-    exec.capture_parallel = (commands) => map(commands, (argv) =>
-        argv[0] == "logread" && argv[1] == "-e" ? { status: 0, stdout: "whole log " + ++full_reads + "\n" } : die("unexpected " + join(" ", argv)));
-    stub.commands([ [ "logread -l", { stdout: "nexroute: first\n" } ] ]);
+    let tail = "nexroute: first\n";
+    stub.commands([ [ "logread -l", () => ({ stdout: tail }) ] ]);
     let log_text = (args) => service.object_methods().log_text.call({ args });
     let first = log_text({});
-    let same = log_text({ cursor: first.cursor });
-    service.remember_log_line("nexroute: second");
-    let moved = log_text({ cursor: first.cursor });
-    let fresh_page = log_text({});
+    t.eq(first.text, tail);
+    t.eq(log_text({ cursor: first.cursor }), { cursor: first.cursor, unchanged: true });
+    t.eq(service.object_methods().clear_logs.call({ args: {} }), { success: true });
+    t.eq(fs.readfile(journal.paths.file), "");
+    t.eq(log_text({ cursor: first.cursor }).text, "");
+    service = stub.fresh("service.state_service");
+    t.eq(log_text({}).text, "");
+    tail += "nexroute: second\n";
+    t.eq(journal.sync([ "nexroute: first", "nexroute: second" ]).success, true);
+    t.eq(log_text({}).text, "nexroute: second\n");
     stub.restore();
-    exec.capture_parallel = real_parallel;
-    t.eq([ first.text, same, moved.text, moved.cursor - first.cursor, fresh_page.text, full_reads ],
-        [ "whole log 1\n", { cursor: first.cursor, unchanged: true }, "whole log 2\n", 1, "whole log 3\n", 3 ]);
 });
 
 t.test("the new lines of a tail are the ones after the last line already held", () => {

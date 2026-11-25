@@ -18,6 +18,7 @@ let installer = require("service.installer");
 let uci = require("core.uci");
 let health = require("service.health");
 let features = require("singbox.features");
+let journal = require("service.journal");
 
 const OBJECT_NAME = getenv("NEXROUTE_STATE_SERVICE_OBJECT") || "nexroute";
 
@@ -39,7 +40,7 @@ const LOG_PATTERN = constants.NEXROUTE_LOG_PATTERN;
 const LOG_TAIL_LINES = 200;
 const LOG_BUFFER_LINES = 400;
 const LOG_POLL_MS = 1500;
-// Log polling stops when nobody has asked for a while.
+// Keep the existing log interest tracking for state waiters.
 const LOG_INTEREST_MS = 60000;
 
 let paths = {
@@ -88,7 +89,7 @@ let down_since_ms = 0;
 
 function read_log_tail() {
     let data = exec.output([ "logread", "-l", LOG_TAIL_LINES, "-e", LOG_PATTERN ]);
-    return filter(split(data ?? "", "\n"), (line) => line != "");
+    return data == null ? null : filter(split(data, "\n"), (line) => line != "");
 }
 
 // Matching the last known line rather than counting survives unrelated entries between two
@@ -185,7 +186,11 @@ function poll_log(force) {
         return false;
 
     last_log_poll_ms = now;
-    if (!append_log_lines(new_log_lines(read_log_tail())))
+    let tail = read_log_tail();
+    if (tail == null)
+        return false;
+    let synced = journal.sync(tail);
+    if (!synced.success || !append_log_lines(synced.lines))
         return false;
 
     wake_log_waiters();
@@ -333,8 +338,8 @@ function tick() {
 }
 
 function log_tick() {
-    if (log_is_watched())
-        poll_log(true);
+    // Keep the file current even with no browser watching the log.
+    poll_log(true);
 }
 
 function object_methods() {
@@ -404,10 +409,23 @@ function object_methods() {
                 poll_log(false);
                 if (request.args.cursor != null && int(request.args.cursor) == log_cursor)
                     return { cursor: log_cursor, unchanged: true };
-                let read = exec.capture_parallel([ [ "logread", "-e", LOG_PATTERN ] ])[0];
-                return { cursor: log_cursor, text: read.status == 0 ? read.stdout : "" };
+                return { cursor: log_cursor, text: journal.read_visible() };
             },
             args: { cursor: 0, ubus_rpc_session: "" }
+        },
+        // Only this service may clear its private journal; system logread remains intact.
+        clear_logs: {
+            call: function(request) {
+                let tail = read_log_tail();
+                if (tail == null || !journal.clear(tail))
+                    return { success: false };
+                log_lines = [];
+                log_cursor++;
+                last_log_poll_ms = common.monotonic_ms();
+                wake_log_waiters();
+                return { success: true };
+            },
+            args: { ubus_rpc_session: "" }
         },
         // Installed versions and the device, held until the installed packages change.
         system_info: {

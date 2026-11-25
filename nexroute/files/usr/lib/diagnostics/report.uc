@@ -70,7 +70,7 @@ function report(visibility, checks) {
 
     return {
         checks: text(checks ?? ""),
-        log: text(log_tail(output([ "logread", "-e", constants.NEXROUTE_LOG_PATTERN ]))),
+        log: text(log_tail(require("service.journal").read())),
         nexroute_config: names(masked ? mask.nexroute_config(nexroute) : nexroute),
         nftables: text(chains(output([ "nft", "-t", "list", "table", "inet", constants.NFT_TABLE_NAME ]))),
         ip_rules: text(output([ "ip", "-4", "rule" ]) + output([ "ip", "-6", "rule" ]))

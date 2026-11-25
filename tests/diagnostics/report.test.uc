@@ -6,6 +6,8 @@ let report = require("diagnostics.report");
 
 let dir = stub.tmpdir();
 report.paths.nexroute_config = dir + "/nexroute";
+let journal = require("service.journal");
+journal.paths.file = dir + "/nexroute.log";
 
 const TABLE = "table inet NexRouteTable {\n\tset localv4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t}\n\n" +
     "\tset nexroute_interfaces {\n\t\ttype ifname\n\t\tflags interval\n\t}\n\n" +
@@ -21,8 +23,8 @@ function seed() {
     for (let i = 1; i <= 60; i++)
         log += sprintf("Mon Oct 19 17:05:02 2026 daemon.err sing-box[1]: ERROR dial tcp node.example:443 (185.199.108.9) %d\n", i);
     log += "Mon Oct 19 17:05:03 2026 user.info nexroute: [info] line 61\n";
+    fs.writefile(journal.paths.file, log);
     stub.commands([
-        [ /'logread'/, { stdout: log } ],
         [ /'nft' '-t' 'list' 'table' 'inet' 'NexRouteTable'/, { stdout: TABLE } ],
         [ /'ip' '-4' 'rule'/, { stdout: "105:\tfrom all fwmark 0x4000000/0x4000000 lookup nexroute\n" } ],
         [ /'ip' '-6' 'rule'/, { stdout: "" } ]
@@ -72,6 +74,14 @@ t.test("a raw report is the router as it is", () => {
     t.contains(value.log, "node.example:443 (185.199.108.9)");
     t.contains(value.nexroute_config, "vless://uuid-secret@node.example:443");
     t.eq(value.checks, "Main: vpn.example");
+});
+
+t.test("a cleared journal stays empty in a diagnostic report", () => {
+    seed();
+    fs.writefile(journal.paths.file, "");
+    let value = report.report("raw", "");
+    stub.restore();
+    t.eq(value.log, "");
 });
 
 t.done();

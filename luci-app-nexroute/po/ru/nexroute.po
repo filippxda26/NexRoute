@@ -2912,8 +2912,8 @@ msgstr "вчера %s"
 msgid "Your own certificate"
 msgstr "Свой сертификат"
 
-msgid "Clear displayed logs; system logs are kept"
-msgstr "Очистить отображаемые логи; системный журнал сохраняется"
+msgid "Clear the NexRoute log file; system logs are kept"
+msgstr "Очистить файл журнала NexRoute; системный журнал сохраняется"
 
 msgid "Clear logs"
 msgstr "Очистить логи"
@@ -2938,3 +2938,6 @@ msgstr "идёт через секцию «%s»"
 
 msgid "check request goes directly"
 msgstr "проверочный запрос идёт напрямую"
+
+msgid "Failed to clear logs"
+msgstr "Не удалось очистить журнал"

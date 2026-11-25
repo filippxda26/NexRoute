@@ -63,9 +63,11 @@ t.test("autostart answers the page whether the switch moved or not", () => {
 });
 
 t.test("the log command answers an empty log with nothing, successfully", () => {
-    stub.commands([ [ () => true, { status: 0, stdout: "" } ] ]);
+    let journal = require("service.journal");
+    journal.paths.file = stub.tmpdir() + "/nexroute.log";
+    fs.writefile(journal.paths.file, "");
     let empty = stub.capture(() => cli.main([ "check_logs" ], "/lib"));
-    stub.commands([ [ () => true, { status: 0, stdout: "nexroute: [info] up\n" } ] ]);
+    fs.writefile(journal.paths.file, "nexroute: [info] up\n");
     let some = stub.capture(() => cli.main([ "check_logs" ], "/lib"));
     stub.restore();
     t.eq([ empty.result, empty.stdout ], [ 0, "" ]);

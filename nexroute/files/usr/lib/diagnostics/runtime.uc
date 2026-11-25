@@ -88,7 +88,7 @@ function show_sing_box_config(visibility) {
 }
 
 function logs() {
-    return exec.output([ "logread", "-e", constants.NEXROUTE_LOG_PATTERN ]) ?? "";
+    return require("service.journal").read_visible();
 }
 
 return { paths, status, system_info, show_config, show_sing_box_config, logs };

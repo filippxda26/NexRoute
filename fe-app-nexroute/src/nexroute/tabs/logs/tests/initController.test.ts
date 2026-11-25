@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mocks = vi.hoisted(() => ({ checkLogs: vi.fn() }));
+const mocks = vi.hoisted(() => ({ checkLogs: vi.fn(), clearLogs: vi.fn() }));
 
 vi.mock('../../../methods', () => ({
-  NexRouteShellMethods: { checkLogs: mocks.checkLogs },
+  NexRouteShellMethods: {
+    checkLogs: mocks.checkLogs,
+    clearLogs: mocks.clearLogs,
+  },
 }));
 vi.mock('../../../../helpers/onMount', () => ({ onMount: async () => ({}) }));
 vi.mock('../../../../icons', () => ({ renderSearchIcon24: () => ({}) }));
@@ -39,6 +42,7 @@ function page() {
 beforeEach(() => {
   vi.resetModules();
   mocks.checkLogs.mockReset();
+  mocks.clearLogs.mockReset();
 });
 
 async function openedOn(tab: string) {
@@ -103,29 +107,30 @@ describe('the Logs tab', () => {
     expect(node('logs-download').textContent).toBe('Download');
   });
 
-  it('clears the display and only shows new lines after refresh and rotation', async () => {
+  it('clears the router file and shows only new server log lines', async () => {
     vi.useFakeTimers();
     const node = page();
     mocks.checkLogs.mockResolvedValue({ success: true, data: 'one\ntwo' });
+    mocks.clearLogs.mockImplementation(async () => {
+      mocks.checkLogs.mockResolvedValue({ success: true, data: '' });
+      return { success: true, data: null };
+    });
     const initController = await openedOn('logs');
 
     await initController();
     await Promise.resolve();
-    (node('logs-clear').click as () => void)();
+    await (node('logs-clear').click as () => Promise<void>)();
 
+    expect(mocks.clearLogs).toHaveBeenCalledTimes(1);
     expect(node('logs-output').textContent).toBe('No logs available');
     expect(node('logs-copy').disabled).toBe(true);
     expect(node('logs-download').disabled).toBe(true);
     await vi.advanceTimersByTimeAsync(2000);
     expect(node('logs-output').textContent).toBe('No logs available');
 
-    mocks.checkLogs.mockResolvedValue({ success: true, data: 'two\nthree' });
+    mocks.checkLogs.mockResolvedValue({ success: true, data: 'three' });
     await vi.advanceTimersByTimeAsync(2000);
     expect(node('logs-output').textContent).toBe('three');
-
-    mocks.checkLogs.mockResolvedValue({ success: true, data: 'four' });
-    await vi.advanceTimersByTimeAsync(2000);
-    expect(node('logs-output').textContent).toBe('four');
     vi.useRealTimers();
   });
 

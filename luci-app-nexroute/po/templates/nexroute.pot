@@ -4036,7 +4036,7 @@ msgstr ""
 msgid "Your own certificate"
 msgstr ""
 
-msgid "Clear displayed logs; system logs are kept"
+msgid "Clear the NexRoute log file; system logs are kept"
 msgstr ""
 
 msgid "Clear logs"
@@ -4063,4 +4063,7 @@ msgstr ""
 
 #: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
 msgid "check request goes directly"
+msgstr ""
+
+msgid "Failed to clear logs"
 msgstr ""
