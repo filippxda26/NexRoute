@@ -175,6 +175,25 @@ export function presentDualStackTraffic(
   const shown = dual.exits.find(
     ({ section }) => section === dual.displaySection,
   );
+  // Place the two reference exits together, before the device findings.
+  if (dual.displaySection) {
+    for (const family of families) {
+      const label = family === 'ipv4' ? 'IPv4' : 'IPv6';
+      const direct = familyAddress(dual.direct?.[family]?.address, family);
+      const exit = familyAddress(shown?.result?.[family]?.address, family);
+      const key =
+        _('Exit via "%s"').format(dual.displaySection) + ' (' + label + ')';
+      items.push({
+        ...(!exit
+          ? finding('warning', key, _('not checked: no answer'))
+          : exit === direct
+            ? finding('warning', key, _('%s, the same as direct').format(exit))
+            : finding('success', key, exit)),
+        layout: 'section-exit',
+      });
+    }
+  }
+
   const matchesExit4 =
     !!direct4 &&
     dual.browser.ipv4 !== direct4 &&
@@ -192,20 +211,6 @@ export function presentDualStackTraffic(
       dual.exits.every(({ result }) =>
         Boolean(familyAddress(result?.[family]?.address, family)),
       );
-    // Keep one reference section visible, but compare against every exit.
-    if (dual.displaySection) {
-      const exit = familyAddress(shown?.result?.[family]?.address, family);
-      const key =
-        _('Exit via "%s"').format(dual.displaySection) + ' (' + label + ')';
-      items.push(
-        !exit
-          ? finding('warning', key, _('not checked: no answer'))
-          : exit === direct
-            ? finding('warning', key, _('%s, the same as direct').format(exit))
-            : finding('success', key, exit),
-      );
-    }
-
     const key = _('This device') + ' (' + label + ')';
     if (!browser) {
       items.push(

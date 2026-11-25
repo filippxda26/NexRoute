@@ -406,8 +406,8 @@ describe('the traffic check', () => {
       'Direct exit (IPv4)',
       'Direct exit (IPv6)',
       'Exit via "YouTube" (IPv4)',
-      'This device (IPv4)',
       'Exit via "YouTube" (IPv6)',
+      'This device (IPv4)',
       'This device (IPv6)',
     ]);
     expect(items.slice(0, 2)).toEqual([
@@ -422,6 +422,20 @@ describe('the traffic check', () => {
         key: 'Direct exit (IPv6)',
         value: '2001:db8::10',
         layout: 'direct-exit',
+      },
+    ]);
+    expect(items.slice(2, 4)).toEqual([
+      {
+        state: 'success',
+        key: 'Exit via "YouTube" (IPv4)',
+        value: '198.51.100.20',
+        layout: 'section-exit',
+      },
+      {
+        state: 'success',
+        key: 'Exit via "YouTube" (IPv6)',
+        value: '2001:db8::20',
+        layout: 'section-exit',
       },
     ]);
     expect(items.find((item) => item.key === 'This device (IPv4)')).toEqual({

@@ -70,8 +70,8 @@ function renderCheckSummary(items: IRenderCheckSectionProps['items']) {
   const rows = [];
   for (let i = 0; i < items.length; i++) {
     if (
-      items[i].layout === 'direct-exit' &&
-      items[i + 1]?.layout === 'direct-exit'
+      items[i].layout &&
+      items[i + 1]?.layout === items[i].layout
     ) {
       rows.push(
         E('div', { class: 'fkp_diagnostic_alert__direct_exits' }, [

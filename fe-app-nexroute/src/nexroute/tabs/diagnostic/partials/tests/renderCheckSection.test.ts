@@ -162,6 +162,18 @@ describe('a diagnostic check', () => {
           value: 'not checked: no answer',
           layout: 'direct-exit',
         },
+        {
+          state: 'success',
+          key: 'Exit via "YouTube" (IPv4)',
+          value: '198.51.100.20',
+          layout: 'section-exit',
+        },
+        {
+          state: 'success',
+          key: 'Exit via "YouTube" (IPv6)',
+          value: '2001:db8::20',
+          layout: 'section-exit',
+        },
         { state: 'success', key: 'This device', value: 'OK' },
       ]),
     );
@@ -176,9 +188,25 @@ describe('a diagnostic check', () => {
     expect(find(columns[1], value)?.children).toEqual([
       'not checked: no answer',
     ]);
-    expect(find(root, 'fkp_diagnostic_alert__summary')?.children).toHaveLength(
-      2,
+    const summary = find(root, 'fkp_diagnostic_alert__summary');
+    expect(summary?.children).toHaveLength(3);
+    const section = find(
+      summary!.children[1],
+      'fkp_diagnostic_alert__direct_exits',
     );
+    expect(section?.children).toHaveLength(2);
+    expect(find(section!.children[0], key)?.children).toEqual([
+      'Exit via "YouTube" (IPv4)',
+    ]);
+    expect(find(section!.children[0], value)?.children).toEqual([
+      '198.51.100.20',
+    ]);
+    expect(find(section!.children[1], key)?.children).toEqual([
+      'Exit via "YouTube" (IPv6)',
+    ]);
+    expect(find(section!.children[1], value)?.children).toEqual([
+      '2001:db8::20',
+    ]);
   });
 
   it('shows every detail when nobody folds it', async () => {
