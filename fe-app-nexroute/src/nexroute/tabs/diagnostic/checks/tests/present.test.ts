@@ -263,22 +263,32 @@ describe('the traffic check', () => {
         key: 'Exit via "Main"',
         value: '38.107.233.96, direct 46.138.78.196',
       },
-      { state: 'success', key: 'This device', value: 'goes through NexRoute' },
+      {
+        state: 'success',
+        key: 'This device (FakeIP)',
+        value: 'goes through NexRoute',
+      },
     ]);
   });
 
   it('warns about a possible IPv6 bypass when IPv4 uses the checked exit', () => {
-    const items = presentDualStackTraffic(traffic(), {
+    const items = presentDualStackTraffic({
       direct: {
         outbound: 'direct-out',
         ipv4: { address: '203.0.113.10' },
         ipv6: { address: '2001:db8::10' },
       },
-      exit: {
-        outbound: 'Main',
-        ipv4: { address: '198.51.100.20' },
-        ipv6: { address: '2001:db8::20' },
-      },
+      exits: [
+        {
+          section: 'Main',
+          result: {
+            outbound: 'Main',
+            ipv4: { address: '198.51.100.20' },
+            ipv6: { address: '2001:db8::20' },
+          },
+        },
+      ],
+      sectionsComplete: true,
       browser: { ipv4: '198.51.100.20', ipv6: '2001:db8::99' },
     });
 
@@ -296,9 +306,10 @@ describe('the traffic check', () => {
   });
 
   it('does not call an unanswered IPv6 probe a leak or success', () => {
-    const items = presentDualStackTraffic(traffic(), {
+    const items = presentDualStackTraffic({
       direct: null,
-      exit: null,
+      exits: [],
+      sectionsComplete: false,
       browser: { ipv4: '', ipv6: '' },
     });
 
@@ -306,8 +317,80 @@ describe('the traffic check', () => {
       items.find((item) => item.key === 'This device (IPv6)'),
     ).toMatchObject({
       state: 'warning',
-      value: 'not checked: no answer',
+      value: 'IPv6 unavailable or the check did not answer',
     });
+  });
+
+  it('recognizes a second section independently for each family', () => {
+    const items = presentDualStackTraffic({
+      direct: {
+        outbound: 'direct-out',
+        ipv4: { address: '203.0.113.10' },
+        ipv6: { address: '2001:db8::10' },
+      },
+      exits: [
+        {
+          section: 'YouTube',
+          result: {
+            outbound: 'YouTube',
+            ipv4: { address: '198.51.100.20' },
+            ipv6: { address: '2001:db8::20' },
+          },
+        },
+        {
+          section: 'Full VPN',
+          result: {
+            outbound: 'Full VPN',
+            ipv4: { address: '198.51.100.30' },
+            ipv6: { address: '2001:db8::30' },
+          },
+        },
+      ],
+      sectionsComplete: true,
+      browser: { ipv4: '198.51.100.30', ipv6: '2001:0db8:0:0:0:0:0:20' },
+    });
+    expect(items.find((item) => item.key === 'This device (IPv4)')).toEqual({
+      state: 'success',
+      key: 'This device (IPv4)',
+      value: '198.51.100.30, matches exit of Full VPN',
+    });
+    expect(items.find((item) => item.key === 'This device (IPv6)')).toEqual({
+      state: 'success',
+      key: 'This device (IPv6)',
+      value: '2001:db8::20, matches exit of YouTube',
+    });
+  });
+
+  it('does not confirm shared exits or incomplete probes', () => {
+    const direct = {
+      outbound: 'direct-out',
+      ipv4: { address: '203.0.113.10' },
+      ipv6: { address: '2001:db8::10' },
+    };
+    const exits = [
+      {
+        section: 'Main',
+        result: {
+          outbound: 'Main',
+          ipv4: { address: '198.51.100.20' },
+          ipv6: { address: '2001:db8::10' },
+        },
+      },
+      { section: 'Other', result: null },
+    ];
+    const check = (ipv6: string) =>
+      presentDualStackTraffic({
+        direct,
+        exits,
+        sectionsComplete: true,
+        browser: { ipv4: '198.51.100.20', ipv6 },
+      }).find((item) => item.key === 'This device (IPv6)');
+    expect(check('2001:db8::10')?.value).toBe(
+      '2001:db8::10, route not verified',
+    );
+    expect(check('2001:db8::99')?.value).toBe(
+      '2001:db8::99, route not verified',
+    );
   });
 
   it('warns when the section leaves from the direct address', () => {
@@ -370,7 +453,11 @@ describe('the traffic check', () => {
       ).slice(0, 2),
     ).toEqual([
       { state: 'success', key: 'Router', value: 'excluded from routing' },
-      { state: 'success', key: 'This device', value: 'goes through NexRoute' },
+      {
+        state: 'success',
+        key: 'This device (FakeIP)',
+        value: 'goes through NexRoute',
+      },
     ]);
   });
 });

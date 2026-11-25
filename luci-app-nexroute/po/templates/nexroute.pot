@@ -4054,3 +4054,9 @@ msgstr ""
 
 msgid "%s, route not verified"
 msgstr ""
+
+msgid "%s, matches exit of %s"
+msgstr ""
+
+msgid "IPv6 unavailable or the check did not answer"
+msgstr ""
