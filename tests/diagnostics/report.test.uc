@@ -47,7 +47,7 @@ t.test("the report leaves out what the NexRoute configuration already determines
     seed();
     let value = report.report("raw", "");
     stub.restore();
-    t.eq(sort(keys(value)), [ "checks", "nexroute_config", "ip_rules", "log", "nftables" ], "no sing-box configuration");
+    t.eq(sort(keys(value)), [ "checks", "ip_rules", "log", "nexroute_config", "nftables" ], "no sing-box configuration");
     t.eq(value.nftables, "table inet NexRouteTable {\n\tchain mangle {\n\t\ttype filter hook prerouting priority mangle + 1; policy accept;\n\t\tip daddr @localv4 return\n\t}\n}\n",
         "the chains without the declarations of the sets they use");
 });

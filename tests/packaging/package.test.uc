@@ -55,7 +55,10 @@ function without_libc(list) {
 t.test("the IPK and APK packages depend on what the feed package depends on", () => {
     t.ok(length(makefile_depends) > 0);
     t.eq(sorted(without_libc(words(build_sh_variable("BACKEND_DEPENDS_IPK")))), makefile_depends, "IPK");
-    t.eq(sorted(without_libc(words(build_sh_variable("BACKEND_DEPENDS_APK")))),
+    let apk = words(build_sh_variable("BACKEND_DEPENDS_APK"));
+    t.eq(sorted(filter(apk, (name) => substr(name, 0, 1) == "!")),
+        sorted(map(words(makefile_field("CONFLICTS")), (name) => "!" + name)), "APK conflicts");
+    t.eq(sorted(without_libc(filter(apk, (name) => substr(name, 0, 1) != "!"))),
         sorted(map(makefile_depends, (name) => name == "ip-tiny" ? "ip" : name)), "APK, where ip-tiny is the ip any iproute2 provides");
 });
 

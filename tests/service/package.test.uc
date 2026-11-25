@@ -126,7 +126,7 @@ t.test("postinst loads the firewall include into a running firewall that lacks i
     let chain_with = "chain input {\n" + fs.readfile(repo.path("nexroute/files/usr/share/nftables.d/chain-pre/input/nexroute.nft")) + "}\n";
     function reloads(nft_reply, reload_status) {
         let result = run(() => pkg.postinst(), [ [ "nft list chain", nft_reply ], [ firewall_init + " reload", { status: reload_status ?? 0 } ] ]);
-        return filter(result.commands, (line) => line == firewall_init + " reload" || substr(line, 0, 32) == "logger -t nexroute -p user.warning");
+        return filter(result.commands, (line) => line == firewall_init + " reload" || substr(line, 0, length("logger -t nexroute -p user.warning")) == "logger -t nexroute -p user.warning");
     }
 
     t.eq(reloads({ stdout: chain_without }), [ firewall_init + " reload" ]);

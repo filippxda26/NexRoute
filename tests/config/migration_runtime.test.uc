@@ -46,7 +46,7 @@ function migrate(setup, mode) {
 }
 
 function kept_aside(setup) {
-    return filter(fs.lsdir(setup.dir), (name) => substr(name, 0, 7) == "nexroute.");
+    return filter(fs.lsdir(setup.dir), (name) => substr(name, 0, length("nexroute.")) == "nexroute.");
 }
 
 function server_sections() {
