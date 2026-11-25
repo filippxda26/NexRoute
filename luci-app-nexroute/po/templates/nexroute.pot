@@ -4051,6 +4051,12 @@ msgstr ""
 msgid "%s, route not verified"
 msgstr ""
 
+msgid "%s, goes through section \"%s\""
+msgstr ""
+
+msgid "%s, goes directly"
+msgstr ""
+
 msgid "%s, matches exit of %s"
 msgstr ""
 

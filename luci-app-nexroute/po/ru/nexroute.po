@@ -2927,6 +2927,12 @@ msgstr "%s, возможный обход VPN по IPv6"
 msgid "%s, route not verified"
 msgstr "%s, маршрут не подтверждён"
 
+msgid "%s, goes through section \"%s\""
+msgstr "%s, идёт через секцию «%s»"
+
+msgid "%s, goes directly"
+msgstr "%s, идёт напрямую"
+
 msgid "%s, matches exit of %s"
 msgstr "%s, совпадает с выходом секции %s"
 

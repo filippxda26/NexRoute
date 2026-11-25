@@ -333,7 +333,7 @@ describe('the traffic check', () => {
     );
   });
 
-  it('warns about a possible IPv6 bypass when IPv4 uses the checked exit', () => {
+  it('does not infer an IPv6 bypass from a different address', () => {
     const items = presentDualStackTraffic({
       direct: {
         outbound: 'direct-out',
@@ -357,15 +357,54 @@ describe('the traffic check', () => {
     expect(
       items.find((item) => item.key === 'This device (IPv4)'),
     ).toMatchObject({
-      state: 'success',
+      state: 'warning',
     });
     expect(
       items.find((item) => item.key === 'This device (IPv6)'),
     ).toMatchObject({
       state: 'warning',
-      value: '2001:db8::99, possible IPv6 bypass',
+      value: '2001:db8::99, route not verified',
       layout: 'device-exit',
     });
+  });
+
+  it('uses the observed IPv6 section even if its exit address differs', () => {
+    const dual = {
+      direct: {
+        outbound: 'direct-out',
+        ipv4: { address: '203.0.113.10' },
+        ipv6: { address: '2001:db8::10' },
+      },
+      exits: [
+        {
+          section: 'Germany',
+          result: {
+            outbound: 'Germany',
+            ipv4: { address: '198.51.100.20' },
+            ipv6: { address: '2001:db8::20' },
+          },
+        },
+      ],
+      sectionsComplete: true,
+      browser: { ipv4: '198.51.100.20', ipv6: '2001:db8::99' },
+      routes: { ipv4: 'Germany', ipv6: 'Germany' },
+    };
+    const check = (ipv6: string) =>
+      presentDualStackTraffic({
+        ...dual,
+        routes: { ...dual.routes, ipv6 },
+      }).find((item) => item.key === 'This device (IPv6)');
+    expect(check('Germany')).toMatchObject({
+      state: 'success',
+      value: '2001:db8::99, goes through section "Germany"',
+    });
+    expect(check('direct-out')).toMatchObject({
+      state: 'warning',
+      value: '2001:db8::99, possible IPv6 bypass',
+    });
+    expect(presentTraffic(traffic(), { fakeip: true }, dual)[1].value).toBe(
+      'goes through section "Germany"',
+    );
   });
 
   it('does not call an unanswered IPv6 probe a leak or success', () => {
@@ -412,6 +451,7 @@ describe('the traffic check', () => {
       displaySection: 'YouTube',
       sectionsComplete: true,
       browser: { ipv4: '198.51.100.30', ipv6: '2001:0db8:0:0:0:0:0:20' },
+      routes: { ipv4: 'Full VPN', ipv6: 'YouTube' },
     });
     expect(items.map((item) => item.key)).toEqual([
       'Direct exit (IPv4)',

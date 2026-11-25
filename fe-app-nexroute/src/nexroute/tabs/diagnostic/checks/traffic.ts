@@ -125,13 +125,9 @@ function matchingSections(dual: DualStackTraffic, family: AddressFamily) {
 function deviceSectionSummary(dual: DualStackTraffic): string {
   const confirmed = (family: AddressFamily) => {
     const actual = dual.routes?.[family];
-    const direct = familyAddress(dual.direct?.[family]?.address, family);
-    const browser = familyAddress(dual.browser[family], family);
     return actual &&
       actual !== 'direct-out' &&
-      direct &&
-      browser !== direct &&
-      matchingSections(dual, family).includes(actual)
+      familyAddress(dual.browser[family], family)
       ? actual
       : '';
   };
@@ -194,10 +190,8 @@ export function presentDualStackTraffic(
     }
   }
 
-  const matchesExit4 =
-    !!direct4 &&
-    dual.browser.ipv4 !== direct4 &&
-    matchingSections(dual, 'ipv4').length > 0;
+  const route4 = dual.routes?.ipv4;
+  const routed4 = Boolean(route4 && route4 !== 'direct-out');
 
   for (const family of families) {
     const label = family === 'ipv4' ? 'IPv4' : 'IPv6';
@@ -205,12 +199,6 @@ export function presentDualStackTraffic(
     const browser = familyAddress(dual.browser[family], family);
     const matches = matchingSections(dual, family);
     const actual = dual.routes?.[family];
-    const complete =
-      dual.sectionsComplete &&
-      dual.exits.length > 0 &&
-      dual.exits.every(({ result }) =>
-        Boolean(familyAddress(result?.[family]?.address, family)),
-      );
     const key = _('This device') + ' (' + label + ')';
     const addDeviceFinding = (item: IDiagnosticsChecksItem) =>
       items.push({ ...item, layout: 'device-exit' });
@@ -224,30 +212,37 @@ export function presentDualStackTraffic(
             : _('not checked: no answer'),
         ),
       );
-    } else if (matches.length && direct && browser !== direct) {
+    } else if (actual === 'direct-out') {
+      addDeviceFinding(
+        finding(
+          'warning',
+          key,
+          family === 'ipv6' && routed4
+            ? _('%s, possible IPv6 bypass').format(browser)
+            : _('%s, goes directly').format(browser),
+        ),
+      );
+    } else if (actual) {
       addDeviceFinding(
         finding(
           'success',
           key,
-          _('%s, matches exit of %s').format(
-            browser,
-            actual && matches.includes(actual) ? actual : matches.join(', '),
-          ),
+          matches.includes(actual)
+            ? _('%s, matches exit of %s').format(browser, actual)
+            : _('%s, goes through section "%s"').format(browser, actual),
         ),
       );
-    } else if (matches.length) {
+    } else if (matches.length && direct && browser !== direct) {
       addDeviceFinding(
-        finding('warning', key, _('%s, route not verified').format(browser)),
+        finding(
+          'warning',
+          key,
+          _('%s, matches exit of %s').format(browser, matches.join(', ')),
+        ),
       );
-    } else if (direct && browser === direct) {
-      const value =
-        family === 'ipv6' && matchesExit4
-          ? _('%s, possible IPv6 bypass').format(browser)
-          : _('%s, the same as direct').format(browser);
-      addDeviceFinding(finding('warning', key, value));
-    } else if (family === 'ipv6' && matchesExit4 && direct && complete) {
+    } else if (direct && browser === direct && !matches.length) {
       addDeviceFinding(
-        finding('warning', key, _('%s, possible IPv6 bypass').format(browser)),
+        finding('warning', key, _('%s, the same as direct').format(browser)),
       );
     } else {
       addDeviceFinding(
@@ -307,18 +302,34 @@ async function browserProbes() {
   const snapshots: ProbeConnection[][] = [];
   if (baseline) {
     // Bounded sampling; a failed or very short probe may not be visible.
-    for (let i = 0; i < 8 && !finished; i++) {
+    for (let i = 0; i < 25 && !finished; i++) {
       const snapshot = await connectionSnapshot();
       if (!snapshot) {
         break;
       }
       snapshots.push(snapshot);
       if (!finished) {
-        await new Promise<void>((resolve) => setTimeout(resolve, 200));
+        await new Promise<void>((resolve) => setTimeout(resolve, 100));
       }
     }
   }
   const [browser, ipv4, ipv6] = await probes;
+  if (baseline) {
+    // IPv6 privacy addresses may only appear in NDP after the probe starts.
+    const [latest, snapshot] = await Promise.all([
+      loadLocalDevices(true).catch(() => null),
+      connectionSnapshot(),
+    ]);
+    if (snapshot) {
+      snapshots.push(snapshot);
+    }
+    for (const address of clientAddresses(
+      client.success ? client.data?.ip || '' : '',
+      { ...devices?.macs, ...latest?.macs },
+    )) {
+      addresses.add(address);
+    }
+  }
   return { browser, ipv4, ipv6, addresses, baseline, snapshots };
 }
 
@@ -366,9 +377,15 @@ export async function runTrafficCheck(): Promise<CheckOutcome> {
           probes.baseline,
           probes.snapshots,
           probes.addresses,
-          targets.map(({ section }) => section),
+          targets.map(({ code }) => code),
         )
       : {};
+  for (const kind of Object.keys(routes) as (keyof ProbeRoutes)[]) {
+    const target = targets.find(({ code }) => code === routes[kind]);
+    if (target) {
+      routes[kind] = target.section;
+    }
+  }
   const dual: DualStackTraffic = {
     direct,
     exits,
