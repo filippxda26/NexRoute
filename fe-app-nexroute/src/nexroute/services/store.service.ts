@@ -114,7 +114,7 @@ export interface IDiagnosticsChecksItem {
   state: 'error' | 'warning' | 'success';
   key: string;
   value: string;
-  layout?: 'direct-exit' | 'section-exit' | 'device-exit';
+  layout?: 'direct-exit' | 'section-exit' | 'device-exit' | 'traffic-summary';
 }
 
 export interface IDiagnosticsChecksStoreItem {

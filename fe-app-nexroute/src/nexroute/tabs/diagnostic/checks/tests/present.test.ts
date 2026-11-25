@@ -257,8 +257,18 @@ function traffic(
 describe('the traffic check', () => {
   it('shows only the router and device before the dual-stack checks', () => {
     expect(presentTraffic(traffic(), { fakeip: true })).toEqual([
-      { state: 'success', key: 'Router', value: 'goes through NexRoute' },
-      { state: 'success', key: 'This device', value: 'goes through NexRoute' },
+      {
+        state: 'success',
+        key: 'Router',
+        value: 'goes through NexRoute',
+        layout: 'traffic-summary',
+      },
+      {
+        state: 'success',
+        key: 'This device',
+        value: 'goes through NexRoute',
+        layout: 'traffic-summary',
+      },
     ]);
   });
 
@@ -573,8 +583,18 @@ describe('the traffic check', () => {
         { fakeip: true },
       ).slice(0, 2),
     ).toEqual([
-      { state: 'success', key: 'Router', value: 'excluded from routing' },
-      { state: 'success', key: 'This device', value: 'goes through NexRoute' },
+      {
+        state: 'success',
+        key: 'Router',
+        value: 'excluded from routing',
+        layout: 'traffic-summary',
+      },
+      {
+        state: 'success',
+        key: 'This device',
+        value: 'goes through NexRoute',
+        layout: 'traffic-summary',
+      },
     ]);
   });
 });

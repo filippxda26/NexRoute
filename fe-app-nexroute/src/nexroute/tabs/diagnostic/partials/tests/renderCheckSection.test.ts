@@ -240,6 +240,37 @@ describe('a diagnostic check', () => {
     ).toBeDefined();
   });
 
+  it('renders the router and device summaries in the same pair', async () => {
+    const root = await render(
+      check('success', [
+        {
+          state: 'success',
+          key: 'Router',
+          value: 'goes through NexRoute',
+          layout: 'traffic-summary',
+        },
+        {
+          state: 'success',
+          key: 'This device',
+          value: 'goes through section "Germany" (IPv4)',
+          layout: 'traffic-summary',
+        },
+      ]),
+    );
+    const pair = find(root, 'fkp_diagnostic_alert__direct_exits');
+    expect(pair?.children).toHaveLength(2);
+    const key = 'fkp_diagnostic_alert__summary__item__key';
+    const value = 'fkp_diagnostic_alert__summary__item__value';
+    expect(find(pair!.children[0], key)?.children).toEqual(['Router']);
+    expect(find(pair!.children[0], value)?.children).toEqual([
+      'goes through NexRoute',
+    ]);
+    expect(find(pair!.children[1], key)?.children).toEqual(['This device']);
+    expect(find(pair!.children[1], value)?.children).toEqual([
+      'goes through section "Germany" (IPv4)',
+    ]);
+  });
+
   it('shows every detail when nobody folds it', async () => {
     const root = await render(check('error'));
 

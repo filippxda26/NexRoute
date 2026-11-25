@@ -263,7 +263,10 @@ export function presentTraffic(
   browser: BrowserCheck,
   dual?: DualStackTraffic,
 ): IDiagnosticsChecksItem[] {
-  return [routerItem(data.router), deviceItem(browser, dual)];
+  return [
+    { ...routerItem(data.router), layout: 'traffic-summary' },
+    { ...deviceItem(browser, dual), layout: 'traffic-summary' },
+  ];
 }
 
 async function connectionSnapshot(): Promise<ProbeConnection[] | null> {
