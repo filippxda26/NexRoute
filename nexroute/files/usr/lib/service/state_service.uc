@@ -77,6 +77,7 @@ let state = { revision: 0, payload: null, text: "" };
 let system_info = { value: null, signature: "" };
 let log_lines = [];
 let log_cursor = 0;
+let log_generation = sprintf("%J", clock());
 let last_log_interest_ms = 0;
 let last_log_poll_ms = 0;
 let waiters = [];
@@ -407,11 +408,22 @@ function object_methods() {
             call: function(request) {
                 log_interest();
                 poll_log(false);
-                if (request.args.cursor != null && int(request.args.cursor) == log_cursor)
+                if (request.args.offset != null) {
+                    if (request.args.generation != log_generation)
+                        return { changed: true };
+                    let page = journal.page(int(request.args.offset), int(request.args.size));
+                    return page == null ? { changed: true } : { ...page, generation: log_generation };
+                }
+                if (request.args.cursor != null && int(request.args.cursor) == log_cursor &&
+                    (request.args.generation == null || request.args.generation == log_generation))
                     return { cursor: log_cursor, unchanged: true };
-                return { cursor: log_cursor, text: journal.read_visible() };
+                let size = journal.size();
+                if (size <= journal.CHUNK_BYTES)
+                    return { cursor: log_cursor, text: journal.read(), generation: log_generation };
+                let page = journal.page(0, size);
+                return page == null ? { changed: true } : { ...page, cursor: log_cursor, generation: log_generation };
             },
-            args: { cursor: 0, ubus_rpc_session: "" }
+            args: { cursor: 0, offset: 0, size: 0, generation: "", ubus_rpc_session: "" }
         },
         // Only this service may clear its private journal; system logread remains intact.
         clear_logs: {
@@ -421,6 +433,7 @@ function object_methods() {
                     return { success: false };
                 log_lines = [];
                 log_cursor++;
+                log_generation = sprintf("%J", clock());
                 last_log_poll_ms = common.monotonic_ms();
                 wake_log_waiters();
                 return { success: true };

@@ -88,7 +88,7 @@ function show_sing_box_config(visibility) {
 }
 
 function logs() {
-    return require("service.journal").read_visible();
+    return require("service.journal").read();
 }
 
 return { paths, status, system_info, show_config, show_sing_box_config, logs };

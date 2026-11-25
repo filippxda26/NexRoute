@@ -50,6 +50,34 @@ describe('NexRouteShellMethods.checkLogs', () => {
     expect(mocks.executeShellCommand).not.toHaveBeenCalled();
   });
 
+  it('reads every page of the file without dropping earlier entries', async () => {
+    const shell = await methods();
+    mocks.callUbus
+      .mockResolvedValueOnce({
+        success: true,
+        data: {
+          cursor: 4,
+          generation: 'a',
+          chunk: 'YQ==',
+          next: 1,
+          size: 2,
+        },
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        data: { generation: 'a', chunk: 'Yg==', next: 2, size: 2 },
+      });
+    await expect(shell.checkLogs()).resolves.toEqual({
+      success: true,
+      data: 'ab',
+    });
+    expect(mocks.callUbus.mock.calls[1][0].params).toEqual({
+      offset: 1,
+      size: 2,
+      generation: 'a',
+    });
+  });
+
   it('runs the CLI when the state service does not answer, and starts over afterwards', async () => {
     const shell = await methods();
     mocks.callUbus

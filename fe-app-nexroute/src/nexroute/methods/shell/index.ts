@@ -15,9 +15,66 @@ const CLASH_API_TRANSPORT_TIMEOUT_MS = 65000;
 const DIAGNOSTIC_CHECK_RPC_TIMEOUT_MS = 3 * 60 * 1000;
 
 let checkLogsRequest: Promise<NexRoute.MethodResponse<string>> | null = null;
-let servedLog: { cursor: number; text: string } | null = null;
+let servedLog: { cursor: number; text: string; generation?: string } | null =
+  null;
 
-type LogTextReply = { cursor?: number; unchanged?: boolean; text?: string };
+type LogTextReply = {
+  cursor?: number;
+  unchanged?: boolean;
+  text?: string;
+  generation?: string;
+  chunk?: string;
+  next?: number;
+  size?: number;
+  changed?: boolean;
+};
+
+async function readLogPages(first: LogTextReply): Promise<string | null> {
+  const { size, generation } = first;
+  if (typeof size !== 'number' || !generation) {
+    return null;
+  }
+  const decoder = new TextDecoder();
+  const parts: string[] = [];
+  let offset = 0;
+  let page = first;
+  try {
+    while (offset < size) {
+      if (
+        page.generation !== generation ||
+        page.size !== size ||
+        typeof page.chunk !== 'string' ||
+        typeof page.next !== 'number' ||
+        page.next <= offset ||
+        page.next > size
+      ) {
+        return null;
+      }
+      const bytes = Uint8Array.from(atob(page.chunk), (c) => c.charCodeAt(0));
+      if (bytes.length !== page.next - offset) {
+        return null;
+      }
+      parts.push(decoder.decode(bytes, { stream: true }));
+      offset = page.next;
+      if (offset < size) {
+        const result = await callUbus<LogTextReply>({
+          object: 'nexroute',
+          method: 'log_text',
+          params: { offset, size, generation },
+          timeoutMs: LOG_TEXT_UBUS_TIMEOUT_MS,
+        });
+        if (!result.success || result.data.changed) {
+          return null;
+        }
+        page = result.data;
+      }
+    }
+    parts.push(decoder.decode());
+    return parts.join('');
+  } catch {
+    return null;
+  }
+}
 
 // The state service reads the log again only once a line arrived past the cursor it handed out;
 // the CLI answers when the service does not run. A log with no NexRoute line yet is empty, not a
@@ -26,19 +83,33 @@ async function readLogs(): Promise<NexRoute.MethodResponse<string>> {
   const served = await callUbus<LogTextReply>({
     object: 'nexroute',
     method: 'log_text',
-    params: servedLog ? { cursor: servedLog.cursor } : {},
+    params: servedLog
+      ? {
+          cursor: servedLog.cursor,
+          ...(servedLog.generation ? { generation: servedLog.generation } : {}),
+        }
+      : {},
     timeoutMs: LOG_TEXT_UBUS_TIMEOUT_MS,
   });
   const reply = served.success ? served.data : null;
   if (typeof reply?.cursor === 'number') {
-    const text = reply.unchanged ? servedLog?.text : reply.text;
+    const text = reply.unchanged
+      ? servedLog?.text
+      : (reply.text ?? (await readLogPages(reply)));
     if (typeof text === 'string') {
-      servedLog = { cursor: reply.cursor, text };
+      servedLog = {
+        cursor: reply.cursor,
+        text,
+        generation: reply.generation ?? servedLog?.generation,
+      };
       return { success: true, data: text };
     }
   }
 
   servedLog = null;
+  if (served.success) {
+    return { success: false, error: _('Failed to load logs') };
+  }
   const response = await executeShellCommand({
     command: '/usr/bin/nexroute',
     args: [NexRoute.AvailableMethods.CHECK_LOGS],

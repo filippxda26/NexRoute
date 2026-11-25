@@ -16,15 +16,27 @@ t.test("clearing the private file never restores the same syslog history", () =>
     t.eq(fs.stat(journal.paths.file).mode & 0777, 0600);
 });
 
-t.test("the journal is bounded and keeps complete recent lines", () => {
+t.test("the journal retains all bytes and serves a complete snapshot in pages", () => {
+    journal.paths.file = stub.tmpdir() + "/nexroute.log";
     let line = "0123456789\n";
     let text = "";
     for (let i = 0; i < 15000; i++)
         text += line;
-    let result = journal.bounded(text, 128 * 1024);
-    t.ok(length(result) <= 128 * 1024);
-    t.eq(substr(result, 0, length(line)), line);
-    t.eq(journal.bounded(text), text);
+    fs.writefile(journal.paths.file, text);
+    t.eq(journal.sync([ "new" ]).success, true);
+    t.eq(journal.read(), text + "new\n");
+    let size = journal.size();
+    let offset = 0;
+    let result = "";
+    while (offset < size) {
+        let page = journal.page(offset, size);
+        t.ok(page != null);
+        if (page == null)
+            break;
+        result += b64dec(page.chunk);
+        offset = page.next;
+    }
+    t.eq(result, text + "new\n");
 });
 
 t.done();
