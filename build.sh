@@ -223,6 +223,7 @@ build_app_root() {
     "$output_root/www/luci-static/resources/view/nexroute/main.js"
 
   normalize_package_root_modes "$output_root"
+  chmod 0755 "$output_root/www/cgi-bin/nexroute-client"
   find "$output_root/etc/uci-defaults" -type f -exec chmod 0755 {} + 2>/dev/null || true
 }
 

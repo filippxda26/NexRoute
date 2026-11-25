@@ -2936,11 +2936,5 @@ msgstr "IPv6 недоступен или проверка не получила 
 msgid "goes through section \"%s\""
 msgstr "идёт через секцию «%s»"
 
-msgid "goes through section \"%s\" (%s)"
-msgstr "идёт через секцию «%s» (%s)"
-
-msgid "matches exits of sections: %s"
-msgstr "совпадает с выходом секций: %s"
-
-msgid "matches exits of sections (%s): %s"
-msgstr "совпадает с выходом секций (%s): %s"
+msgid "check request goes directly"
+msgstr "проверочный запрос идёт напрямую"

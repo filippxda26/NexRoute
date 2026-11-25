@@ -262,49 +262,28 @@ describe('the traffic check', () => {
     ]);
   });
 
-  it('names the matching section without confirming an unverified family', () => {
-    const direct = {
-      outbound: 'direct-out',
-      ipv4: { address: '203.0.113.10' },
-      ipv6: { address: '2001:db8::10' },
-    };
-    const vpn = {
-      section: 'Vanya_FULL_VPN',
-      result: {
-        outbound: 'Vanya_FULL_VPN',
-        ipv4: { address: '198.51.100.30' },
-        ipv6: { address: '2001:db8::30' },
-      },
-    };
+  it('names the observed route, not a shared exit or a full-device rule', () => {
     const dual = {
-      direct,
-      exits: [vpn],
+      direct: null,
+      exits: [],
       sectionsComplete: true,
-      browser: { ipv4: '198.51.100.30', ipv6: '2001:db8::30' },
+      browser: { ipv4: '', ipv6: '' },
     };
-    const check = (input: typeof dual) =>
-      presentTraffic(traffic(), { fakeip: true }, input)[1].value;
-    expect(check(dual)).toBe('goes through section "Vanya_FULL_VPN"');
-    expect(
-      check({
-        ...dual,
-        browser: { ...dual.browser, ipv6: '2001:db8::99' },
-      }),
-    ).toBe('goes through section "Vanya_FULL_VPN" (IPv4)');
-    const shared = [vpn, { ...vpn, section: 'Other' }];
-    expect(check({ ...dual, exits: shared })).toBe(
-      'matches exits of sections: Vanya_FULL_VPN, Other',
-    );
-    expect(
-      check({
-        ...dual,
-        exits: shared,
-        browser: { ...dual.browser, ipv6: '2001:db8::99' },
-      }),
-    ).toBe('matches exits of sections (IPv4): Vanya_FULL_VPN, Other');
-    expect(check({ ...dual, sectionsComplete: false })).toBe(
+    expect(presentTraffic(traffic(), { fakeip: true }, dual)[1].value).toBe(
       'goes through NexRoute',
     );
+    expect(
+      presentTraffic(traffic(), { fakeip: true }, {
+        ...dual,
+        routes: { fakeip: 'Vanya_FULL_VPN' },
+      })[1].value,
+    ).toBe('goes through section "Vanya_FULL_VPN"');
+    expect(
+      presentTraffic(traffic(), { fakeip: true }, {
+        ...dual,
+        routes: { fakeip: 'direct-out' },
+      })[1].value,
+    ).toBe('check request goes directly');
   });
 
   it('warns about a possible IPv6 bypass when IPv4 uses the checked exit', () => {

@@ -13,6 +13,8 @@ export async function getFakeIpCheck(): Promise<
     () =>
       fetch(`https://${FAKEIP_CHECK_DOMAIN}/check`, {
         method: 'GET',
+        cache: 'no-store',
+        signal: AbortSignal.timeout(5000),
       }),
     {
       operationName: 'getFakeIpCheck',
