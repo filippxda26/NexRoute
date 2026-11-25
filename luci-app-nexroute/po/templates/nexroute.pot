@@ -134,10 +134,6 @@ msgid "%s waiting for approval in the console"
 msgstr ""
 
 #: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
-msgid "%s, direct %s"
-msgstr ""
-
-#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
 msgid "%s, the same as direct"
 msgstr ""
 

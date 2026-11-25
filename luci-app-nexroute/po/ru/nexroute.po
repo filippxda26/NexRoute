@@ -104,9 +104,6 @@ msgstr "%s забирает DNS-запросы раньше NexRoute"
 msgid "%s waiting for approval in the console"
 msgstr "%s ждёт одобрения в консоли"
 
-msgid "%s, direct %s"
-msgstr "%s, напрямую %s"
-
 msgid "%s, the same as direct"
 msgstr "%s, как и напрямую"
 
