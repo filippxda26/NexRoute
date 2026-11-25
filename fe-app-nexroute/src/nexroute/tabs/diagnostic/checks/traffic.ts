@@ -121,13 +121,31 @@ function matchingSections(dual: DualStackTraffic, family: AddressFamily) {
     .map(({ section }) => section);
 }
 
-// The generic row describes the FakeIP check, never all of a device's traffic.
+// Use the observed public-IP connections, not the internal FakeIP route.
 function deviceSectionSummary(dual: DualStackTraffic): string {
-  const route = dual.routes?.fakeip;
-  if (route === 'direct-out') {
-    return _('check request goes directly');
+  const confirmed = (family: AddressFamily) => {
+    const actual = dual.routes?.[family];
+    const direct = familyAddress(dual.direct?.[family]?.address, family);
+    const browser = familyAddress(dual.browser[family], family);
+    return actual &&
+      actual !== 'direct-out' &&
+      direct &&
+      browser !== direct &&
+      matchingSections(dual, family).includes(actual)
+      ? actual
+      : '';
+  };
+  const ipv4 = confirmed('ipv4');
+  const ipv6 = confirmed('ipv6');
+  if (ipv4 && ipv4 === ipv6) {
+    return _('goes through section "%s"').format(ipv4);
   }
-  return route ? _('goes through section "%s"').format(route) : '';
+  return [
+    ipv4 && _('goes through section "%s" (%s)').format(ipv4, 'IPv4'),
+    ipv6 && _('goes through section "%s" (%s)').format(ipv6, 'IPv6'),
+  ]
+    .filter(Boolean)
+    .join('; ');
 }
 
 export function presentDualStackTraffic(

@@ -4061,9 +4061,8 @@ msgstr ""
 msgid "goes through section \"%s\""
 msgstr ""
 
-#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
-msgid "check request goes directly"
+msgid "Failed to clear logs"
 msgstr ""
 
-msgid "Failed to clear logs"
+msgid "goes through section \"%s\" (%s)"
 msgstr ""

@@ -262,28 +262,53 @@ describe('the traffic check', () => {
     ]);
   });
 
-  it('names the observed route, not a shared exit or a full-device rule', () => {
+  it('summarizes observed public-IP routes, not the internal FakeIP route', () => {
+    const vpn = {
+      section: 'Vanya_FULL_VPN',
+      result: {
+        outbound: 'Vanya_FULL_VPN',
+        ipv4: { address: '198.51.100.30' },
+        ipv6: { address: '2001:db8::30' },
+      },
+    };
     const dual = {
-      direct: null,
-      exits: [],
+      direct: {
+        outbound: 'direct-out',
+        ipv4: { address: '203.0.113.10' },
+        ipv6: { address: '2001:db8::10' },
+      },
+      exits: [vpn, { ...vpn, section: 'Germany' }],
       sectionsComplete: true,
-      browser: { ipv4: '', ipv6: '' },
+      browser: { ipv4: '198.51.100.30', ipv6: '2001:db8::30' },
+      routes: {
+        fakeip: 'direct-out',
+        ipv4: 'Vanya_FULL_VPN',
+        ipv6: 'Vanya_FULL_VPN',
+      },
     };
     expect(presentTraffic(traffic(), { fakeip: true }, dual)[1].value).toBe(
-      'goes through NexRoute',
+      'goes through section "Vanya_FULL_VPN"',
     );
     expect(
       presentTraffic(traffic(), { fakeip: true }, {
         ...dual,
-        routes: { fakeip: 'Vanya_FULL_VPN' },
+        routes: { ...dual.routes, ipv6: 'direct-out' },
       })[1].value,
-    ).toBe('goes through section "Vanya_FULL_VPN"');
+    ).toBe('goes through section "Vanya_FULL_VPN" (IPv4)');
     expect(
       presentTraffic(traffic(), { fakeip: true }, {
         ...dual,
         routes: { fakeip: 'direct-out' },
       })[1].value,
-    ).toBe('check request goes directly');
+    ).toBe('goes through NexRoute');
+    expect(
+      presentTraffic(traffic(), { fakeip: true }, {
+        ...dual,
+        routes: { ...dual.routes, ipv6: 'Germany' },
+      })[1].value,
+    ).toBe(
+      'goes through section "Vanya_FULL_VPN" (IPv4); goes through section "Germany" (IPv6)',
+    );
   });
 
   it('warns about a possible IPv6 bypass when IPv4 uses the checked exit', () => {
