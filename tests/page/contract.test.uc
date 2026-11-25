@@ -131,11 +131,11 @@ t.test("the state service parks a request as long as the page expects", () => {
     t.eq(state_service.MAX_WAIT_MS, contract.state_wait_ms);
 });
 
-// rpcd refuses a method the page's ACL does not list; the one that changes something is a write.
+// rpcd refuses a method the page's ACL does not list; mutations must require write access.
 t.test("the page may call every method the state service publishes", () => {
     let acl = json(fs.readfile(repo.path("luci-app-nexroute/root/usr/share/rpcd/acl.d/luci-app-nexroute.json")))["luci-app-nexroute"];
     t.eq(sort([ ...acl.read.ubus.nexroute, ...acl.write.ubus.nexroute ]), sort(keys(state_service.object_methods())));
-    t.eq(acl.write.ubus.nexroute, [ "import_config" ]);
+    t.eq(sort(acl.write.ubus.nexroute), [ "clear_logs", "import_config" ]);
 });
 
 t.test("the option every password field is stored in is masked in diagnostics", () => {
