@@ -1803,7 +1803,9 @@ var NexRouteShellMethods = {
   checkService: async () => diagnosticCheck(
     NexRoute.AvailableMethods.CHECK_SERVICE
   ),
-  checkDns: async () => diagnosticCheck(NexRoute.AvailableMethods.CHECK_DNS),
+  checkDns: async () => diagnosticCheck(
+    NexRoute.AvailableMethods.CHECK_DNS
+  ),
   checkTraffic: async () => diagnosticCheck(
     NexRoute.AvailableMethods.CHECK_TRAFFIC
   ),
@@ -1811,10 +1813,10 @@ var NexRouteShellMethods = {
     NexRoute.AvailableMethods.CHECK_SERVERS
   ),
   // The router masks the checks by the same rules as the rest of the report.
-  report: async (masked, checks) => diagnosticCheck(NexRoute.AvailableMethods.REPORT, [
-    masked ? "masked" : "raw",
-    checks
-  ]),
+  report: async (masked, checks) => diagnosticCheck(
+    NexRoute.AvailableMethods.REPORT,
+    [masked ? "masked" : "raw", checks]
+  ),
   clashApi: async (method, path, body = "") => callBaseMethod(
     NexRoute.AvailableMethods.CLASH_API,
     [method, path, body],
@@ -3264,7 +3266,10 @@ function refusalMessage(refusal) {
   }
 }
 function renderImportDialog(fileName2, check, onLoad) {
-  const version = check.from === check.to ? _("%s holds a configuration of NexRoute %s.").format(fileName2, check.from) : _(
+  const version = check.from === check.to ? _("%s holds a configuration of NexRoute %s.").format(
+    fileName2,
+    check.from
+  ) : _(
     "%s holds a configuration of NexRoute %s, which is brought to %s as an update would bring it."
   ).format(fileName2, check.from, check.to);
   return [
@@ -3284,7 +3289,13 @@ function renderImportDialog(fileName2, check, onLoad) {
         "It replaces the current one through unsaved changes, as if you made them by hand. NexRoute runs it once you apply them."
       )
     ),
-    ...check.unsaved ? [textE("p", {}, _("Unsaved changes to NexRoute made earlier are replaced."))] : [],
+    ...check.unsaved ? [
+      textE(
+        "p",
+        {},
+        _("Unsaved changes to NexRoute made earlier are replaced.")
+      )
+    ] : [],
     textE("div", { class: "fkp-partial-modal__footer" }, [
       textE(
         "button",
@@ -4415,7 +4426,10 @@ function initController() {
     logButton.disabled = true;
     try {
       const text8 = await installerApi.log();
-      ui.showModal(_("Installer log"), renderModal(text8, "nexroute-install-log"));
+      ui.showModal(
+        _("Installer log"),
+        renderModal(text8, "nexroute-install-log")
+      );
     } catch (error) {
       showToast(
         error instanceof Error ? error.message : String(error),
@@ -6616,7 +6630,9 @@ async function runWaitLoop() {
         break;
       }
       logger.error("[RUNTIME_UI_STATE]", "state wait failed", response.message);
-      await new Promise((resolve) => setTimeout(resolve, NEXROUTE_WAIT_RETRY_MS));
+      await new Promise(
+        (resolve) => setTimeout(resolve, NEXROUTE_WAIT_RETRY_MS)
+      );
     }
   } finally {
     waitLoopRunning = false;
@@ -26083,7 +26099,11 @@ function keepWarpGenerateButtonCurrent(option2) {
       hint,
       readonly,
       warpGenerateBlockReason(
-        uci.get(NEXROUTE_UCI_PACKAGE, "settings", "warp_profiles_via_proxy") === "1",
+        uci.get(
+          NEXROUTE_UCI_PACKAGE,
+          "settings",
+          "warp_profiles_via_proxy"
+        ) === "1",
         store.get().serviceState
       )
     );
