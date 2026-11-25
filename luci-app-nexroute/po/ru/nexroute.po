@@ -2932,3 +2932,9 @@ msgstr "%s, совпадает с выходом секции %s"
 
 msgid "IPv6 unavailable or the check did not answer"
 msgstr "IPv6 недоступен или проверка не получила ответа"
+
+msgid "goes through section \"%s\""
+msgstr "идёт через секцию «%s»"
+
+msgid "goes through section \"%s\" (%s)"
+msgstr "идёт через секцию «%s» (%s)"

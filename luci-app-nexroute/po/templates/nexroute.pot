@@ -4056,3 +4056,11 @@ msgstr ""
 
 msgid "IPv6 unavailable or the check did not answer"
 msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+msgid "goes through section \"%s\""
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/traffic.ts
+msgid "goes through section \"%s\" (%s)"
+msgstr ""

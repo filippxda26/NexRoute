@@ -39,11 +39,12 @@ function routerItem(router: NexRoute.TrafficCheckResult['router']) {
   );
 }
 
-function deviceItem(browser: BrowserCheck) {
+function deviceItem(browser: BrowserCheck, dual?: DualStackTraffic) {
   const key = _('This device');
 
   if (browser?.fakeip) {
-    return finding('success', key, _('goes through NexRoute'));
+    const section = dual ? deviceSectionSummary(dual) : '';
+    return finding('success', key, section || _('goes through NexRoute'));
   }
   return browser
     ? finding('warning', key, _("does not use the router's DNS"))
@@ -108,6 +109,32 @@ function matchingSections(dual: DualStackTraffic, family: AddressFamily) {
         browser && familyAddress(result?.[family]?.address, family) === browser,
     )
     .map(({ section }) => section);
+}
+
+// Only name a section when the observed exit uniquely matches it.
+function deviceSectionSummary(dual: DualStackTraffic): string {
+  if (!dual.sectionsComplete) {
+    return '';
+  }
+  const confirmed = (family: AddressFamily) => {
+    const direct = familyAddress(dual.direct?.[family]?.address, family);
+    const browser = familyAddress(dual.browser[family], family);
+    const matches = matchingSections(dual, family);
+    return direct && browser !== direct && matches.length === 1
+      ? matches[0]
+      : '';
+  };
+  const ipv4 = confirmed('ipv4');
+  const ipv6 = confirmed('ipv6');
+  if (ipv4 && ipv4 === ipv6) {
+    return _('goes through section "%s"').format(ipv4);
+  }
+  return [
+    ipv4 && _('goes through section "%s" (%s)').format(ipv4, 'IPv4'),
+    ipv6 && _('goes through section "%s" (%s)').format(ipv6, 'IPv6'),
+  ]
+    .filter(Boolean)
+    .join('; ');
 }
 
 export function presentDualStackTraffic(
@@ -201,8 +228,9 @@ export function presentDualStackTraffic(
 export function presentTraffic(
   data: NexRoute.TrafficCheckResult,
   browser: BrowserCheck,
+  dual?: DualStackTraffic,
 ): IDiagnosticsChecksItem[] {
-  return [routerItem(data.router), deviceItem(browser)];
+  return [routerItem(data.router), deviceItem(browser, dual)];
 }
 
 // The router's side and the browser's run at once; each can take seconds when something is wrong.
@@ -244,17 +272,19 @@ export async function runTrafficCheck(): Promise<CheckOutcome> {
     );
     exits.push(...batch);
   }
+  const dual: DualStackTraffic = {
+    direct,
+    exits,
+    displaySection: response.data.exit?.section,
+    sectionsComplete: sections?.success === true,
+    browser: { ipv4, ipv6 },
+  };
   return outcome([
     ...presentTraffic(
       response.data,
       browser.success ? { fakeip: Boolean(browser.data.fakeip) } : null,
+      dual,
     ),
-    ...presentDualStackTraffic({
-      direct,
-      exits,
-      displaySection: response.data.exit?.section,
-      sectionsComplete: sections?.success === true,
-      browser: { ipv4, ipv6 },
-    }),
+    ...presentDualStackTraffic(dual),
   ]);
 }

@@ -262,6 +262,43 @@ describe('the traffic check', () => {
     ]);
   });
 
+  it('names the matching section without confirming an unverified family', () => {
+    const direct = {
+      outbound: 'direct-out',
+      ipv4: { address: '203.0.113.10' },
+      ipv6: { address: '2001:db8::10' },
+    };
+    const vpn = {
+      section: 'Vanya_FULL_VPN',
+      result: {
+        outbound: 'Vanya_FULL_VPN',
+        ipv4: { address: '198.51.100.30' },
+        ipv6: { address: '2001:db8::30' },
+      },
+    };
+    const dual = {
+      direct,
+      exits: [vpn],
+      sectionsComplete: true,
+      browser: { ipv4: '198.51.100.30', ipv6: '2001:db8::30' },
+    };
+    const check = (input: typeof dual) =>
+      presentTraffic(traffic(), { fakeip: true }, input)[1].value;
+    expect(check(dual)).toBe('goes through section "Vanya_FULL_VPN"');
+    expect(
+      check({
+        ...dual,
+        browser: { ...dual.browser, ipv6: '2001:db8::99' },
+      }),
+    ).toBe('goes through section "Vanya_FULL_VPN" (IPv4)');
+    expect(
+      check({ ...dual, exits: [vpn, { ...vpn, section: 'Other' }] }),
+    ).toBe('goes through NexRoute');
+    expect(check({ ...dual, sectionsComplete: false })).toBe(
+      'goes through NexRoute',
+    );
+  });
+
   it('warns about a possible IPv6 bypass when IPv4 uses the checked exit', () => {
     const items = presentDualStackTraffic({
       direct: {
