@@ -15037,42 +15037,40 @@ controls. */
     overflow-wrap: anywhere;
 }
 
-/* Each address belongs to its own heading, with equal-width columns. */
-.fkp_diagnostic_alert__direct_exits {
+/* Use the same label/value alignment at every screen size. */
+.fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__summary {
+    margin-left: 0;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 12px;
-    margin: 4px 0;
+    row-gap: 6px;
+}
+
+.fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__summary__item {
+    grid-column-gap: 6px;
     align-items: start;
 }
 
-.fkp_diagnostic_alert__direct_exits .fkp_diagnostic_alert__summary__item__body {
+.fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__summary__item__body {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     row-gap: 2px;
 }
 
-/* Narrow cards: keep addresses and section names below their labels. */
+/* Direct exits are separate findings; stack when the card itself is too narrow. */
+.fkp_diagnostic_alert__direct_exits {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 6px 12px;
+    align-items: start;
+}
+
 @container (max-width: 599px) {
     .fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__summary {
-        margin-left: 0;
-    }
-
-    .fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__summary__item {
-        grid-column-gap: 6px;
-        margin-top: 4px;
-    }
-
-    .fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__summary__item__body {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        row-gap: 2px;
+        row-gap: 4px;
     }
 
     .fkp_diagnostic_alert--traffic .fkp_diagnostic_alert__direct_exits {
         grid-template-columns: minmax(0, 1fr);
-        gap: 4px;
-        margin: 0;
+        row-gap: 4px;
     }
 }
 
