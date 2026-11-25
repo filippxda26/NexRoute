@@ -291,9 +291,17 @@ describe('the traffic check', () => {
         browser: { ...dual.browser, ipv6: '2001:db8::99' },
       }),
     ).toBe('goes through section "Vanya_FULL_VPN" (IPv4)');
+    const shared = [vpn, { ...vpn, section: 'Other' }];
+    expect(check({ ...dual, exits: shared })).toBe(
+      'matches exits of sections: Vanya_FULL_VPN, Other',
+    );
     expect(
-      check({ ...dual, exits: [vpn, { ...vpn, section: 'Other' }] }),
-    ).toBe('goes through NexRoute');
+      check({
+        ...dual,
+        exits: shared,
+        browser: { ...dual.browser, ipv6: '2001:db8::99' },
+      }),
+    ).toBe('matches exits of sections (IPv4): Vanya_FULL_VPN, Other');
     expect(check({ ...dual, sectionsComplete: false })).toBe(
       'goes through NexRoute',
     );

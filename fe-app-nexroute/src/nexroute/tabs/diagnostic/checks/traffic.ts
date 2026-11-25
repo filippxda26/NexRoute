@@ -111,28 +111,41 @@ function matchingSections(dual: DualStackTraffic, family: AddressFamily) {
     .map(({ section }) => section);
 }
 
-// Only name a section when the observed exit uniquely matches it.
+// Shared exit addresses identify candidates, not a unique routing rule.
 function deviceSectionSummary(dual: DualStackTraffic): string {
   if (!dual.sectionsComplete) {
     return '';
   }
-  const confirmed = (family: AddressFamily) => {
+  const candidates = (family: AddressFamily) => {
     const direct = familyAddress(dual.direct?.[family]?.address, family);
     const browser = familyAddress(dual.browser[family], family);
-    const matches = matchingSections(dual, family);
-    return direct && browser !== direct && matches.length === 1
-      ? matches[0]
-      : '';
+    return direct && browser !== direct
+      ? [...new Set(matchingSections(dual, family))]
+      : [];
   };
-  const ipv4 = confirmed('ipv4');
-  const ipv6 = confirmed('ipv6');
-  if (ipv4 && ipv4 === ipv6) {
-    return _('goes through section "%s"').format(ipv4);
+  const ipv4 = candidates('ipv4');
+  const ipv6 = candidates('ipv6');
+  const same =
+    ipv4.length > 0 &&
+    ipv4.length === ipv6.length &&
+    ipv4.every((section) => ipv6.includes(section));
+  if (same) {
+    return ipv4.length === 1
+      ? _('goes through section "%s"').format(ipv4[0])
+      : _('matches exits of sections: %s').format(ipv4.join(', '));
   }
-  return [
-    ipv4 && _('goes through section "%s" (%s)').format(ipv4, 'IPv4'),
-    ipv6 && _('goes through section "%s" (%s)').format(ipv6, 'IPv6'),
-  ]
+  const describe = (matches: string[], label: string) => {
+    if (!matches.length) {
+      return '';
+    }
+    return matches.length === 1
+      ? _('goes through section "%s" (%s)').format(matches[0], label)
+      : _('matches exits of sections (%s): %s').format(
+          label,
+          matches.join(', '),
+        );
+  };
+  return [describe(ipv4, 'IPv4'), describe(ipv6, 'IPv6')]
     .filter(Boolean)
     .join('; ');
 }
