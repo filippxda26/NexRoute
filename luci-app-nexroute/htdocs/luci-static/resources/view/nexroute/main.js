@@ -13004,7 +13004,7 @@ function exitItem(data) {
   );
 }
 function deviceItem(browser) {
-  const key = _("This device");
+  const key = _("This device") + " (FakeIP)";
   if (browser?.fakeip) {
     return finding("success", key, _("goes through NexRoute"));
   }
@@ -13038,37 +13038,63 @@ async function outboundAddresses(tag) {
     return null;
   }
 }
-function presentDualStackTraffic(data, dual) {
+function matchingSections(dual, family) {
+  const browser = familyAddress(dual.browser[family], family);
+  return dual.exits.filter(
+    ({ result }) => browser && familyAddress(result?.[family]?.address, family) === browser
+  ).map(({ section: section2 }) => section2);
+}
+function presentDualStackTraffic(dual) {
   const items = [];
   const families = ["ipv4", "ipv6"];
-  const matchesExit4 = !!familyAddress(dual.exit?.ipv4?.address, "ipv4") && dual.browser.ipv4 === familyAddress(dual.exit?.ipv4?.address, "ipv4") && dual.browser.ipv4 !== familyAddress(dual.direct?.ipv4?.address, "ipv4");
+  const direct4 = familyAddress(dual.direct?.ipv4?.address, "ipv4");
+  const matchesExit4 = !!direct4 && dual.browser.ipv4 !== direct4 && matchingSections(dual, "ipv4").length > 0;
   for (const family of families) {
     const label = family === "ipv4" ? "IPv4" : "IPv6";
     const direct = familyAddress(dual.direct?.[family]?.address, family);
-    const exit = familyAddress(dual.exit?.[family]?.address, family);
     const browser = familyAddress(dual.browser[family], family);
+    const matches = matchingSections(dual, family);
+    const complete = dual.sectionsComplete && dual.exits.length > 0 && dual.exits.every(
+      ({ result }) => Boolean(familyAddress(result?.[family]?.address, family))
+    );
     const directKey = _("Direct exit (%s)").format(label);
     items.push(
       direct ? finding("success", directKey, direct) : finding("warning", directKey, _("not checked: no answer"))
     );
-    if (data.exit) {
-      const key2 = _('Exit via "%s"').format(data.exit.section) + " (" + label + ")";
+    for (const { section: section2, result } of dual.exits) {
+      const exit = familyAddress(result?.[family]?.address, family);
+      const key2 = _('Exit via "%s"').format(section2) + " (" + label + ")";
       items.push(
         !exit ? finding("warning", key2, _("not checked: no answer")) : exit === direct ? finding("warning", key2, _("%s, the same as direct").format(exit)) : finding("success", key2, exit)
       );
     }
     const key = _("This device") + " (" + label + ")";
     if (!browser) {
-      items.push(finding("warning", key, _("not checked: no answer")));
-    } else if (exit && browser === exit && exit !== direct) {
-      items.push(finding("success", key, browser));
-    } else if (family === "ipv6" && matchesExit4 && browser !== exit) {
       items.push(
-        finding("warning", key, _("%s, possible IPv6 bypass").format(browser))
+        finding(
+          "warning",
+          key,
+          family === "ipv6" ? _("IPv6 unavailable or the check did not answer") : _("not checked: no answer")
+        )
+      );
+    } else if (matches.length && direct && browser !== direct) {
+      items.push(
+        finding(
+          "success",
+          key,
+          _("%s, matches exit of %s").format(browser, matches.join(", "))
+        )
+      );
+    } else if (matches.length) {
+      items.push(
+        finding("warning", key, _("%s, route not verified").format(browser))
       );
     } else if (direct && browser === direct) {
+      const value = family === "ipv6" && matchesExit4 ? _("%s, possible IPv6 bypass").format(browser) : _("%s, the same as direct").format(browser);
+      items.push(finding("warning", key, value));
+    } else if (family === "ipv6" && matchesExit4 && direct && complete) {
       items.push(
-        finding("warning", key, _("%s, the same as direct").format(browser))
+        finding("warning", key, _("%s, possible IPv6 bypass").format(browser))
       );
     } else {
       items.push(
@@ -13086,25 +13112,45 @@ function presentTraffic(data, browser) {
   ];
 }
 async function runTrafficCheck() {
-  const [response, browser, ipv4, ipv6, direct] = await Promise.all([
+  const [response, browser, ipv4, ipv6, direct, sections] = await Promise.all([
     NexRouteShellMethods.checkTraffic(),
     RemoteFakeIPMethods.getFakeIpCheck(),
     browserAddress("ipv4"),
     browserAddress("ipv6"),
-    outboundAddresses("direct-out")
+    outboundAddresses("direct-out"),
+    getDashboardSections().catch(() => null)
   ]);
   if (!response.success) {
     return unanswered();
   }
-  const exit = response.data.exit ? await outboundAddresses(response.data.exit.section) : null;
+  const targets = sections?.success ? sections.data.map(({ code, displayName }) => ({
+    code,
+    section: displayName
+  })) : response.data.exit ? [
+    {
+      code: response.data.exit.section,
+      section: response.data.exit.section
+    }
+  ] : [];
+  const exits = [];
+  for (let i = 0; i < targets.length; i += 4) {
+    const batch = await Promise.all(
+      targets.slice(i, i + 4).map(async ({ code, section: section2 }) => ({
+        section: section2,
+        result: await outboundAddresses(code)
+      }))
+    );
+    exits.push(...batch);
+  }
   return outcome([
     ...presentTraffic(
       response.data,
       browser.success ? { fakeip: Boolean(browser.data.fakeip) } : null
     ),
-    ...presentDualStackTraffic(response.data, {
+    ...presentDualStackTraffic({
       direct,
-      exit,
+      exits,
+      sectionsComplete: sections?.success === true,
       browser: { ipv4, ipv6 }
     })
   ]);
