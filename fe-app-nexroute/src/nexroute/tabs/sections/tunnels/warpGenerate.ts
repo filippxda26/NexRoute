@@ -56,8 +56,11 @@ export function keepWarpGenerateButtonCurrent(option: CBIOption) {
         hint,
         readonly,
         warpGenerateBlockReason(
-          uci.get(NEXROUTE_UCI_PACKAGE, 'settings', 'warp_profiles_via_proxy') ===
-            '1',
+          uci.get(
+            NEXROUTE_UCI_PACKAGE,
+            'settings',
+            'warp_profiles_via_proxy',
+          ) === '1',
           store.get().serviceState,
         ),
       );

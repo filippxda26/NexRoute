@@ -45,7 +45,8 @@ import { showTailscaleDetailsModal } from '../servers/tailscale';
 import { E } from '../../../helpers/element';
 
 const SECTIONS_REFRESH_INTERVAL_MS = 10000;
-const COLLAPSED_SECTIONS_STORAGE_KEY = 'nexroute:dashboard-collapsed-sections:v1';
+const COLLAPSED_SECTIONS_STORAGE_KEY =
+  'nexroute:dashboard-collapsed-sections:v1';
 const LATENCY_SORTED_SECTIONS_STORAGE_KEY =
   'nexroute:dashboard-latency-sorted-sections:v1';
 // While a latency test runs the router fills its delay records one at a time, so the sections
@@ -351,7 +352,8 @@ async function pollWidgetsSnapshot(dataUpdatesId: number) {
   const startedAt = Date.now();
 
   try {
-    const response = await CustomNexRouteMethods.getClashApiConnectionsSummary();
+    const response =
+      await CustomNexRouteMethods.getClashApiConnectionsSummary();
 
     lastWidgetsPollDurationMs = Date.now() - startedAt;
 
@@ -1268,7 +1270,10 @@ function fallbackPinRequestKey(code: string, memberCode: string) {
   return `${code}:${memberCode}`;
 }
 
-async function handleFallbackPin(code: string, member: NexRoute.FallbackMember) {
+async function handleFallbackPin(
+  code: string,
+  member: NexRoute.FallbackMember,
+) {
   const requestKey = fallbackPinRequestKey(code, member.code);
 
   if (fallbackPinRequests.has(requestKey)) {

@@ -127,7 +127,10 @@ describe('the tables the page carries', () => {
     const page = (kind, sectionClass, sid, values, render) => {
       harness.uci.add('nexroute', kind, sid);
       Object.assign(harness.store.get(sid), values);
-      const section = new harness.form.Map('nexroute').section(sectionClass, sid);
+      const section = new harness.form.Map('nexroute').section(
+        sectionClass,
+        sid,
+      );
       render(section);
       return walk(kind, section.children, sid);
     };
@@ -187,7 +190,12 @@ describe('a password field', () => {
     }
     const itemId = `${typeName}_probe`;
     harness.uci.add('nexroute', typeName, itemId);
-    harness.uci.set('nexroute', itemId, option.ownerOption || 'section', ownerId);
+    harness.uci.set(
+      'nexroute',
+      itemId,
+      option.ownerOption || 'section',
+      ownerId,
+    );
     const dialog = await harness.openDialog(option, ownerId, itemId);
     const options = dialog.map.children.flatMap((section) => section.children);
     for (const field of passwordFields(options)) {

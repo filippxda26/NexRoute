@@ -113,7 +113,9 @@ export const NexRouteShellMethods = {
       NexRoute.AvailableMethods.CHECK_SERVICE,
     ),
   checkDns: async () =>
-    diagnosticCheck<NexRoute.DnsCheckResult>(NexRoute.AvailableMethods.CHECK_DNS),
+    diagnosticCheck<NexRoute.DnsCheckResult>(
+      NexRoute.AvailableMethods.CHECK_DNS,
+    ),
   checkTraffic: async () =>
     diagnosticCheck<NexRoute.TrafficCheckResult>(
       NexRoute.AvailableMethods.CHECK_TRAFFIC,
@@ -124,10 +126,10 @@ export const NexRouteShellMethods = {
     ),
   // The router masks the checks by the same rules as the rest of the report.
   report: async (masked: boolean, checks: string) =>
-    diagnosticCheck<NexRoute.ReportAttachments>(NexRoute.AvailableMethods.REPORT, [
-      masked ? 'masked' : 'raw',
-      checks,
-    ]),
+    diagnosticCheck<NexRoute.ReportAttachments>(
+      NexRoute.AvailableMethods.REPORT,
+      [masked ? 'masked' : 'raw', checks],
+    ),
   clashApi: async (method: string, path: string, body = '') =>
     callBaseMethod<NexRoute.ClashApiResponse>(
       NexRoute.AvailableMethods.CLASH_API,
@@ -149,7 +151,8 @@ export const NexRouteShellMethods = {
     ),
   // Through the CLI: init script commands wait on procd's per-service lock.
   enable: async () => callBaseMethod<unknown>(NexRoute.AvailableMethods.ENABLE),
-  disable: async () => callBaseMethod<unknown>(NexRoute.AvailableMethods.DISABLE),
+  disable: async () =>
+    callBaseMethod<unknown>(NexRoute.AvailableMethods.DISABLE),
   checkLogs,
   // The state service holds the versions until the installed packages change; the CLI answers
   // when it is not running.

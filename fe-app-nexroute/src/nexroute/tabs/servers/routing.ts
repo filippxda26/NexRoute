@@ -1,4 +1,7 @@
-import { DETOUR_TARGET_ACTIONS, NEXROUTE_UCI_PACKAGE } from '../../../constants';
+import {
+  DETOUR_TARGET_ACTIONS,
+  NEXROUTE_UCI_PACKAGE,
+} from '../../../constants';
 import {
   keepUnavailableSectionChoice,
   validateSectionChoice,

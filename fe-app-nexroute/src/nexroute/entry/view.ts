@@ -1,4 +1,7 @@
-import { NEXROUTE_LUCI_APP_VERSION, NEXROUTE_UCI_PACKAGE } from '../../constants';
+import {
+  NEXROUTE_LUCI_APP_VERSION,
+  NEXROUTE_UCI_PACKAGE,
+} from '../../constants';
 import { injectGlobalStyles } from '../../helpers/injectGlobalStyles';
 import { coreService } from '../services/core.service';
 import { loadCoreFeatures } from '../services/coreFeatures.service';

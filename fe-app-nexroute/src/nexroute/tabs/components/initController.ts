@@ -198,7 +198,10 @@ export function initController(): void {
     logButton.disabled = true;
     try {
       const text = await installerApi.log();
-      ui.showModal(_('Installer log'), renderModal(text, 'nexroute-install-log'));
+      ui.showModal(
+        _('Installer log'),
+        renderModal(text, 'nexroute-install-log'),
+      );
     } catch (error) {
       showToast(
         error instanceof Error ? error.message : String(error),

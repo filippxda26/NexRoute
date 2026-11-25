@@ -605,7 +605,9 @@ describe.each([
     ]);
     await parseEveryOption(serverGrid(), 'srv');
 
-    expect(harness.uci.get('nexroute', 'srv', 'routing_section')).toBe('target');
+    expect(harness.uci.get('nexroute', 'srv', 'routing_section')).toBe(
+      'target',
+    );
   });
 
   it("on a server account's own routing section", async () => {
@@ -630,7 +632,9 @@ describe.each([
     const result = await dialog.save().catch(() => ({ saved: false }));
 
     expect(result.saved, 'the account dialog refused to save').toBe(true);
-    expect(harness.uci.get('nexroute', 'cl1', 'routing_section')).toBe('target');
+    expect(harness.uci.get('nexroute', 'cl1', 'routing_section')).toBe(
+      'target',
+    );
   });
 
   it('on a server tailscale detour', async () => {
@@ -690,7 +694,9 @@ describe.each([
       'dns_detour_section',
       'download_lists_via_proxy_section',
     ]) {
-      expect(harness.uci.get('nexroute', 'settings', name), name).toBe('target');
+      expect(harness.uci.get('nexroute', 'settings', name), name).toBe(
+        'target',
+      );
     }
   });
 
@@ -834,7 +840,9 @@ it('a DNS detour survives a target whose provider is not installed', async () =>
   ]);
   await parseEveryOption(sectionGrid(NO_PROVIDERS), 'sec');
 
-  expect(harness.uci.get('nexroute', 'sec', 'dns_detour_section')).toBe('target');
+  expect(harness.uci.get('nexroute', 'sec', 'dns_detour_section')).toBe(
+    'target',
+  );
 });
 
 describe.each([

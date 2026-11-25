@@ -13,7 +13,9 @@ type CoreTypeKind = 'outbound' | 'inbound' | 'endpoint';
 let report: NexRoute.CoreFeatures | null = null;
 
 // Answers from the state service carry the report; the CLI's leave the last one in place.
-export function setCoreFeatures(value: NexRoute.CoreFeatures | null | undefined) {
+export function setCoreFeatures(
+  value: NexRoute.CoreFeatures | null | undefined,
+) {
   if (value === undefined) {
     return;
   }

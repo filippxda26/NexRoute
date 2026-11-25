@@ -21,7 +21,10 @@ interface Router {
   reachable: boolean;
 }
 
-function snapshotOf(router: Router, offset: number): NexRoute.InstallerSnapshot {
+function snapshotOf(
+  router: Router,
+  offset: number,
+): NexRoute.InstallerSnapshot {
   if (!router.id) {
     return { id: '', running: false };
   }

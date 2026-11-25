@@ -1,5 +1,8 @@
 import { renderChildItemLabel } from '../../cbi/listItems';
-import { NEXROUTE_UCI_PACKAGE, RESERVED_RUNTIME_TAGS } from '../../../constants';
+import {
+  NEXROUTE_UCI_PACKAGE,
+  RESERVED_RUNTIME_TAGS,
+} from '../../../constants';
 import { validateOutboundJson } from '../../../validators/validateOutboundJson';
 import { message } from '../../../validators/messages';
 import {

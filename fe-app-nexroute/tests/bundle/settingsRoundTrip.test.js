@@ -308,7 +308,11 @@ function loadShippedConfig() {
     if (!line || line.startsWith('#')) continue;
     let matched = /^config\s+(\S+)(?:\s+'([^']*)')?/.exec(line);
     if (matched) {
-      current = harness.uci.add('nexroute', matched[1], matched[2] || undefined);
+      current = harness.uci.add(
+        'nexroute',
+        matched[1],
+        matched[2] || undefined,
+      );
       continue;
     }
     matched = /^option\s+(\S+)\s+'([^']*)'/.exec(line);
@@ -387,7 +391,12 @@ describe('a subscription tag', () => {
     ['sub_first', 'sub_second'].forEach((itemId, index) => {
       harness.uci.add('nexroute', 'subscription_url', itemId);
       harness.uci.set('nexroute', itemId, 'section', 'section_probe');
-      harness.uci.set('nexroute', itemId, 'url', `https://example.com/${index}`);
+      harness.uci.set(
+        'nexroute',
+        itemId,
+        'url',
+        `https://example.com/${index}`,
+      );
       harness.uci.set('nexroute', itemId, 'tag', `sub${index + 1}`);
     });
     list.cfgvalue('section_probe', ['sub_first', 'sub_second']);
@@ -445,9 +454,9 @@ describe.each(['connection', 'bypass', 'block', 'dns'])(
     });
 
     it('keeps its rule sets', () => {
-      expect(`${harness.uci.get('nexroute', 'section_probe', 'rule_set')}`).toBe(
-        'https://example.com/list.srs',
-      );
+      expect(
+        `${harness.uci.get('nexroute', 'section_probe', 'rule_set')}`,
+      ).toBe('https://example.com/list.srs');
     });
 
     it('keeps the subnets flag of its rule set', () => {
@@ -505,7 +514,9 @@ describe('a tunnel dialog', () => {
     await dialog.save();
 
     expect(harness.operations.join(', ')).toBe('');
-    expect(harness.uci.get('nexroute', 'tunnel_probe', 'name')).toBe('wg tunnel');
+    expect(harness.uci.get('nexroute', 'tunnel_probe', 'name')).toBe(
+      'wg tunnel',
+    );
   });
 });
 

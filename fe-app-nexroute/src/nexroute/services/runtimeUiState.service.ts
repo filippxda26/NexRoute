@@ -262,7 +262,9 @@ async function runWaitLoop() {
       }
 
       logger.error('[RUNTIME_UI_STATE]', 'state wait failed', response.message);
-      await new Promise((resolve) => setTimeout(resolve, NEXROUTE_WAIT_RETRY_MS));
+      await new Promise((resolve) =>
+        setTimeout(resolve, NEXROUTE_WAIT_RETRY_MS),
+      );
     }
   } finally {
     waitLoopRunning = false;

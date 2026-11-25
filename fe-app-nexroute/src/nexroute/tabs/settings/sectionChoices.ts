@@ -9,7 +9,8 @@ function isDownloadSectionAction(action: unknown) {
 }
 
 function refreshDownloadSectionChoices(option: CBIOption) {
-  const sections = option.map?.data?.state?.values?.[NEXROUTE_UCI_PACKAGE] ?? {};
+  const sections =
+    option.map?.data?.state?.values?.[NEXROUTE_UCI_PACKAGE] ?? {};
 
   option.keylist = [];
   option.vallist = [];

@@ -179,7 +179,9 @@ describe('the Tailscale dialog', () => {
         tailnet: 'hs.example.net',
       }),
     });
-    expect(findAll(content, 'fkp-ts__who').map(texts)).toEqual([['nexroute-3']]);
+    expect(findAll(content, 'fkp-ts__who').map(texts)).toEqual([
+      ['nexroute-3'],
+    ]);
     // Each a link that copies it, the name of the tailnet too.
     expect(findAll(content, 'fkp-ts__address').map(texts)).toEqual([
       ['100.64.0.1'],

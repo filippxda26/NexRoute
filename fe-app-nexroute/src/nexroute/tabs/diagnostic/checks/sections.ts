@@ -107,7 +107,8 @@ export async function runSectionsCheck(): Promise<CheckOutcome> {
   const items = await Promise.all(
     sections.data.map(async (section) => {
       const { code, node } = target(section);
-      const response = await CustomNexRouteMethods.getClashApiProxyLatency(code);
+      const response =
+        await CustomNexRouteMethods.getClashApiProxyLatency(code);
       return presentSection(section, node, probeResult(response));
     }),
   );

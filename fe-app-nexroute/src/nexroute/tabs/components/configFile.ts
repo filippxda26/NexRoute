@@ -163,7 +163,10 @@ export function renderImportDialog(
 ) {
   const version =
     check.from === check.to
-      ? _('%s holds a configuration of NexRoute %s.').format(fileName, check.from)
+      ? _('%s holds a configuration of NexRoute %s.').format(
+          fileName,
+          check.from,
+        )
       : _(
           '%s holds a configuration of NexRoute %s, which is brought to %s as an update would bring it.',
         ).format(fileName, check.from, check.to);
@@ -187,7 +190,13 @@ export function renderImportDialog(
       ),
     ),
     ...(check.unsaved
-      ? [E('p', {}, _('Unsaved changes to NexRoute made earlier are replaced.'))]
+      ? [
+          E(
+            'p',
+            {},
+            _('Unsaved changes to NexRoute made earlier are replaced.'),
+          ),
+        ]
       : []),
     E('div', { class: 'fkp-partial-modal__footer' }, [
       E(

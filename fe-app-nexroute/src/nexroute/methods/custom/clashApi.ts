@@ -31,7 +31,9 @@ const GROUP_LATENCY_SWEEP_OVERSHOOT_MS = 5000;
 const DIRECT_CLASH_API_PROBE_INTERVAL_MS = 30000;
 const DIRECT_CLASH_API_PROBE_TIMEOUT_MS = 2000;
 let clashApiConfigSections: NexRoute.ConfigSection[] = [];
-let clashApiConfigSectionsPromise: Promise<NexRoute.ConfigSection[]> | undefined;
+let clashApiConfigSectionsPromise:
+  | Promise<NexRoute.ConfigSection[]>
+  | undefined;
 let directClashApiSuspended = false;
 let directClashApiReachable = false;
 let directClashApiProbeAt = 0;

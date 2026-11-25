@@ -1,4 +1,7 @@
-import { DETOUR_TARGET_ACTIONS, NEXROUTE_UCI_PACKAGE } from '../../../constants';
+import {
+  DETOUR_TARGET_ACTIONS,
+  NEXROUTE_UCI_PACKAGE,
+} from '../../../constants';
 import { parseCommentAwareListTokens } from '../../cbi/annotatedTextarea';
 import { normalizeDynamicListItems } from '../../cbi/listValues';
 import { modalOptionFormValue } from '../../cbi/modal';
@@ -55,8 +58,8 @@ function isDetourTargetSection(
 }
 
 function getOutboundDetourTargetSections(currentSectionId: string) {
-  return (uci.sections(NEXROUTE_UCI_PACKAGE, 'section') || []).filter((section) =>
-    isDetourTargetSection(section, currentSectionId),
+  return (uci.sections(NEXROUTE_UCI_PACKAGE, 'section') || []).filter(
+    (section) => isDetourTargetSection(section, currentSectionId),
   );
 }
 

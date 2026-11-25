@@ -1,10 +1,13 @@
 import { getSessionStorage } from './browserStorage.service';
-const LOG_NOTIFICATION_STORAGE_KEY = 'nexroute:shown-log-error-notifications:v1';
+const LOG_NOTIFICATION_STORAGE_KEY =
+  'nexroute:shown-log-error-notifications:v1';
 const MAX_STORED_LOG_NOTIFICATIONS = 500;
 // A NexRoute error as logread prints it: the date, the facility, the tag and the
 // level before the message the alert shows.
-const NEXROUTE_ERROR_LINE_PATTERN = /\bnexroute(?:\[\d+\])?:\s+\[error\]\s+(.*)$/i;
-const NEXROUTE_INFO_LINE_PATTERN = /\bnexroute(?:\[\d+\])?:\s+\[info\]\s+(.*)$/i;
+const NEXROUTE_ERROR_LINE_PATTERN =
+  /\bnexroute(?:\[\d+\])?:\s+\[error\]\s+(.*)$/i;
+const NEXROUTE_INFO_LINE_PATTERN =
+  /\bnexroute(?:\[\d+\])?:\s+\[info\]\s+(.*)$/i;
 
 // The first line of each NexRoute action: a start, a stop, an apply and a reapply.
 // A restart is a stop and a start.

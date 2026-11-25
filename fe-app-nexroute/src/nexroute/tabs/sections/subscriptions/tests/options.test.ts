@@ -81,7 +81,10 @@ describe('validateSubscriptionUrlEntry', () => {
 
   it('accepts an absolute local path', () => {
     expect(
-      validateSubscriptionUrlEntry('settings', '/etc/nexroute/subscription.txt'),
+      validateSubscriptionUrlEntry(
+        'settings',
+        '/etc/nexroute/subscription.txt',
+      ),
     ).toBe(true);
   });
 
