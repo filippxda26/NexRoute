@@ -222,6 +222,21 @@ controls. */
     overflow-wrap: anywhere;
 }
 
+/* Each address belongs to its own heading, with equal-width columns. */
+.fkp_diagnostic_alert__direct_exits {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 12px;
+    margin: 4px 0;
+    align-items: start;
+}
+
+.fkp_diagnostic_alert__direct_exits .fkp_diagnostic_alert__summary__item__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 2px;
+}
+
 .fkp_diagnostic_alert__summary__item--error {
     color: var(--error-color-medium, red);
 }

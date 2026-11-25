@@ -154,17 +154,22 @@ export function presentDualStackTraffic(
   const direct4 = familyAddress(dual.direct?.ipv4?.address, 'ipv4');
   const direct6 = familyAddress(dual.direct?.ipv6?.address, 'ipv6');
   const items: IDiagnosticsChecksItem[] = [
-    finding(
-      direct4 && direct6 ? 'success' : 'warning',
-      [
+    {
+      ...finding(
+        direct4 ? 'success' : 'warning',
         _('Direct exit (%s)').format('IPv4'),
-        _('Direct exit (%s)').format('IPv6'),
-      ].join(' · '),
-      [
         direct4 || _('not checked: no answer'),
+      ),
+      layout: 'direct-exit',
+    },
+    {
+      ...finding(
+        direct6 ? 'success' : 'warning',
+        _('Direct exit (%s)').format('IPv6'),
         direct6 || _('not checked: no answer'),
-      ].join(' · '),
-    ),
+      ),
+      layout: 'direct-exit',
+    },
   ];
   const families = ['ipv4', 'ipv6'] as const;
   const shown = dual.exits.find(

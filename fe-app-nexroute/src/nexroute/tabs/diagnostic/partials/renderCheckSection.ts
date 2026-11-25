@@ -67,7 +67,25 @@ function renderCheckSummary(items: IRenderCheckSectionProps['items']) {
     );
   });
 
-  return E('div', { class: 'fkp_diagnostic_alert__summary' }, renderedItems);
+  const rows = [];
+  for (let i = 0; i < items.length; i++) {
+    if (
+      items[i].layout === 'direct-exit' &&
+      items[i + 1]?.layout === 'direct-exit'
+    ) {
+      rows.push(
+        E('div', { class: 'fkp_diagnostic_alert__direct_exits' }, [
+          renderedItems[i],
+          renderedItems[i + 1],
+        ]),
+      );
+      i++;
+    } else {
+      rows.push(renderedItems[i]);
+    }
+  }
+
+  return E('div', { class: 'fkp_diagnostic_alert__summary' }, rows);
 }
 
 // A check that passed is one line until asked for its details.

@@ -147,6 +147,40 @@ describe('a diagnostic check', () => {
     ).toBeUndefined();
   });
 
+  it('renders the two direct exits as independent columns', async () => {
+    const root = await render(
+      check('warning', [
+        {
+          state: 'success',
+          key: 'Direct exit (IPv4)',
+          value: '203.0.113.10',
+          layout: 'direct-exit',
+        },
+        {
+          state: 'warning',
+          key: 'Direct exit (IPv6)',
+          value: 'not checked: no answer',
+          layout: 'direct-exit',
+        },
+        { state: 'success', key: 'This device', value: 'OK' },
+      ]),
+    );
+    const group = find(root, 'fkp_diagnostic_alert__direct_exits');
+    expect(group?.children).toHaveLength(2);
+    const columns = group?.children || [];
+    const key = 'fkp_diagnostic_alert__summary__item__key';
+    const value = 'fkp_diagnostic_alert__summary__item__value';
+    expect(find(columns[0], key)?.children).toEqual(['Direct exit (IPv4)']);
+    expect(find(columns[0], value)?.children).toEqual(['203.0.113.10']);
+    expect(find(columns[1], key)?.children).toEqual(['Direct exit (IPv6)']);
+    expect(find(columns[1], value)?.children).toEqual([
+      'not checked: no answer',
+    ]);
+    expect(find(root, 'fkp_diagnostic_alert__summary')?.children).toHaveLength(
+      2,
+    );
+  });
+
   it('shows every detail when nobody folds it', async () => {
     const root = await render(check('error'));
 

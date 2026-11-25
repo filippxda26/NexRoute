@@ -391,17 +391,27 @@ describe('the traffic check', () => {
       browser: { ipv4: '198.51.100.30', ipv6: '2001:0db8:0:0:0:0:0:20' },
     });
     expect(items.map((item) => item.key)).toEqual([
-      'Direct exit (IPv4) · Direct exit (IPv6)',
+      'Direct exit (IPv4)',
+      'Direct exit (IPv6)',
       'Exit via "YouTube" (IPv4)',
       'This device (IPv4)',
       'Exit via "YouTube" (IPv6)',
       'This device (IPv6)',
     ]);
-    expect(items[0]).toEqual({
-      state: 'success',
-      key: 'Direct exit (IPv4) · Direct exit (IPv6)',
-      value: '203.0.113.10 · 2001:db8::10',
-    });
+    expect(items.slice(0, 2)).toEqual([
+      {
+        state: 'success',
+        key: 'Direct exit (IPv4)',
+        value: '203.0.113.10',
+        layout: 'direct-exit',
+      },
+      {
+        state: 'success',
+        key: 'Direct exit (IPv6)',
+        value: '2001:db8::10',
+        layout: 'direct-exit',
+      },
+    ]);
     expect(items.find((item) => item.key === 'This device (IPv4)')).toEqual({
       state: 'success',
       key: 'This device (IPv4)',
@@ -467,11 +477,20 @@ describe('the traffic check', () => {
       sectionsComplete: true,
       browser: { ipv4: '203.0.113.10', ipv6: '' },
     });
-    expect(items[0]).toEqual({
-      state: 'warning',
-      key: 'Direct exit (IPv4) · Direct exit (IPv6)',
-      value: '203.0.113.10 · not checked: no answer',
-    });
+    expect(items.slice(0, 2)).toEqual([
+      {
+        state: 'success',
+        key: 'Direct exit (IPv4)',
+        value: '203.0.113.10',
+        layout: 'direct-exit',
+      },
+      {
+        state: 'warning',
+        key: 'Direct exit (IPv6)',
+        value: 'not checked: no answer',
+        layout: 'direct-exit',
+      },
+    ]);
     expect(
       items.find((item) => item.key === 'Exit via "Main" (IPv4)'),
     ).toMatchObject({
