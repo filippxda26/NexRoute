@@ -13517,6 +13517,18 @@ function presentDualStackTraffic(dual) {
   const shown2 = dual.exits.find(
     ({ section: section2 }) => section2 === dual.displaySection
   );
+  if (dual.displaySection) {
+    for (const family of families) {
+      const label = family === "ipv4" ? "IPv4" : "IPv6";
+      const direct = familyAddress(dual.direct?.[family]?.address, family);
+      const exit = familyAddress(shown2?.result?.[family]?.address, family);
+      const key = _('Exit via "%s"').format(dual.displaySection) + " (" + label + ")";
+      items.push({
+        ...!exit ? finding("warning", key, _("not checked: no answer")) : exit === direct ? finding("warning", key, _("%s, the same as direct").format(exit)) : finding("success", key, exit),
+        layout: "section-exit"
+      });
+    }
+  }
   const matchesExit4 = !!direct4 && dual.browser.ipv4 !== direct4 && matchingSections(dual, "ipv4").length > 0;
   for (const family of families) {
     const label = family === "ipv4" ? "IPv4" : "IPv6";
@@ -13527,16 +13539,10 @@ function presentDualStackTraffic(dual) {
     const complete = dual.sectionsComplete && dual.exits.length > 0 && dual.exits.every(
       ({ result }) => Boolean(familyAddress(result?.[family]?.address, family))
     );
-    if (dual.displaySection) {
-      const exit = familyAddress(shown2?.result?.[family]?.address, family);
-      const key2 = _('Exit via "%s"').format(dual.displaySection) + " (" + label + ")";
-      items.push(
-        !exit ? finding("warning", key2, _("not checked: no answer")) : exit === direct ? finding("warning", key2, _("%s, the same as direct").format(exit)) : finding("success", key2, exit)
-      );
-    }
     const key = _("This device") + " (" + label + ")";
+    const addDeviceFinding = (item) => items.push({ ...item, layout: "device-exit" });
     if (!browser) {
-      items.push(
+      addDeviceFinding(
         finding(
           "warning",
           key,
@@ -13544,7 +13550,7 @@ function presentDualStackTraffic(dual) {
         )
       );
     } else if (matches.length && direct && browser !== direct) {
-      items.push(
+      addDeviceFinding(
         finding(
           "success",
           key,
@@ -13555,18 +13561,18 @@ function presentDualStackTraffic(dual) {
         )
       );
     } else if (matches.length) {
-      items.push(
+      addDeviceFinding(
         finding("warning", key, _("%s, route not verified").format(browser))
       );
     } else if (direct && browser === direct) {
       const value = family === "ipv6" && matchesExit4 ? _("%s, possible IPv6 bypass").format(browser) : _("%s, the same as direct").format(browser);
-      items.push(finding("warning", key, value));
+      addDeviceFinding(finding("warning", key, value));
     } else if (family === "ipv6" && matchesExit4 && direct && complete) {
-      items.push(
+      addDeviceFinding(
         finding("warning", key, _("%s, possible IPv6 bypass").format(browser))
       );
     } else {
-      items.push(
+      addDeviceFinding(
         finding("warning", key, _("%s, route not verified").format(browser))
       );
     }
@@ -14082,7 +14088,7 @@ function renderCheckSummary(items) {
   });
   const rows = [];
   for (let i = 0; i < items.length; i++) {
-    if (items[i].layout === "direct-exit" && items[i + 1]?.layout === "direct-exit") {
+    if (items[i].layout && items[i + 1]?.layout === items[i].layout) {
       rows.push(
         textE("div", { class: "fkp_diagnostic_alert__direct_exits" }, [
           renderedItems[i],
