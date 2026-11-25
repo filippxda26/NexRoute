@@ -2936,8 +2936,8 @@ msgstr "IPv6 недоступен или проверка не получила 
 msgid "goes through section \"%s\""
 msgstr "идёт через секцию «%s»"
 
+msgid "check request goes directly"
+msgstr "проверочный запрос идёт напрямую"
+
 msgid "Failed to clear logs"
 msgstr "Не удалось очистить журнал"
-
-msgid "goes through section \"%s\" (%s)"
-msgstr "идёт через секцию «%s» (%s)"

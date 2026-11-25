@@ -121,43 +121,37 @@ function matchingSections(dual: DualStackTraffic, family: AddressFamily) {
     .map(({ section }) => section);
 }
 
-// Summarize observed public-IP probes, not the internal FakeIP check.
-function confirmedSection(dual: DualStackTraffic, family: AddressFamily) {
-  const actual = dual.routes?.[family];
-  const direct = familyAddress(dual.direct?.[family]?.address, family);
-  const browser = familyAddress(dual.browser[family], family);
-  return actual &&
-    actual !== 'direct-out' &&
-    direct &&
-    browser !== direct &&
-    matchingSections(dual, family).includes(actual)
-    ? actual
-    : '';
-}
-
+// The generic row describes the FakeIP check, never all of a device's traffic.
 function deviceSectionSummary(dual: DualStackTraffic): string {
-  const ipv4 = confirmedSection(dual, 'ipv4');
-  const ipv6 = confirmedSection(dual, 'ipv6');
-  if (ipv4 && ipv4 === ipv6) {
-    return _('goes through section "%s"').format(ipv4);
+  const route = dual.routes?.fakeip;
+  if (route === 'direct-out') {
+    return _('check request goes directly');
   }
-  return [
-    ipv4 && _('goes through section "%s" (%s)').format(ipv4, 'IPv4'),
-    ipv6 && _('goes through section "%s" (%s)').format(ipv6, 'IPv6'),
-  ]
-    .filter(Boolean)
-    .join('; ');
+  return route ? _('goes through section "%s"').format(route) : '';
 }
 
 export function presentDualStackTraffic(
   dual: DualStackTraffic,
 ): IDiagnosticsChecksItem[] {
-  const items: IDiagnosticsChecksItem[] = [];
+  const direct4 = familyAddress(dual.direct?.ipv4?.address, 'ipv4');
+  const direct6 = familyAddress(dual.direct?.ipv6?.address, 'ipv6');
+  const items: IDiagnosticsChecksItem[] = [
+    finding(
+      direct4 && direct6 ? 'success' : 'warning',
+      [
+        _('Direct exit (%s)').format('IPv4'),
+        _('Direct exit (%s)').format('IPv6'),
+      ].join(' · '),
+      [
+        direct4 || _('not checked: no answer'),
+        direct6 || _('not checked: no answer'),
+      ].join(' · '),
+    ),
+  ];
   const families = ['ipv4', 'ipv6'] as const;
   const shown = dual.exits.find(
     ({ section }) => section === dual.displaySection,
   );
-  const direct4 = familyAddress(dual.direct?.ipv4?.address, 'ipv4');
   const matchesExit4 =
     !!direct4 &&
     dual.browser.ipv4 !== direct4 &&
@@ -175,13 +169,6 @@ export function presentDualStackTraffic(
       dual.exits.every(({ result }) =>
         Boolean(familyAddress(result?.[family]?.address, family)),
       );
-    const directKey = _('Direct exit (%s)').format(label);
-    items.push(
-      direct
-        ? finding('success', directKey, direct)
-        : finding('warning', directKey, _('not checked: no answer')),
-    );
-
     // Keep one reference section visible, but compare against every exit.
     if (dual.displaySection) {
       const exit = familyAddress(shown?.result?.[family]?.address, family);
@@ -212,9 +199,10 @@ export function presentDualStackTraffic(
         finding(
           'success',
           key,
-          actual && matches.includes(actual)
-            ? '%s · %s'.format(browser, actual)
-            : _('%s, matches exit of %s').format(browser, matches.join(', ')),
+          _('%s, matches exit of %s').format(
+            browser,
+            actual && matches.includes(actual) ? actual : matches.join(', '),
+          ),
         ),
       );
     } else if (matches.length) {

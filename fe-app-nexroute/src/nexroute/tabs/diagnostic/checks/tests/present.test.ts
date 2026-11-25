@@ -262,50 +262,28 @@ describe('the traffic check', () => {
     ]);
   });
 
-  it('summarizes actual IP probes instead of the internal FakeIP route', () => {
-    const vpn = {
-      section: 'Vanya_FULL_VPN',
-      result: {
-        outbound: 'Vanya_FULL_VPN',
-        ipv4: { address: '198.51.100.30' },
-        ipv6: { address: '2001:db8::30' },
-      },
-    };
+  it('names the observed route, not a shared exit or a full-device rule', () => {
     const dual = {
-      direct: {
-        outbound: 'direct-out',
-        ipv4: { address: '203.0.113.10' },
-        ipv6: { address: '2001:db8::10' },
-      },
-      exits: [vpn, { ...vpn, section: 'Other' }],
+      direct: null,
+      exits: [],
       sectionsComplete: true,
-      browser: { ipv4: '198.51.100.30', ipv6: '2001:db8::30' },
-      routes: {
-        fakeip: 'direct-out',
-        ipv4: 'Vanya_FULL_VPN',
-        ipv6: 'Vanya_FULL_VPN',
-      },
+      browser: { ipv4: '', ipv6: '' },
     };
     expect(presentTraffic(traffic(), { fakeip: true }, dual)[1].value).toBe(
-      'goes through section "Vanya_FULL_VPN"',
+      'goes through NexRoute',
     );
     expect(
       presentTraffic(traffic(), { fakeip: true }, {
         ...dual,
-        routes: { ...dual.routes, ipv6: 'direct-out' },
+        routes: { fakeip: 'Vanya_FULL_VPN' },
       })[1].value,
-    ).toBe('goes through section "Vanya_FULL_VPN" (IPv4)');
+    ).toBe('goes through section "Vanya_FULL_VPN"');
     expect(
       presentTraffic(traffic(), { fakeip: true }, {
         ...dual,
         routes: { fakeip: 'direct-out' },
       })[1].value,
-    ).toBe('goes through NexRoute');
-    expect(
-      presentDualStackTraffic(dual).find(
-        (item) => item.key === 'This device (IPv4)',
-      )?.value,
-    ).toBe('198.51.100.30 · Vanya_FULL_VPN');
+    ).toBe('check request goes directly');
   });
 
   it('warns about a possible IPv6 bypass when IPv4 uses the checked exit', () => {
@@ -388,13 +366,17 @@ describe('the traffic check', () => {
       browser: { ipv4: '198.51.100.30', ipv6: '2001:0db8:0:0:0:0:0:20' },
     });
     expect(items.map((item) => item.key)).toEqual([
-      'Direct exit (IPv4)',
+      'Direct exit (IPv4) · Direct exit (IPv6)',
       'Exit via "YouTube" (IPv4)',
       'This device (IPv4)',
-      'Direct exit (IPv6)',
       'Exit via "YouTube" (IPv6)',
       'This device (IPv6)',
     ]);
+    expect(items[0]).toEqual({
+      state: 'success',
+      key: 'Direct exit (IPv4) · Direct exit (IPv6)',
+      value: '203.0.113.10 · 2001:db8::10',
+    });
     expect(items.find((item) => item.key === 'This device (IPv4)')).toEqual({
       state: 'success',
       key: 'This device (IPv4)',
@@ -459,6 +441,11 @@ describe('the traffic check', () => {
       displaySection: 'Main',
       sectionsComplete: true,
       browser: { ipv4: '203.0.113.10', ipv6: '' },
+    });
+    expect(items[0]).toEqual({
+      state: 'warning',
+      key: 'Direct exit (IPv4) · Direct exit (IPv6)',
+      value: '203.0.113.10 · not checked: no answer',
     });
     expect(
       items.find((item) => item.key === 'Exit via "Main" (IPv4)'),
