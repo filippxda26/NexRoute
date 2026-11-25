@@ -121,13 +121,32 @@ function matchingSections(dual: DualStackTraffic, family: AddressFamily) {
     .map(({ section }) => section);
 }
 
-// The generic row describes the FakeIP check, never all of a device's traffic.
+// Summarize observed public-IP probes, not the internal FakeIP check.
+function confirmedSection(dual: DualStackTraffic, family: AddressFamily) {
+  const actual = dual.routes?.[family];
+  const direct = familyAddress(dual.direct?.[family]?.address, family);
+  const browser = familyAddress(dual.browser[family], family);
+  return actual &&
+    actual !== 'direct-out' &&
+    direct &&
+    browser !== direct &&
+    matchingSections(dual, family).includes(actual)
+    ? actual
+    : '';
+}
+
 function deviceSectionSummary(dual: DualStackTraffic): string {
-  const route = dual.routes?.fakeip;
-  if (route === 'direct-out') {
-    return _('check request goes directly');
+  const ipv4 = confirmedSection(dual, 'ipv4');
+  const ipv6 = confirmedSection(dual, 'ipv6');
+  if (ipv4 && ipv4 === ipv6) {
+    return _('goes through section "%s"').format(ipv4);
   }
-  return route ? _('goes through section "%s"').format(route) : '';
+  return [
+    ipv4 && _('goes through section "%s" (%s)').format(ipv4, 'IPv4'),
+    ipv6 && _('goes through section "%s" (%s)').format(ipv6, 'IPv6'),
+  ]
+    .filter(Boolean)
+    .join('; ');
 }
 
 export function presentDualStackTraffic(
@@ -193,10 +212,9 @@ export function presentDualStackTraffic(
         finding(
           'success',
           key,
-          _('%s, matches exit of %s').format(
-            browser,
-            actual && matches.includes(actual) ? actual : matches.join(', '),
-          ),
+          actual && matches.includes(actual)
+            ? '%s · %s'.format(browser, actual)
+            : _('%s, matches exit of %s').format(browser, matches.join(', ')),
         ),
       );
     } else if (matches.length) {
