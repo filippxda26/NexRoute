@@ -354,6 +354,7 @@ describe('the traffic check', () => {
     ).toMatchObject({
       state: 'warning',
       value: '2001:db8::99, possible IPv6 bypass',
+      layout: 'device-exit',
     });
   });
 
@@ -442,11 +443,13 @@ describe('the traffic check', () => {
       state: 'success',
       key: 'This device (IPv4)',
       value: '198.51.100.30, matches exit of Full VPN',
+      layout: 'device-exit',
     });
     expect(items.find((item) => item.key === 'This device (IPv6)')).toEqual({
       state: 'success',
       key: 'This device (IPv6)',
       value: '2001:db8::20, matches exit of YouTube',
+      layout: 'device-exit',
     });
   });
 

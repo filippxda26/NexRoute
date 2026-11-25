@@ -212,8 +212,10 @@ export function presentDualStackTraffic(
         Boolean(familyAddress(result?.[family]?.address, family)),
       );
     const key = _('This device') + ' (' + label + ')';
+    const addDeviceFinding = (item: IDiagnosticsChecksItem) =>
+      items.push({ ...item, layout: 'device-exit' });
     if (!browser) {
-      items.push(
+      addDeviceFinding(
         finding(
           'warning',
           key,
@@ -223,7 +225,7 @@ export function presentDualStackTraffic(
         ),
       );
     } else if (matches.length && direct && browser !== direct) {
-      items.push(
+      addDeviceFinding(
         finding(
           'success',
           key,
@@ -234,7 +236,7 @@ export function presentDualStackTraffic(
         ),
       );
     } else if (matches.length) {
-      items.push(
+      addDeviceFinding(
         finding('warning', key, _('%s, route not verified').format(browser)),
       );
     } else if (direct && browser === direct) {
@@ -242,13 +244,13 @@ export function presentDualStackTraffic(
         family === 'ipv6' && matchesExit4
           ? _('%s, possible IPv6 bypass').format(browser)
           : _('%s, the same as direct').format(browser);
-      items.push(finding('warning', key, value));
+      addDeviceFinding(finding('warning', key, value));
     } else if (family === 'ipv6' && matchesExit4 && direct && complete) {
-      items.push(
+      addDeviceFinding(
         finding('warning', key, _('%s, possible IPv6 bypass').format(browser)),
       );
     } else {
-      items.push(
+      addDeviceFinding(
         finding('warning', key, _('%s, route not verified').format(browser)),
       );
     }

@@ -174,7 +174,18 @@ describe('a diagnostic check', () => {
           value: '2001:db8::20',
           layout: 'section-exit',
         },
-        { state: 'success', key: 'This device', value: 'OK' },
+        {
+          state: 'success',
+          key: 'This device (IPv4)',
+          value: '198.51.100.20, matches exit of YouTube',
+          layout: 'device-exit',
+        },
+        {
+          state: 'warning',
+          key: 'This device (IPv6)',
+          value: '2001:db8::99, possible IPv6 bypass',
+          layout: 'device-exit',
+        },
       ]),
     );
     const group = find(root, 'fkp_diagnostic_alert__direct_exits');
@@ -207,6 +218,26 @@ describe('a diagnostic check', () => {
     expect(find(section!.children[1], value)?.children).toEqual([
       '2001:db8::20',
     ]);
+    const device = find(
+      summary!.children[2],
+      'fkp_diagnostic_alert__direct_exits',
+    );
+    expect(device?.children).toHaveLength(2);
+    expect(find(device!.children[0], key)?.children).toEqual([
+      'This device (IPv4)',
+    ]);
+    expect(find(device!.children[0], value)?.children).toEqual([
+      '198.51.100.20, matches exit of YouTube',
+    ]);
+    expect(find(device!.children[1], key)?.children).toEqual([
+      'This device (IPv6)',
+    ]);
+    expect(find(device!.children[1], value)?.children).toEqual([
+      '2001:db8::99, possible IPv6 bypass',
+    ]);
+    expect(
+      find(device!.children[1], 'fkp_diagnostic_alert__summary__item--warning'),
+    ).toBeDefined();
   });
 
   it('shows every detail when nobody folds it', async () => {
