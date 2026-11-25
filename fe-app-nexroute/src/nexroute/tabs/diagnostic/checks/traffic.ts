@@ -253,6 +253,33 @@ export function presentDualStackTraffic(
   return items;
 }
 
+export function presentFakeIpDns(
+  data: NexRoute.TrafficCheckResult,
+): IDiagnosticsChecksItem[] {
+  const results = data.fakeip_dns;
+  if (!results) {
+    return [];
+  }
+  return (['ipv4', 'ipv6'] as const).map((family) => {
+    const result = results[family];
+    const address = familyAddress(result?.address, family);
+    const working = Boolean(address && result?.fakeip);
+    return {
+      ...finding(
+        working ? 'success' : 'warning',
+        _('FakeIP (%s)').format(family === 'ipv4' ? 'IPv4' : 'IPv6'),
+        working
+          ? _('Works')
+          : address
+            ? _('Not working')
+            : _('not checked: no answer'),
+      ),
+      ...(address ? { detail: address } : {}),
+      layout: 'fakeip-dns',
+    };
+  });
+}
+
 export function presentTraffic(
   data: NexRoute.TrafficCheckResult,
   browser: BrowserCheck,
@@ -400,6 +427,7 @@ export async function runTrafficCheck(): Promise<CheckOutcome> {
       browser.success ? { fakeip: Boolean(browser.data.fakeip) } : null,
       dual,
     ),
+    ...presentFakeIpDns(response.data),
     ...presentDualStackTraffic(dual),
   ]);
 }

@@ -271,6 +271,36 @@ describe('a diagnostic check', () => {
     ]);
   });
 
+  it('renders each FakeIP address on its own line below the status', async () => {
+    const root = await render(
+      check('success', [
+        {
+          state: 'success',
+          key: 'FakeIP (IPv4)',
+          value: 'Works',
+          detail: '198.18.0.7',
+          layout: 'fakeip-dns',
+        },
+        {
+          state: 'success',
+          key: 'FakeIP (IPv6)',
+          value: 'Works',
+          detail: '2001:2::7',
+          layout: 'fakeip-dns',
+        },
+      ]),
+    );
+    const pair = find(root, 'fkp_diagnostic_alert__direct_exits');
+    expect(pair?.children).toHaveLength(2);
+    const body = 'fkp_diagnostic_alert__summary__item__body';
+    for (const [index, address] of ['198.18.0.7', '2001:2::7'].entries()) {
+      const lines = find(pair!.children[index], body)?.children || [];
+      expect(lines).toHaveLength(3);
+      expect((lines[1] as FakeNode).children).toEqual(['Works']);
+      expect((lines[2] as FakeNode).children).toEqual([address]);
+    }
+  });
+
   it('shows every detail when nobody folds it', async () => {
     const root = await render(check('error'));
 

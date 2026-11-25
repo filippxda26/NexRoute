@@ -4072,3 +4072,12 @@ msgstr ""
 
 msgid "goes through section \"%s\" (%s)"
 msgstr ""
+
+msgid "FakeIP (%s)"
+msgstr ""
+
+msgid "Works"
+msgstr ""
+
+msgid "Not working"
+msgstr ""

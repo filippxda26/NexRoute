@@ -19,7 +19,7 @@ export function checksText(checks: IDiagnosticsChecksStoreItem[]) {
     lines.push(`${MARKS[check.state]} ${check.title} — ${check.description}`);
     for (const item of check.items) {
       lines.push(
-        `    ${MARKS[item.state]} ${item.key}${item.value ? `: ${item.value}` : ''}`,
+        `    ${MARKS[item.state]} ${item.key}${item.value ? `: ${item.value}` : ''}${item.detail ? ` — ${item.detail}` : ''}`,
       );
     }
   }

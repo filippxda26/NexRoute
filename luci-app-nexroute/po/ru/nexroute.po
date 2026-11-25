@@ -2947,3 +2947,12 @@ msgstr "Не удалось очистить журнал"
 
 msgid "goes through section \"%s\" (%s)"
 msgstr "идёт через секцию «%s» (%s)"
+
+msgid "FakeIP (%s)"
+msgstr "FakeIP (%s)"
+
+msgid "Works"
+msgstr "Работает"
+
+msgid "Not working"
+msgstr "Не работает"

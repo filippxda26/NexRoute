@@ -3,7 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { summarize } from '../present';
 import { presentService } from '../service';
 import { presentDns } from '../dns';
-import { presentDualStackTraffic, presentTraffic } from '../traffic';
+import {
+  presentDualStackTraffic,
+  presentFakeIpDns,
+  presentTraffic,
+} from '../traffic';
 import { presentServers } from '../servers';
 import type { NexRoute } from '../../../../types';
 
@@ -255,6 +259,59 @@ function traffic(
 }
 
 describe('the traffic check', () => {
+  it('shows the actual FakeIP DNS addresses independently of each family', () => {
+    expect(
+      presentFakeIpDns(
+        traffic({
+          fakeip_dns: {
+            ipv4: { address: '198.18.0.7', fakeip: true },
+            ipv6: { address: '2001:2::7', fakeip: true },
+          },
+        }),
+      ),
+    ).toEqual([
+      {
+        state: 'success',
+        key: 'FakeIP (IPv4)',
+        value: 'Works',
+        detail: '198.18.0.7',
+        layout: 'fakeip-dns',
+      },
+      {
+        state: 'success',
+        key: 'FakeIP (IPv6)',
+        value: 'Works',
+        detail: '2001:2::7',
+        layout: 'fakeip-dns',
+      },
+    ]);
+    expect(
+      presentFakeIpDns(
+        traffic({
+          fakeip_dns: {
+            ipv4: { address: '203.0.113.7', fakeip: false },
+            ipv6: { address: '', fakeip: false },
+          },
+        }),
+      ),
+    ).toEqual([
+      {
+        state: 'warning',
+        key: 'FakeIP (IPv4)',
+        value: 'Not working',
+        detail: '203.0.113.7',
+        layout: 'fakeip-dns',
+      },
+      {
+        state: 'warning',
+        key: 'FakeIP (IPv6)',
+        value: 'not checked: no answer',
+        layout: 'fakeip-dns',
+      },
+    ]);
+    expect(presentFakeIpDns(traffic())).toEqual([]);
+  });
+
   it('shows only the router and device before the dual-stack checks', () => {
     expect(presentTraffic(traffic(), { fakeip: true })).toEqual([
       {

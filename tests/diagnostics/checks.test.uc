@@ -234,13 +234,14 @@ t.test("with DNS sent through a section, bootstrap finds the proxy servers", () 
 t.test("the router's own traffic is checked the way a client's goes, and the exit through the first section", () => {
     fixture.seed({ settings: { config_path: dir + "/config.json" } });
     write_config({ route: { rules: [ { action: "sniff" }, { action: "route", inbound: [ "tproxy-in" ], outbound: "Main", domain: "ip.podkop.fyi" } ] } });
-    let lookups = dns_replies([ [ /^fakeip\.podkop\.fyi@resolv\.conf$/, records("A", "198.18.0.7") ] ]);
+    let lookups = dns_replies([ [ /^fakeip\.podkop\.fyi@resolv\.conf$/, (name) => ({ [name]: { A: [ "198.18.0.7" ], AAAA: [ "2001:2::7" ] } }) ] ]);
     let asked = parallel([
         [ /^uclient-fetch -q -O - --timeout=6 https:\/\/fakeip\.podkop\.fyi\/check$/, "{\"fakeip\": true, \"IP\": \"203.0.113.5\"}" ],
         [ /^uclient-fetch -q -O - --timeout=8 https:\/\/ip\.podkop\.fyi\/check$/, "{\"fakeip\": false, \"IP\": \"198.51.100.9\"}" ]
     ]);
     t.eq(checks.traffic(), {
         router: { excluded: false, dns_fakeip: true, answered: true, fakeip: true, ip: "203.0.113.5" },
+        fakeip_dns: { ipv4: { address: "198.18.0.7", fakeip: true }, ipv6: { address: "2001:2::7", fakeip: true } },
         exit: { section: "Main", answered: true, ip: "198.51.100.9" }
     });
     t.eq([ length(lookups), length(asked) ], [ 1, 2 ]);
@@ -248,12 +249,17 @@ t.test("the router's own traffic is checked the way a client's goes, and the exi
     write_config({ route: { rules: [] } });
     dns_replies([ [ /^fakeip\.podkop\.fyi@/, records("A", "93.184.215.14") ] ]);
     asked = parallel([ [ /fakeip\.podkop\.fyi\/check/, "<html>blocked</html>" ] ]);
-    t.eq(checks.traffic(), { router: { excluded: false, dns_fakeip: false, answered: false, fakeip: false, ip: "" }, exit: null });
+    t.eq(checks.traffic(), { router: { excluded: false, dns_fakeip: false, answered: false, fakeip: false, ip: "" },
+        fakeip_dns: { ipv4: { address: "93.184.215.14", fakeip: false }, ipv6: { address: "", fakeip: false } }, exit: null });
     t.eq(length(asked), 1, "no section, no exit to check");
 
     dns_replies([ [ /^fakeip\.podkop\.fyi@/, (name) => ({ "fakeip.podkop.fyi": { CNAME: [ "fake.example.net" ] }, "fake.example.net": { A: [ "198.18.0.9" ] } }) ] ]);
     parallel([ [ /fakeip\.podkop\.fyi\/check/, "" ] ]);
     t.eq(checks.traffic().router.dns_fakeip, true, "the address a CNAME leads to is the answer");
+
+    dns_replies([ [ /^fakeip\.podkop\.fyi@/, (name) => ({ [name]: { A: [ "198.18.0.7" ], AAAA: [ "2001:db8::7" ] } }) ] ]);
+    parallel([ [ /fakeip\.podkop\.fyi\/check/, "" ] ]);
+    t.eq(checks.traffic().fakeip_dns.ipv6, { address: "2001:db8::7", fakeip: false }, "a real IPv6 answer is not FakeIP");
     stub.restore();
 });
 

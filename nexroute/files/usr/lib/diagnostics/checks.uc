@@ -223,9 +223,13 @@ function check_answer(text) {
     return type(value) == "object" ? { fakeip: value.fakeip === true, ip: common.as_string(value.IP) } : null;
 }
 
-function in_fakeip_range(address) {
-    return core_ip.prefix_contains(singbox_constants.FAKEIP_INET4_RANGE, address) ||
-        core_ip.prefix_contains(singbox_constants.FAKEIP_INET6_RANGE, address);
+function fakeip_dns_result(reply, kind, range) {
+    let answers = addresses(reply, [ kind ]);
+    let address = answers[0] ?? "";
+    return {
+        address,
+        fakeip: length(answers) > 0 && length(filter(answers, (answer) => core_ip.prefix_contains(range, answer))) == length(answers)
+    };
 }
 
 // The router looks the check domain up through its resolver, which must hand out a FakeIP
@@ -236,7 +240,11 @@ function traffic() {
         return { router: { excluded: true, dns_fakeip: false, answered: false, fakeip: false, ip: "" }, exit: null };
 
     let section = check_section(runtime_config());
-    let reply = resolv.query([ FAKEIP_DOMAIN ], { type: [ "A" ], timeout: 3000, retries: 1 });
+    let reply = resolv.query([ FAKEIP_DOMAIN ], { type: [ "A", "AAAA" ], timeout: 3000, retries: 1 });
+    let fakeip_dns = {
+        ipv4: fakeip_dns_result(reply, "A", singbox_constants.FAKEIP_INET4_RANGE),
+        ipv6: fakeip_dns_result(reply, "AAAA", singbox_constants.FAKEIP_INET6_RANGE)
+    };
     let commands = [ [ "uclient-fetch", "-q", "-O", "-", "--timeout=6", "https://" + FAKEIP_DOMAIN + "/check" ] ];
     if (section != "")
         push(commands, [ "uclient-fetch", "-q", "-O", "-", "--timeout=8", "https://" + IP_DOMAIN + "/check" ]);
@@ -247,11 +255,12 @@ function traffic() {
     return {
         router: {
             excluded: false,
-            dns_fakeip: in_fakeip_range(addresses(reply, [ "A" ])[0] ?? ""),
+            dns_fakeip: fakeip_dns.ipv4.fakeip,
             answered: router != null,
             fakeip: router?.fakeip ?? false,
             ip: router?.ip ?? ""
         },
+        fakeip_dns,
         exit: section == "" ? null : { section, answered: exit != null, ip: exit?.ip ?? "" }
     };
 }

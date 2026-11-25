@@ -385,6 +385,7 @@ export namespace NexRoute {
       fakeip: boolean;
       ip: string;
     };
+    fakeip_dns?: Record<'ipv4' | 'ipv6', { address: string; fakeip: boolean }>;
     exit: { section: string; answered: boolean; ip: string } | null;
   }
 

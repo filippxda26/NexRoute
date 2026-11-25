@@ -62,6 +62,15 @@ function renderCheckSummary(items: IRenderCheckSectionProps['items']) {
             { class: 'fkp_diagnostic_alert__summary__item__value' },
             item.value,
           ),
+          ...(item.detail
+            ? [
+                E(
+                  'div',
+                  { class: 'fkp_diagnostic_alert__summary__item__value' },
+                  item.detail,
+                ),
+              ]
+            : []),
         ]),
       ],
     );

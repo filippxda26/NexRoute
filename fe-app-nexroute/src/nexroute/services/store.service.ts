@@ -114,7 +114,13 @@ export interface IDiagnosticsChecksItem {
   state: 'error' | 'warning' | 'success';
   key: string;
   value: string;
-  layout?: 'direct-exit' | 'section-exit' | 'device-exit' | 'traffic-summary';
+  detail?: string;
+  layout?:
+    | 'direct-exit'
+    | 'section-exit'
+    | 'device-exit'
+    | 'traffic-summary'
+    | 'fakeip-dns';
 }
 
 export interface IDiagnosticsChecksStoreItem {
