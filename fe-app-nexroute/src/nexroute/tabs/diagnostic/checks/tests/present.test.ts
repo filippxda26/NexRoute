@@ -398,6 +398,7 @@ describe('the traffic check', () => {
       direct: {
         outbound: 'direct-out',
         ipv4: { address: '203.0.113.10' },
+        ipv6: { error: 'timeout' },
       },
       exits: [
         {
@@ -405,6 +406,7 @@ describe('the traffic check', () => {
           result: {
             outbound: 'Main',
             ipv4: { address: '203.0.113.10' },
+            ipv6: { error: 'timeout' },
           },
         },
       ],
