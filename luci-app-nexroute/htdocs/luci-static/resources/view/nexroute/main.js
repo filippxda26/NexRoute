@@ -13580,7 +13580,10 @@ function presentDualStackTraffic(dual) {
   return items;
 }
 function presentTraffic(data, browser, dual) {
-  return [routerItem(data.router), deviceItem(browser, dual)];
+  return [
+    { ...routerItem(data.router), layout: "traffic-summary" },
+    { ...deviceItem(browser, dual), layout: "traffic-summary" }
+  ];
 }
 async function connectionSnapshot() {
   try {
