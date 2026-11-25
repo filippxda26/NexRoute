@@ -58,7 +58,7 @@ function exitItem(data: NexRoute.TrafficCheckResult) {
 }
 
 function deviceItem(browser: BrowserCheck) {
-  const key = _('This device') + ' (FakeIP)';
+  const key = _('This device');
 
   if (browser?.fakeip) {
     return finding('success', key, _('goes through NexRoute'));
@@ -78,6 +78,7 @@ export interface SectionExit {
 export interface DualStackTraffic {
   direct: NexRoute.GetClashApiProxyExit | null;
   exits: SectionExit[];
+  displaySection?: string;
   sectionsComplete: boolean;
   browser: Record<AddressFamily, string>;
 }
@@ -132,6 +133,9 @@ export function presentDualStackTraffic(
 ): IDiagnosticsChecksItem[] {
   const items: IDiagnosticsChecksItem[] = [];
   const families = ['ipv4', 'ipv6'] as const;
+  const shown = dual.exits.find(
+    ({ section }) => section === dual.displaySection,
+  );
   const direct4 = familyAddress(dual.direct?.ipv4?.address, 'ipv4');
   const matchesExit4 =
     !!direct4 &&
@@ -156,9 +160,11 @@ export function presentDualStackTraffic(
         : finding('warning', directKey, _('not checked: no answer')),
     );
 
-    for (const { section, result } of dual.exits) {
-      const exit = familyAddress(result?.[family]?.address, family);
-      const key = _('Exit via "%s"').format(section) + ' (' + label + ')';
+    // Keep one reference section visible, but compare against every exit.
+    if (dual.displaySection) {
+      const exit = familyAddress(shown?.result?.[family]?.address, family);
+      const key =
+        _('Exit via "%s"').format(dual.displaySection) + ' (' + label + ')';
       items.push(
         !exit
           ? finding('warning', key, _('not checked: no answer'))
@@ -268,6 +274,7 @@ export async function runTrafficCheck(): Promise<CheckOutcome> {
     ...presentDualStackTraffic({
       direct,
       exits,
+      displaySection: response.data.exit?.section,
       sectionsComplete: sections?.success === true,
       browser: { ipv4, ipv6 },
     }),

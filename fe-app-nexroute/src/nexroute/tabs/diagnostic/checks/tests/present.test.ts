@@ -263,11 +263,7 @@ describe('the traffic check', () => {
         key: 'Exit via "Main"',
         value: '38.107.233.96, direct 46.138.78.196',
       },
-      {
-        state: 'success',
-        key: 'This device (FakeIP)',
-        value: 'goes through NexRoute',
-      },
+      { state: 'success', key: 'This device', value: 'goes through NexRoute' },
     ]);
   });
 
@@ -346,9 +342,18 @@ describe('the traffic check', () => {
           },
         },
       ],
+      displaySection: 'YouTube',
       sectionsComplete: true,
       browser: { ipv4: '198.51.100.30', ipv6: '2001:0db8:0:0:0:0:0:20' },
     });
+    expect(items.map((item) => item.key)).toEqual([
+      'Direct exit (IPv4)',
+      'Exit via "YouTube" (IPv4)',
+      'This device (IPv4)',
+      'Direct exit (IPv6)',
+      'Exit via "YouTube" (IPv6)',
+      'This device (IPv6)',
+    ]);
     expect(items.find((item) => item.key === 'This device (IPv4)')).toEqual({
       state: 'success',
       key: 'This device (IPv4)',
@@ -453,11 +458,7 @@ describe('the traffic check', () => {
       ).slice(0, 2),
     ).toEqual([
       { state: 'success', key: 'Router', value: 'excluded from routing' },
-      {
-        state: 'success',
-        key: 'This device (FakeIP)',
-        value: 'goes through NexRoute',
-      },
+      { state: 'success', key: 'This device', value: 'goes through NexRoute' },
     ]);
   });
 });
