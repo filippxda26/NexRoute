@@ -32,6 +32,7 @@ const PROVIDED = [
   'Request',
   'Response',
   'AbortController',
+  'AbortSignal',
   'Event',
   'CustomEvent',
   'MouseEvent',
