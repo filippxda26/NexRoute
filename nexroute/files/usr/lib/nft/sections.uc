@@ -38,7 +38,7 @@ function enabled(section) {
 // "bypass", "capture" or "" for a section the table has no rule for at all.
 function priority_action(section) {
     let action = common.option(section, "action", "");
-    if (action == "bypass")
+    if (action == "bypass" || action == "direct")
         return "bypass";
     return CAPTURE_ACTIONS[action] == true ? "capture" : "";
 }

@@ -490,4 +490,12 @@ t.test("MAC devices match IPv4 and IPv6 without widening a destination filter", 
     }
 });
 
+t.test("Direct IP conditions leave IPv4 and IPv6 packets outside TProxy", () => {
+    let lines = script_lines({ settings: {}, section: [
+        { ".name": "native_direct", action: "direct", destinations: "198.51.100.0/24\n2001:db8::/32" }
+    ] });
+    has(lines, T + "priority_rules iifname @nexroute_interfaces ip daddr != @localv4 ip daddr != 198.18.0.0/16 ip daddr @nexroute_rule_native_direct_subnets counter accept");
+    has(lines, T + "priority_rules iifname @nexroute_interfaces ip6 daddr != @localv6 ip6 daddr != 2001:2::/112 ip6 daddr @nexroute_rule_native_direct_subnets6 counter accept");
+});
+
 t.done();

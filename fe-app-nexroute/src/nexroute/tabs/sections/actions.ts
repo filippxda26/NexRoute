@@ -18,6 +18,8 @@ function getActionOptionLabel(action: string) {
       return 'Block';
     case 'bypass':
       return 'Bypass';
+    case 'direct':
+      return 'Direct';
     case 'connection':
       return 'Connection';
     case 'dns':
@@ -51,6 +53,7 @@ export function populateActionOptionValues(
 
   option.value('connection', getActionOptionLabel('connection'));
   option.value('bypass', 'Bypass');
+  option.value('direct', 'Direct');
   option.value('block', 'Block');
   option.value('dns', 'DNS');
 

@@ -57,7 +57,7 @@ function target(section, outbound_tag_name) {
     let action = option(section, "action", "");
     if (connections.is_connections_action(action))
         return { action: "route", outbound: outbound_tag_name };
-    if (action == "bypass")
+    if (action == "bypass" || action == "direct")
         return { action: "route", outbound: runtime_constants.DIRECT_OUTBOUND_TAG };
     if (action == "block")
         return { action: "reject" };

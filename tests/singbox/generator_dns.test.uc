@@ -340,4 +340,18 @@ t.test("extended FakeIP evaluates real DNS before preserving GeoIP, CIDR and pri
     t.eq(q.dns_rule(off, (r) => r.action == "evaluate"), null);
 });
 
+t.test("Direct resolves domains and whole devices through the router resolver, unlike Bypass", () => {
+    let config = build({ settings: DNS, section: [
+        { ".name": "plain", action: "direct", destinations: "ozon.ru\nozone.ru" },
+        { ".name": "device", action: "direct", fully_routed_ips: [ "192.168.1.44/32", "2001:db8::44/128" ] },
+        { ".name": "old", action: "bypass", destinations: "example.org" }
+    ] });
+    t.ok(q.dns_rule(config, (r) => r.server == "dnsmasq-server" && q.has(r.domain_suffix, "ozone.ru")) != null);
+    t.ok(q.dns_rule(config, (r) => r.server == "dnsmasq-server" && q.has(r.source_ip_cidr, "192.168.1.44/32")) != null);
+    t.ok(q.dns_rule(config, (r) => r.server == "dnsmasq-server" && q.has(r.source_ip_cidr, "2001:db8::44/128")) != null);
+    t.ok(q.dns_rule(config, (r) => r.server == "dns-server" && q.has(r.domain_suffix, "example.org")) != null);
+    t.ok(q.route_rule(config, (r) => r.outbound == "direct-out" && q.has(r.domain_suffix, "ozone.ru")) != null,
+        "already intercepted connections still go direct");
+});
+
 t.done();

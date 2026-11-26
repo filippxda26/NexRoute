@@ -230,7 +230,7 @@ function rule_action(section) {
 }
 
 function rule_action_supported(action) {
-    return contains([ "connection", "bypass", "block", "dns" ], as_string(action));
+    return contains([ "connection", "bypass", "direct", "block", "dns" ], as_string(action));
 }
 
 function find_section(sections, name) {

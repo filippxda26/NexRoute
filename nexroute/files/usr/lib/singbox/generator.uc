@@ -1323,6 +1323,8 @@ function section_has_port_matchers(section) {
 }
 
 function section_dns_server(section) {
+    if (option(section, "action", "") == "direct")
+        return runtime_constants.DNSMASQ_DNS_SERVER_TAG;
     return option(section, "action", "") == "bypass" && !section_has_port_matchers(section)
         ? runtime_constants.DNS_SERVER_TAG
         : runtime_constants.FAKEIP_DNS_SERVER_TAG;
@@ -1606,9 +1608,10 @@ function add_fully_routed_ips_rules(config, section) {
     if (!devices.selected)
         return;
 
-    if (option(section, "action", "") == "bypass")
+    let action = option(section, "action", "");
+    if (action == "bypass" || action == "direct")
         for (let dns_matchers in device_matcher_variants(section, "fully_routed_ips", true))
-            add_device_dns_rules(config, dns_matchers, unmatched_dns_server_tag(), int_option(runtime_settings(), "dns_rewrite_ttl", "60"));
+            add_device_dns_rules(config, dns_matchers, action == "direct" ? runtime_constants.DNSMASQ_DNS_SERVER_TAG : unmatched_dns_server_tag(), int_option(runtime_settings(), "dns_rewrite_ttl", "60"));
 
     let target = runtime_route.target(section, outbound_tag(section[".name"]));
     if (target.unsupported)
@@ -1733,7 +1736,7 @@ function add_outbound_for_section(config, section) {
 
     if (connections.is_connections_action(action))
         add_connections_outbound(config, section);
-    else if (action == "bypass") {
+    else if (action == "bypass" || action == "direct") {
         /* route-only action */
     }
     else if (action == "block") {
@@ -1824,7 +1827,7 @@ function server_route_rule(sections, routing_mode, routing_section_name, label) 
     if (routing_section == null)
         runtime_generate_unsupported(label + " references missing routing section " + routing_section_name);
     let action = option(routing_section, "action", "");
-    if (action == "bypass" || action == "block")
+    if (action == "bypass" || action == "direct" || action == "block")
         runtime_generate_unsupported(label + " routing section " + routing_section_name + " cannot use action " + action);
     let target = runtime_route.target(routing_section, outbound_tag(routing_section[".name"]));
     if (target.unsupported)
