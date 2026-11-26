@@ -13581,6 +13581,26 @@ function presentDualStackTraffic(dual) {
   }
   return items;
 }
+function presentFakeIpDns(data) {
+  const results = data.fakeip_dns;
+  if (!results) {
+    return [];
+  }
+  return ["ipv4", "ipv6"].map((family) => {
+    const result = results[family];
+    const address = familyAddress(result?.address, family);
+    const working = Boolean(address && result?.fakeip);
+    return {
+      ...finding(
+        working ? "success" : "warning",
+        _("FakeIP (%s)").format(family === "ipv4" ? "IPv4" : "IPv6"),
+        working ? _("Works") : address ? _("Not working") : _("not checked: no answer")
+      ),
+      ...address ? { detail: address } : {},
+      layout: "fakeip-dns"
+    };
+  });
+}
 function presentTraffic(data, browser, dual) {
   return [
     { ...routerItem(data.router), layout: "traffic-summary" },
@@ -13707,6 +13727,7 @@ async function runTrafficCheck() {
       browser.success ? { fakeip: Boolean(browser.data.fakeip) } : null,
       dual
     ),
+    ...presentFakeIpDns(response.data),
     ...presentDualStackTraffic(dual)
   ]);
 }
@@ -13944,7 +13965,7 @@ function checksText(checks) {
     lines3.push(`${MARKS[check.state]} ${check.title} \u2014 ${check.description}`);
     for (const item of check.items) {
       lines3.push(
-        `    ${MARKS[item.state]} ${item.key}${item.value ? `: ${item.value}` : ""}`
+        `    ${MARKS[item.state]} ${item.key}${item.value ? `: ${item.value}` : ""}${item.detail ? ` \u2014 ${item.detail}` : ""}`
       );
     }
   }
@@ -14107,7 +14128,14 @@ function renderCheckSummary(items) {
             "div",
             { class: "fkp_diagnostic_alert__summary__item__value" },
             item.value
-          )
+          ),
+          ...item.detail ? [
+            textE(
+              "div",
+              { class: "fkp_diagnostic_alert__summary__item__value" },
+              item.detail
+            )
+          ] : []
         ])
       ]
     );
@@ -20009,6 +20037,7 @@ function dependsOnRuleConditions(option2) {
       (condition) => option2.depends({ action, [condition]: /\S/ })
     )
   );
+  option2.depends({ action: "connection", include_ip_check_domains: "1" });
   ["_dns_destinations", "community_lists", "rule_set", "_dns_rule_set"].forEach(
     (condition) => option2.depends({ action: "dns", [condition]: /\S/ })
   );
@@ -28323,6 +28352,20 @@ function createSectionContent(section2) {
     _("Match destination domains and addresses")
   );
   dependsOnRoutingAction(destinationOption);
+  o = section2.taboption(
+    "conditions",
+    form.Flag,
+    "include_ip_check_domains",
+    _("IP check domains"),
+    _("Automatically include %s and %s in this section").format(
+      "api.ipify.org",
+      "api6.ipify.org"
+    )
+  );
+  o.depends("action", "connection");
+  o.default = "0";
+  o.rmempty = false;
+  o.modalonly = true;
   const dnsDestinationOption = addDestinationField(
     section2,
     "_dns_destinations",
