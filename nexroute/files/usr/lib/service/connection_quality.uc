@@ -30,47 +30,8 @@ function number_or_null(value) {
     return type(value) == "int" || type(value) == "double" ? value : null;
 }
 
-function station_metrics(station) {
-    return {
-        mac: common.as_string(station.mac),
-        signal_dbm: number_or_null(station.signal),
-        noise_dbm: number_or_null(station.noise),
-        tx_rate_kbps: number_or_null(station.tx?.rate),
-        rx_rate_kbps: number_or_null(station.rx?.rate),
-        tx_packets: number_or_null(station.tx?.packets),
-        tx_retries: number_or_null(station.tx?.retries ?? station.tx_retries),
-        tx_failed: number_or_null(station.tx?.failed ?? station.tx_failed),
-        rx_packets: number_or_null(station.rx?.packets),
-        inactive_ms: number_or_null(station.inactive)
-    };
-}
-
 function emit(kind, value, level) {
     exec.log(level ?? "info", "[quality] " + kind + " " + sprintf("%J", value));
-}
-
-function wifi() {
-    let status = ubus_json("network.wireless", "status");
-    if (type(status) != "object" || length(keys(status)) == 0) {
-        emit("wifi", { status: "unavailable" });
-        return;
-    }
-    for (let radio, device in status) {
-        emit("wifi.radio", { radio, up: device.up === true, pending: device.pending === true });
-        for (let iface in device.interfaces ?? []) {
-            let name = common.as_string(iface.ifname);
-            if (name == "")
-                continue;
-            let result = ubus_json("iwinfo", "assoclist", { device: name });
-            if (type(result?.results) != "array") {
-                emit("wifi.interface", { interface: name, status: "station_data_unavailable" });
-                continue;
-            }
-            emit("wifi.interface", { interface: name, stations: length(result.results) });
-            for (let station in result.results)
-                emit("wifi.station", { interface: name, ...station_metrics(station) });
-        }
-    }
 }
 
 function counter(device, name) {
@@ -247,7 +208,6 @@ function probe(tag) {
 function sample() {
     emit("sample", { phase: "start" });
     try { wan(); } catch (e) { emit("wan", { status: "unavailable" }, "warn"); }
-    try { wifi(); } catch (e) { emit("wifi", { status: "unavailable" }, "warn"); }
     if (!health.sing_box_service_running()) {
         emit("vpn", { status: "core_not_running" }, "warn");
     }
@@ -279,4 +239,4 @@ if (ARGV[0] == "run" && (sourcepath(1) == null || sourcepath(1) == "")) {
         sample();
     exit(0);
 }
-return { encoded, station_metrics, probe, ping_metrics, dns_packet, dns_result };
+return { encoded, probe, ping_metrics, dns_packet, dns_result };

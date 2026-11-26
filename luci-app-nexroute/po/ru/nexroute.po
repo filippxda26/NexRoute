@@ -2972,5 +2972,5 @@ msgstr "Автоматически включать %s и %s в эту секц�
 msgid "Connection quality logs"
 msgstr "Журнал качества соединений"
 
-msgid "Record WAN, Wi-Fi and section response times every minute in the NexRoute log"
-msgstr "Записывать состояние WAN, Wi-Fi и время ответа секций каждую минуту в журнал NexRoute"
+msgid "Record WAN status, DNS and section response times every minute in the NexRoute log"
+msgstr "Записывать состояние WAN и время ответа DNS и секций каждую минуту в журнал NexRoute"

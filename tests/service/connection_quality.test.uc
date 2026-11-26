@@ -2,16 +2,6 @@ let t = require("t");
 let clash = require("singbox.clash_api");
 let quality = require("service.connection_quality");
 
-t.test("Wi-Fi counters are reported without turning missing data into zeros", () => {
-    let value = quality.station_metrics({
-        mac: "aa:bb:cc:dd:ee:ff", signal: -62, noise: -95,
-        tx: { rate: 144000, packets: 250, retries: 15, failed: 2 },
-        rx: { rate: 72000, packets: 200 }, inactive: 35
-    });
-    t.eq([ value.signal_dbm, value.tx_rate_kbps, value.tx_retries, value.tx_failed ], [ -62, 144000, 15, 2 ]);
-    t.eq(quality.station_metrics({}).signal_dbm, null);
-});
-
 t.test("a probe distinguishes measured latency from a failed response", () => {
     let real = clash.request;
     clash.request = (method, path, body) => {

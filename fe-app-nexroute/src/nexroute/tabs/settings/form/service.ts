@@ -41,7 +41,7 @@ export function addServiceOptions(section: CBISection) {
     'connection_quality_logs',
     _('Connection quality logs'),
     _(
-      'Record WAN, Wi-Fi and section response times every minute in the NexRoute log',
+      'Record WAN status, DNS and section response times every minute in the NexRoute log',
     ),
   );
   o.default = '0';
