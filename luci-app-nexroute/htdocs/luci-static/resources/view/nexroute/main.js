@@ -15226,6 +15226,17 @@ function render4() {
             )
           ])
         ]),
+        textE("ul", { class: "cbi-tabmenu fkp_monitoring-page__ip-tabs" }, [
+          textE("li", { id: "monitoring-ip-all", class: "cbi-tab" }, [
+            textE("a", { href: "#" }, _("All IP versions"))
+          ]),
+          textE("li", { id: "monitoring-ip-v4", class: "cbi-tab-disabled" }, [
+            textE("a", { href: "#" }, "IPv4")
+          ]),
+          textE("li", { id: "monitoring-ip-v6", class: "cbi-tab-disabled" }, [
+            textE("a", { href: "#" }, "IPv6")
+          ])
+        ]),
         textE("ul", { class: "cbi-tabmenu fkp_monitoring-page__tabs" }, [
           textE("li", { id: "monitoring-tab-active", class: "cbi-tab" }, [
             textE("a", { href: "#" }, _("Active"))
@@ -15669,6 +15680,7 @@ async function closeConnections(ids, close) {
 }
 
 // src/nexroute/tabs/monitoring/initController.ts
+var IP_FILTERS = ["all", "v4", "v6"];
 function normalizeConnectionsPayload(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return {};
@@ -15696,6 +15708,7 @@ var pendingConnectionsPayload = null;
 var activeTab = "active";
 var selectedDeviceFilter = ALL_FILTER_VALUE;
 var selectedRouteFilter = ALL_FILTER_VALUE;
+var selectedIpFilter = "all";
 var searchQuery = "";
 var connectionSort = null;
 var localDeviceNames = {};
@@ -15904,11 +15917,27 @@ function getSearchValues(connection) {
     getSource(connection).search
   ].filter(Boolean);
 }
+function getDestinationIpFamily(connection) {
+  const metadata = connection.metadata;
+  for (const address of [metadata?.destinationIP, metadata?.host]) {
+    const ip = normalizeString(address);
+    if (isIPv4(ip)) {
+      return "v4";
+    }
+    if (isIPv6(ip)) {
+      return "v6";
+    }
+  }
+  return "all";
+}
 function matchesConnectionFilters(connection, normalizedSearch) {
   if (selectedDeviceFilter !== ALL_FILTER_VALUE && getSource(connection).key !== selectedDeviceFilter) {
     return false;
   }
   if (selectedRouteFilter !== ALL_FILTER_VALUE && getRoute(connection)?.tag !== selectedRouteFilter) {
+    return false;
+  }
+  if (selectedIpFilter !== "all" && getDestinationIpFamily(connection) !== selectedIpFilter) {
     return false;
   }
   if (!normalizedSearch) {
@@ -15931,7 +15960,7 @@ function filterConnections(connections) {
   );
 }
 function hasConnectionFilters() {
-  return selectedDeviceFilter !== ALL_FILTER_VALUE || selectedRouteFilter !== ALL_FILTER_VALUE || normalizeSearchValue(searchQuery) !== "";
+  return selectedDeviceFilter !== ALL_FILTER_VALUE || selectedRouteFilter !== ALL_FILTER_VALUE || selectedIpFilter !== "all" || normalizeSearchValue(searchQuery) !== "";
 }
 function moveConnectionToClosed(connection, now) {
   closedConnections.set(connection.id, {
@@ -16086,6 +16115,12 @@ function renderControls() {
     "monitoring-auto-refresh"
   );
   renderFilters();
+  IP_FILTERS.forEach((family) => {
+    const tab = document.getElementById(`monitoring-ip-${family}`);
+    if (tab) {
+      tab.className = selectedIpFilter === family ? "cbi-tab" : "cbi-tab-disabled";
+    }
+  });
   const filteredActive = filterConnections(activeConnections);
   renderTab(
     document.getElementById("monitoring-tab-active"),
@@ -16396,6 +16431,16 @@ function bindControls() {
       setTab("closed");
     };
   }
+  IP_FILTERS.forEach((family) => {
+    const tab = document.getElementById(`monitoring-ip-${family}`);
+    if (tab) {
+      tab.onclick = (event) => {
+        event.preventDefault();
+        selectedIpFilter = family;
+        redrawForAction();
+      };
+    }
+  });
   if (closeAllButton) {
     closeAllButton.onclick = () => {
       void closeAllConnections();
@@ -16584,6 +16629,7 @@ function resetMonitoringState() {
   activeTab = "active";
   selectedDeviceFilter = ALL_FILTER_VALUE;
   selectedRouteFilter = ALL_FILTER_VALUE;
+  selectedIpFilter = "all";
   searchQuery = "";
   connectionSort = null;
   filterSignatures = {};
@@ -16737,6 +16783,10 @@ rules leave it alone. */
 
 .fkp_monitoring-page__pause-note[hidden] {
     display: none;
+}
+
+.fkp_monitoring-page .fkp_monitoring-page__ip-tabs {
+    margin-bottom: 12px;
 }
 
 .fkp_monitoring-page__tab-count {
