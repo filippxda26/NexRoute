@@ -117,4 +117,43 @@ t.test("IPv6 route lookup reports device and gateway without source address", ()
     t.eq(quality.route_result({ status: 2, stdout: "" }), { status: "unavailable", exit_code: 2 });
 });
 
+t.test("TCP diagnostics extract only configured endpoints without credentials", () => {
+    let targets = quality.tcp_targets({ outbounds: [
+        { type: "parser", tag: "v4", link: "vless://secret@179.254.148.47:443?security=reality#name" },
+        { type: "parser", tag: "same", link: "vless://other@179.254.148.47:443" },
+        { type: "parser", tag: "v6", link: "vless://secret@[2001:db8::1]:8443?security=tls" },
+        { type: "vless", tag: "dual", server: "vpn.example.com", server_port: 443 },
+        { type: "vless", tag: "detour", server: "skip.example.com", server_port: 443, detour: "v4" },
+        { type: "hysteria2", tag: "udp", server: "skip.example.com", server_port: 443 },
+        { type: "parser", tag: "quic", link: "vless://secret@skip.example.com:443?type=quic" },
+        { type: "vless", tag: "fake", server: "198.18.0.1", server_port: 443 },
+        { type: "vless", tag: "invalid", server: "bad/host", server_port: 443 }
+    ] });
+    t.eq(targets, [
+        { host: "179.254.148.47", port: 443, tags: [ "v4", "same" ] },
+        { host: "2001:db8::1", port: 8443, tags: [ "v6" ] },
+        { host: "vpn.example.com", port: 443, tags: [ "dual" ] }
+    ]);
+    t.eq(map(quality.tcp_plan(targets, 0), (item) => [ item.host, item.family, item.port ]), [
+        [ "179.254.148.47", 4, 443 ], [ "2001:db8::1", 6, 8443 ],
+        [ "vpn.example.com", 4, 443 ], [ "vpn.example.com", 6, 443 ]
+    ]);
+    t.eq(quality.tcp_plan([], 10), []);
+});
+
+t.test("TCP probes rotate large target lists and distinguish socket failures", () => {
+    let targets = [];
+    for (let i = 0; i < 10; i++)
+        push(targets, { host: "vpn" + i + ".example.com", port: 443, tags: [] });
+    t.eq(length(quality.tcp_plan(targets, 0)), 16);
+    t.eq(quality.tcp_plan(targets, 1)[0].host, "vpn8.example.com");
+    t.eq(quality.tcp_address("198.18.0.1", 4), false);
+    t.eq(quality.tcp_address("2001:2::1", 6), false);
+    t.eq(quality.tcp_address("::ffff:192.0.2.1", 6), false);
+    t.eq(quality.tcp_address("2001:db8::1", 6), true);
+    t.eq(quality.tcp_failure("Connection timed out", 4000), { status: "timeout", elapsed_ms: 4000 });
+    t.eq(quality.tcp_failure("Connection refused", 20).status, "refused");
+    t.eq(quality.tcp_failure("Network is unreachable", 0).status, "unreachable");
+});
+
 t.done();

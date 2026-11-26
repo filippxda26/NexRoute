@@ -1,6 +1,7 @@
 // Periodic samples run in a child of the state service, never on its RPC loop.
 let common = require("core.common");
 let ip = require("core.ip");
+let url = require("core.url");
 let exec = require("core.exec");
 let fs = require("fs");
 let socket = require("socket");
@@ -17,6 +18,8 @@ const APPLE_URL = "https://www.apple.com/library/test/success.html";
 const DIRECT_TEST_URL = "https://api.browser.yandex.ru/generate_204";
 const CURL_TIMINGS = '{"http_code":"%{http_code}","remote_ip":"%{remote_ip}","dns":%{time_namelookup},"connect":%{time_connect},"tls":%{time_appconnect},"first_byte":%{time_starttransfer},"total":%{time_total}}';
 const TIMEOUT_MS = 4000;
+const TCP_TARGETS_PER_SAMPLE = 8;
+const TCP_TYPES = [ "vless", "vmess", "trojan", "shadowsocks", "socks", "http", "shadowtls", "ssh" ];
 
 function encoded(value) {
     let result = "";
@@ -333,6 +336,178 @@ function direct_quality(primary_url) {
     }
 }
 
+// Only inspect dial targets from the active configuration, never log a link or its credentials.
+// Runtime subscription providers are not expanded in this file.
+function tcp_targets(config) {
+    let targets = {};
+    for (let outbound in config?.outbounds ?? []) {
+        let protocol = outbound.type;
+        let host = outbound.server;
+        let port = outbound.server_port;
+        if (protocol == "parser") {
+            let link = common.as_string(outbound.link);
+            protocol = url.scheme(link);
+            if (match(link, /[?&]type=(quic|kcp)(&|#|$)/))
+                continue;
+            // Strip query and fragment before the authority helper looks for userinfo.
+            let authority = split(split(link, "#")[0], "?")[0];
+            host = url.host(authority);
+            port = url.port(authority);
+        }
+        if (index(TCP_TYPES, protocol) < 0 || outbound.network == "udp" ||
+            outbound.transport?.type == "quic" || outbound.detour)
+            continue;
+        host = trim(common.as_string(host));
+        let port_text = common.as_string(port);
+        if (!match(port_text, /^[0-9]{1,5}$/) || int(port_text) < 1 || int(port_text) > 65535)
+            continue;
+        port = int(port_text);
+        if (!ip.valid_ip(host) && (!length(host) || length(host) > 253 ||
+            !match(host, /^[A-Za-z0-9][A-Za-z0-9.-]*[A-Za-z0-9.]$/)))
+            continue;
+        if (ip.valid_ip(host) && fakeip_address(host))
+            continue;
+        let key = lc(host) + "/" + port;
+        if (!targets[key])
+            targets[key] = { host, port, tags: [] };
+        let tag = common.as_string(outbound.tag);
+        if (tag != "" && index(targets[key].tags, tag) < 0)
+            push(targets[key].tags, tag);
+    }
+    return map(keys(targets), (key) => targets[key]);
+}
+
+// A literal has only its configured family. A hostname is resolved separately for A and AAAA.
+// Rotate large configurations instead of opening an unbounded number of connections per minute.
+function tcp_plan(targets, minute) {
+    let plan = [];
+    let count = length(targets);
+    for (let i = 0; i < count && i < TCP_TARGETS_PER_SAMPLE; i++) {
+        let target = targets[(minute * TCP_TARGETS_PER_SAMPLE + i) % count];
+        let families = ip.valid_ipv4(target.host) ? [ 4 ] :
+            ip.valid_ipv6(target.host) ? [ 6 ] : [ 4, 6 ];
+        for (let family in families)
+            push(plan, { ...target, family });
+    }
+    return plan;
+}
+
+function tcp_address(address, family) {
+    return (family == 4 ? ip.valid_ipv4(address) : ip.valid_ipv6(address)) &&
+        !fakeip_address(address) && !ip.prefix_contains("::ffff:0:0/96", address);
+}
+
+function tcp_failure(error, elapsed) {
+    let message = lc(common.as_string(error));
+    let status = match(message, /timed out|timeout/) ? "timeout" :
+        match(message, /refused/) ? "refused" :
+        match(message, /unreachable|no route/) ? "unreachable" : "connect_error";
+    return { status, elapsed_ms: elapsed };
+}
+
+// SO_ERROR must be checked after a writable nonblocking socket; writability alone
+// also occurs when connect fails. The mark is already used by sing-box to avoid
+// NexRoute's own transparent capture. No protocol bytes are sent.
+function tcp_connect(address, port, family) {
+    let start = common.monotonic_ms();
+    let conn = socket.create(family == 6 ? socket.AF_INET6 : socket.AF_INET,
+        socket.SOCK_STREAM | socket.SOCK_NONBLOCK);
+    if (!conn)
+        return { status: "socket_error" };
+    let result;
+    try {
+        if (!conn.setopt(socket.SOL_SOCKET, socket.SO_MARK, sb.OUTBOUND_MARK))
+            result = { status: "mark_error" };
+        else if (conn.connect({ address, port }))
+            result = { status: "ok", tcp_ms: common.monotonic_ms() - start };
+        else {
+            let initial = conn.error();
+            if (!match(lc(common.as_string(initial)), /in progress|would block/))
+                result = tcp_failure(initial, common.monotonic_ms() - start);
+            else {
+                let ready = socket.poll(TIMEOUT_MS, [ conn, socket.POLLOUT | socket.POLLERR | socket.POLLHUP ]);
+                let elapsed = common.monotonic_ms() - start;
+                if (!ready)
+                    result = { status: "socket_error", elapsed_ms: elapsed };
+                else if (!ready[0]?.[1])
+                    result = { status: "timeout", elapsed_ms: elapsed };
+                else {
+                    let error = conn.getopt(socket.SOL_SOCKET, socket.SO_ERROR);
+                    result = error === 0 && conn.peername()
+                        ? { status: "ok", tcp_ms: elapsed }
+                        : tcp_failure(error ? socket.strerror(error) : conn.error(), elapsed);
+                }
+            }
+        }
+    }
+    catch (e) {
+        result = { status: "socket_error" };
+    }
+    conn.close();
+    return result;
+}
+
+function tcp_probe(host, port, family) {
+    let start = common.monotonic_ms();
+    let address = null;
+    if (ip.valid_ip(host))
+        address = tcp_address(host, family) ? host : null;
+    else {
+        let info = socket.addrinfo(host, port, {
+            family: family == 6 ? socket.AF_INET6 : socket.AF_INET,
+            socktype: socket.SOCK_STREAM
+        });
+        for (let entry in info ?? []) {
+            if (tcp_address(entry.addr?.address, family)) {
+                address = entry.addr.address;
+                break;
+            }
+        }
+    }
+    let dns_ms = common.monotonic_ms() - start;
+    if (!address)
+        return { status: "no_usable_address", remote_ip: null, dns_ms };
+    return { remote_ip: address, dns_ms, ...tcp_connect(address, port, family) };
+}
+
+function tcp_quality(settings) {
+    let config = common.read_json_file(sb.config_path(settings));
+    if (type(config) != "object") {
+        emit("server.tcp", { status: "config_unavailable" }, "warn");
+        return;
+    }
+    let targets = tcp_targets(config);
+    let plan = tcp_plan(targets, int(common.now_seconds() / 60));
+    if (!length(plan)) {
+        emit("server.tcp", { status: "no_explicit_tcp_targets" });
+        return;
+    }
+    // Resolve and dial in isolated, parallel children. The outer timeout also
+    // bounds the system resolver, whose lookup has no native timeout argument.
+    if (!exec.ok([ "sh", "-c", "command -v timeout >/dev/null" ])) {
+        emit("server.tcp", { status: "unavailable", reason: "timeout not installed" }, "warn");
+        return;
+    }
+    let library = getenv("NEXROUTE_LIB") || "/usr/lib/nexroute";
+    let commands = map(plan, (item) => [
+        "timeout", "8", "/usr/bin/ucode", "-L", library,
+        library + "/service/connection_quality.uc", "tcp-probe",
+        item.host, "" + item.port, "" + item.family
+    ]);
+    let results = exec.capture_parallel(commands);
+    for (let i = 0; i < length(plan); i++) {
+        let item = plan[i];
+        let raw = results[i] ?? { status: 1 };
+        let result = raw.status == 0 ? common.parse_json(raw.stdout) : null;
+        if (type(result) != "object")
+            result = { status: "probe_failed_or_timeout", exit_code: raw.status };
+        emit("server.tcp", { ...item, route: "outbound_mark", ...result },
+            result.status == "ok" || result.status == "no_usable_address" ? "info" : "warn");
+    }
+    if (length(targets) > TCP_TARGETS_PER_SAMPLE)
+        emit("server.tcp", { status: "rotating_targets", total: length(targets), per_sample: TCP_TARGETS_PER_SAMPLE });
+}
+
 function sample() {
     emit("sample", { phase: "start" });
     try { wan(); } catch (e) { emit("wan", { status: "unavailable" }, "warn"); }
@@ -359,6 +534,9 @@ function sample() {
                 try { direct_quality(primary_url); } catch (e) { emit("outbound.compare", { tag, status: "unavailable" }, "warn"); }
             }
         }
+        if (extended_quality_enabled(settings)) {
+            try { tcp_quality(settings); } catch (e) { emit("server.tcp", { status: "unavailable" }, "warn"); }
+        }
         try {
             dns_quality(settings);
         }
@@ -369,9 +547,18 @@ function sample() {
     emit("sample", { phase: "end" });
 }
 
+if (ARGV[0] == "tcp-probe" && (sourcepath(1) == null || sourcepath(1) == "")) {
+    let family = int(ARGV[3]);
+    let port = int(ARGV[2]);
+    if ((family != 4 && family != 6) || port < 1 || port > 65535)
+        exit(1);
+    print(sprintf("%J", tcp_probe(ARGV[1], port, family)));
+    exit(0);
+}
+
 if (ARGV[0] == "run" && (sourcepath(1) == null || sourcepath(1) == "")) {
     if (common.bool_option(uci.get_all(constants.NEXROUTE_CONFIG_NAME, "settings"), "connection_quality_logs", false))
         sample();
     exit(0);
 }
-return { encoded, probe, ping_metrics, dns_packet, dns_result, curl_result, extended_quality_enabled, router_http_plan, latency_url, fakeip_address, route_target, route_result };
+return { encoded, probe, ping_metrics, dns_packet, dns_result, curl_result, extended_quality_enabled, router_http_plan, latency_url, fakeip_address, route_target, route_result, tcp_targets, tcp_plan, tcp_address, tcp_failure };
