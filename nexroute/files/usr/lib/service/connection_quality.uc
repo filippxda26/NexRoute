@@ -1,5 +1,6 @@
 // Periodic samples run in a child of the state service, never on its RPC loop.
 let common = require("core.common");
+let ip = require("core.ip");
 let exec = require("core.exec");
 let fs = require("fs");
 let socket = require("socket");
@@ -13,6 +14,7 @@ let health = require("service.health");
 const TEST_URL = "https://www.gstatic.com/generate_204";
 const ALTERNATIVE_URL = "https://cp.cloudflare.com/generate_204";
 const APPLE_URL = "https://www.apple.com/library/test/success.html";
+const YANDEX_URL = "https://api.browser.yandex.ru/generate_204";
 const SLOW_DIRECT_MS = 150;
 const CURL_TIMINGS = '{"http_code":"%{http_code}","remote_ip":"%{remote_ip}","dns":%{time_namelookup},"connect":%{time_connect},"tls":%{time_appconnect},"first_byte":%{time_starttransfer},"total":%{time_total}}';
 const TIMEOUT_MS = 4000;
@@ -194,6 +196,32 @@ function wan() {
         emit("wan", { status: "no_wan_interface_detected" });
 }
 
+function latency_url(settings) {
+    let url = trim(common.option(settings, "latency_test_url", TEST_URL));
+    return length(url) <= 1000 && match(url, /^https?:\/\/[^ \t\r\n]+$/) ? url : TEST_URL;
+}
+
+function fakeip_address(address) {
+    return ip.prefix_contains(sb.FAKEIP_INET4_RANGE, address) ||
+        ip.prefix_contains(sb.FAKEIP_INET6_RANGE, address);
+}
+
+function route_target(address) {
+    return ip.valid_ipv6(address) && ip.prefix_contains("2000::/3", address) &&
+        ip.valid_public_ip(address) && !fakeip_address(address);
+}
+
+function route_result(result) {
+    if (result.status != 0)
+        return { status: "unavailable", exit_code: result.status };
+    let text = trim(result.stdout ?? "");
+    let device = match(text, /(^|[ \t\r\n])dev[ \t]+([^ \t\r\n]+)/)?.[2];
+    let gateway = match(text, /(^|[ \t\r\n])via[ \t]+([^ \t\r\n]+)/)?.[2];
+    if (!device || !match(device, /^[A-Za-z0-9_.:@-]+$/))
+        return { status: "unavailable" };
+    return { status: "ok", device, gateway: ip.valid_ipv6(gateway) ? gateway : null };
+}
+
 function probe(tag, url) {
     let path = "/proxies/" + encoded(tag) + "/delay?url=" + encoded(url ?? TEST_URL) + "&timeout=" + TIMEOUT_MS;
     try {
@@ -239,14 +267,15 @@ function slow_direct(result) {
     return result.status != "ok" || result.delay_ms >= SLOW_DIRECT_MS;
 }
 
-// Pair each HTTPS target with both address families. All six processes have the
-// same deadline and run in parallel; the original direct-out measurement is unchanged.
+// Pair each HTTPS target with both address families and run them in parallel.
+// These fixed references remain comparable when the user changes the primary URL.
 function router_http_plan() {
     let plan = [];
     for (let target in [
         { provider: "google", url: TEST_URL, expected_status: 204 },
         { provider: "cloudflare", url: ALTERNATIVE_URL, expected_status: 204 },
-        { provider: "apple", url: APPLE_URL, expected_status: 200 }
+        { provider: "apple", url: APPLE_URL, expected_status: 200 },
+        { provider: "yandex", url: YANDEX_URL, expected_status: 204 }
     ]) {
         for (let family in [ 4, 6 ])
             push(plan, {
@@ -259,8 +288,10 @@ function router_http_plan() {
     return plan;
 }
 
-function direct_quality() {
-    for (let url in [ "http://www.gstatic.com/generate_204", ALTERNATIVE_URL ]) {
+function direct_quality(primary_url) {
+    for (let url in [ TEST_URL, "http://www.gstatic.com/generate_204", ALTERNATIVE_URL, YANDEX_URL ]) {
+        if (url == primary_url)
+            continue;
         let result = probe(sb.DIRECT_OUTBOUND_TAG, url);
         emit("outbound.compare", { tag: sb.DIRECT_OUTBOUND_TAG, url, ...result },
             result.status == "ok" ? "info" : "warn");
@@ -271,11 +302,33 @@ function direct_quality() {
     }
     let plan = router_http_plan();
     let results = exec.capture_parallel(map(plan, (item) => item.argv));
+    let targets = [];
     for (let i = 0; i < length(plan); i++) {
         let item = plan[i];
         let result = curl_result(results[i] ?? { status: 1 }, item.expected_status);
-        emit("router.http", { family: item.family, provider: item.provider, url: item.url, ...result },
-            result.status == "ok" ? "info" : "warn");
+        let address = result.remote_ip ?? "";
+        let fakeip = ip.valid_ip(address) ? fakeip_address(address) : null;
+        emit("router.http", { family: item.family, provider: item.provider, url: item.url,
+            fakeip, ...result }, result.status == "ok" ? "info" : "warn");
+        if (item.family == 6 && route_target(address))
+            push(targets, { provider: item.provider, target: address });
+    }
+    // The lookup is unmarked and describes the router's local routing decision,
+    // not the path inside sing-box. Do not log the router's source address.
+    let checks = [];
+    for (let item in targets) {
+        push(checks, [ "/sbin/ip", "-6", "route", "get", item.target ]);
+        push(checks, [ "ping6", "-c", "2", "-W", "1", "-w", "4", item.target ]);
+    }
+    if (length(checks) == 0)
+        return;
+    let routes = exec.capture_parallel(checks);
+    for (let i = 0; i < length(targets); i++) {
+        let item = targets[i];
+        let route = route_result(routes[i * 2] ?? { status: 1 });
+        let ping = ping_metrics(routes[i * 2 + 1]?.stdout);
+        emit("router.ipv6.route", { ...item, ...route }, route.status == "ok" ? "info" : "warn");
+        emit("router.ipv6.ping", { ...item, ...ping }, ping.status == "ok" ? "info" : "warn");
     }
 }
 
@@ -286,6 +339,8 @@ function sample() {
         emit("vpn", { status: "core_not_running" }, "warn");
     }
     else {
+        let settings = uci.get_all(constants.NEXROUTE_CONFIG_NAME, "settings") ?? {};
+        let primary_url = latency_url(settings);
         let tags = [ sb.DIRECT_OUTBOUND_TAG ];
         for (let section in uci.section_objects(constants.NEXROUTE_CONFIG_NAME, "section")) {
             if (!common.bool_option(section, "enabled", true) || !connections.is_connections_action(section.action))
@@ -295,14 +350,15 @@ function sample() {
                 push(tags, tag);
         }
         for (let tag in tags) {
-            let result = probe(tag);
-            emit("outbound", { tag, ...result }, result.status == "ok" ? "info" : "warn");
-            if (tag == sb.DIRECT_OUTBOUND_TAG && slow_direct(result)) {
-                try { direct_quality(); } catch (e) { emit("outbound.compare", { tag, status: "unavailable" }, "warn"); }
+            let result = probe(tag, primary_url);
+            emit("outbound", { tag, test_url: primary_url == TEST_URL ? "default" : "configured", ...result },
+                result.status == "ok" ? "info" : "warn");
+            if (tag == sb.DIRECT_OUTBOUND_TAG && (slow_direct(result) || primary_url != TEST_URL)) {
+                try { direct_quality(primary_url); } catch (e) { emit("outbound.compare", { tag, status: "unavailable" }, "warn"); }
             }
         }
         try {
-            dns_quality(uci.get_all(constants.NEXROUTE_CONFIG_NAME, "settings") ?? {});
+            dns_quality(settings);
         }
         catch (e) {
             emit("dns", { status: "unavailable" }, "warn");
@@ -316,4 +372,4 @@ if (ARGV[0] == "run" && (sourcepath(1) == null || sourcepath(1) == "")) {
         sample();
     exit(0);
 }
-return { encoded, probe, ping_metrics, dns_packet, dns_result, curl_result, slow_direct, router_http_plan };
+return { encoded, probe, ping_metrics, dns_packet, dns_result, curl_result, slow_direct, router_http_plan, latency_url, fakeip_address, route_target, route_result };
