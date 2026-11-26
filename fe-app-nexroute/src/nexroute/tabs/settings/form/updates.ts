@@ -61,8 +61,7 @@ export function addUpdateOptions(section: CBISection) {
     _('URL for the shared latency test of section nodes'),
   );
   LATENCY_TEST_URL_OPTIONS.forEach((value: string) => o.value(value));
-  o.default =
-    DEFAULT_LATENCY_TEST_URL || 'https://www.gstatic.com/generate_204';
+  o.default = DEFAULT_LATENCY_TEST_URL;
   o.validate = function (_section_id: string, value: string) {
     return validateUrlField(value);
   };

@@ -6,7 +6,6 @@ import {
   setClashApiConfigSections,
 } from './clashApi';
 import { isCopyableProxyLink } from '../../../helpers/isCopyableProxyLink';
-import { DEFAULT_LATENCY_TEST_URL } from '../../../constants';
 
 interface IGetDashboardSectionsResponse {
   success: boolean;
@@ -482,7 +481,7 @@ function getUrlTestDisplayName(id: string, settings: ItemSettings | undefined) {
 // What an unset group option means; config/connections.uc gives the generated configuration the
 // same values, and tests/fixtures/page_contract.json holds both.
 export const URLTEST_DEFAULTS = {
-  testing_url: DEFAULT_LATENCY_TEST_URL,
+  testing_url: 'https://www.gstatic.com/generate_204',
   expected_status: '*',
   check_interval: '3m',
   tolerance: 50,
@@ -492,7 +491,7 @@ export const URLTEST_DEFAULTS = {
 };
 
 export const FALLBACK_DEFAULTS = {
-  health_check_url: DEFAULT_LATENCY_TEST_URL,
+  health_check_url: 'https://www.gstatic.com/generate_204',
   health_check_interval: '5m',
   health_check_timeout: '5s',
   attempt_timeout: '5s',

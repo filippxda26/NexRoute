@@ -2974,3 +2974,9 @@ msgstr "Журнал качества соединений"
 
 msgid "Record WAN status, DNS and section response times every minute in the NexRoute log"
 msgstr "Записывать состояние WAN и время ответа DNS и секций каждую минуту в журнал NexRoute"
+
+msgid "Extended connection diagnostics"
+msgstr "Расширенная диагностика соединений"
+
+msgid "With connection quality logs enabled, also compare Google, Cloudflare, Apple and Yandex and check IPv6 routes"
+msgstr "При включённом журнале качества дополнительно сравнивать Google, Cloudflare, Apple и Яндекс и проверять маршруты IPv6"

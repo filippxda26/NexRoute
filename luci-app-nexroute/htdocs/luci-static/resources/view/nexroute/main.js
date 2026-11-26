@@ -40,9 +40,10 @@ var RESERVED_RUNTIME_TAGS = /* @__PURE__ */ new Set([
 ]);
 var DETOUR_TARGET_ACTIONS = ["connection"];
 var TAILSCALE_CONTROL_URL = "https://controlplane.tailscale.com";
-var DEFAULT_LATENCY_TEST_URL = "https://www.gstatic.com/generate_204";
+var DEFAULT_LATENCY_TEST_URL = "https://api.browser.yandex.ru/generate_204";
 var LATENCY_TEST_URL_OPTIONS = [
   DEFAULT_LATENCY_TEST_URL,
+  "https://www.gstatic.com/generate_204",
   "https://cp.cloudflare.com/generate_204",
   "https://captive.apple.com",
   "https://connectivity-check.ubuntu.com"
@@ -2574,7 +2575,7 @@ function getUrlTestDisplayName(id, settings) {
   return itemSettingString(settings, "display_name", id);
 }
 var URLTEST_DEFAULTS = {
-  testing_url: DEFAULT_LATENCY_TEST_URL,
+  testing_url: "https://www.gstatic.com/generate_204",
   expected_status: "*",
   check_interval: "3m",
   tolerance: 50,
@@ -2583,7 +2584,7 @@ var URLTEST_DEFAULTS = {
   interrupt_exist_connections: false
 };
 var FALLBACK_DEFAULTS = {
-  health_check_url: DEFAULT_LATENCY_TEST_URL,
+  health_check_url: "https://www.gstatic.com/generate_204",
   health_check_interval: "5m",
   health_check_timeout: "5s",
   attempt_timeout: "5s",
@@ -30427,6 +30428,16 @@ function addServiceOptions(section2) {
   );
   o.default = "0";
   o.rmempty = false;
+  o = section2.option(
+    form.Flag,
+    "connection_quality_extended",
+    _("Extended connection diagnostics"),
+    _(
+      "With connection quality logs enabled, also compare Google, Cloudflare, Apple and Yandex and check IPv6 routes"
+    )
+  );
+  o.default = "0";
+  o.rmempty = false;
 }
 
 // src/nexroute/tabs/settings/form/traffic.ts
@@ -30527,7 +30538,7 @@ function addUpdateOptions(section2) {
     _("URL for the shared latency test of section nodes")
   );
   LATENCY_TEST_URL_OPTIONS.forEach((value) => o.value(value));
-  o.default = DEFAULT_LATENCY_TEST_URL || "https://www.gstatic.com/generate_204";
+  o.default = DEFAULT_LATENCY_TEST_URL;
   o.validate = function(_section_id, value) {
     return validateUrlField(value);
   };

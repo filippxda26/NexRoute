@@ -46,4 +46,15 @@ export function addServiceOptions(section: CBISection) {
   );
   o.default = '0';
   o.rmempty = false;
+
+  o = section.option(
+    form.Flag,
+    'connection_quality_extended',
+    _('Extended connection diagnostics'),
+    _(
+      'With connection quality logs enabled, also compare Google, Cloudflare, Apple and Yandex and check IPv6 routes',
+    ),
+  );
+  o.default = '0';
+  o.rmempty = false;
 }

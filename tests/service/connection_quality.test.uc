@@ -33,10 +33,10 @@ t.test("wire DNS supports HTTPS and reports response status and truncation", () 
     t.eq(quality.dns_result("", 4660, 25).status, "invalid_response");
 });
 
-t.test("slow direct probes request additional diagnostics at the threshold or on failure", () => {
-    t.eq(quality.slow_direct({ status: "ok", delay_ms: 149 }), false);
-    t.eq(quality.slow_direct({ status: "ok", delay_ms: 150 }), true);
-    t.eq(quality.slow_direct({ status: "failed" }), true);
+t.test("extended diagnostics require explicit opt-in", () => {
+    t.eq(quality.extended_quality_enabled({}), false);
+    t.eq(quality.extended_quality_enabled({ connection_quality_extended: "0" }), false);
+    t.eq(quality.extended_quality_enabled({ connection_quality_extended: "1" }), true);
     let real = clash.request;
     clash.request = (method, path, body) => {
         t.eq(path, "/proxies/direct-out/delay?url=https%3A%2F%2Fcp.cloudflare.com%2Fgenerate_204&timeout=4000");
@@ -80,9 +80,10 @@ t.test("router HTTP comparison pairs each provider with IPv4 and IPv6", () => {
 t.test("configured latency test URL is used with a safe default", () => {
     let url = "https://api.browser.yandex.ru/generate_204";
     t.eq(quality.latency_url({ latency_test_url: url }), url);
-    t.eq(quality.latency_url({}), "https://www.gstatic.com/generate_204");
-    t.eq(quality.latency_url({ latency_test_url: "" }), "https://www.gstatic.com/generate_204");
-    t.eq(quality.latency_url({ latency_test_url: "file:///etc/passwd" }), "https://www.gstatic.com/generate_204");
+    t.eq(quality.latency_url({ latency_test_url: "https://www.gstatic.com/generate_204" }), "https://www.gstatic.com/generate_204");
+    t.eq(quality.latency_url({}), "https://api.browser.yandex.ru/generate_204");
+    t.eq(quality.latency_url({ latency_test_url: "" }), "https://api.browser.yandex.ru/generate_204");
+    t.eq(quality.latency_url({ latency_test_url: "file:///etc/passwd" }), "https://api.browser.yandex.ru/generate_204");
     let real = clash.request;
     clash.request = (method, path, body) => {
         t.eq(path, "/proxies/direct-out/delay?url=https%3A%2F%2Fapi.browser.yandex.ru%2Fgenerate_204&timeout=4000");

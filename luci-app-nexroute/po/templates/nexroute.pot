@@ -4101,3 +4101,9 @@ msgstr ""
 
 msgid "Record WAN status, DNS and section response times every minute in the NexRoute log"
 msgstr ""
+
+msgid "Extended connection diagnostics"
+msgstr ""
+
+msgid "With connection quality logs enabled, also compare Google, Cloudflare, Apple and Yandex and check IPv6 routes"
+msgstr ""

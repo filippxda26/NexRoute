@@ -11,11 +11,10 @@ let clash = require("singbox.clash_api");
 let sb = require("singbox.constants");
 let health = require("service.health");
 
-const TEST_URL = "https://www.gstatic.com/generate_204";
+const GOOGLE_URL = "https://www.gstatic.com/generate_204";
 const ALTERNATIVE_URL = "https://cp.cloudflare.com/generate_204";
 const APPLE_URL = "https://www.apple.com/library/test/success.html";
-const YANDEX_URL = "https://api.browser.yandex.ru/generate_204";
-const SLOW_DIRECT_MS = 150;
+const TEST_URL = "https://api.browser.yandex.ru/generate_204";
 const CURL_TIMINGS = '{"http_code":"%{http_code}","remote_ip":"%{remote_ip}","dns":%{time_namelookup},"connect":%{time_connect},"tls":%{time_appconnect},"first_byte":%{time_starttransfer},"total":%{time_total}}';
 const TIMEOUT_MS = 4000;
 
@@ -263,8 +262,8 @@ function curl_result(result, expected_status) {
     };
 }
 
-function slow_direct(result) {
-    return result.status != "ok" || result.delay_ms >= SLOW_DIRECT_MS;
+function extended_quality_enabled(settings) {
+    return common.bool_option(settings, "connection_quality_extended", false);
 }
 
 // Pair each HTTPS target with both address families and run them in parallel.
@@ -272,10 +271,10 @@ function slow_direct(result) {
 function router_http_plan() {
     let plan = [];
     for (let target in [
-        { provider: "google", url: TEST_URL, expected_status: 204 },
+        { provider: "google", url: GOOGLE_URL, expected_status: 204 },
         { provider: "cloudflare", url: ALTERNATIVE_URL, expected_status: 204 },
         { provider: "apple", url: APPLE_URL, expected_status: 200 },
-        { provider: "yandex", url: YANDEX_URL, expected_status: 204 }
+        { provider: "yandex", url: TEST_URL, expected_status: 204 }
     ]) {
         for (let family in [ 4, 6 ])
             push(plan, {
@@ -289,7 +288,7 @@ function router_http_plan() {
 }
 
 function direct_quality(primary_url) {
-    for (let url in [ TEST_URL, "http://www.gstatic.com/generate_204", ALTERNATIVE_URL, YANDEX_URL ]) {
+    for (let url in [ GOOGLE_URL, "http://www.gstatic.com/generate_204", ALTERNATIVE_URL, TEST_URL ]) {
         if (url == primary_url)
             continue;
         let result = probe(sb.DIRECT_OUTBOUND_TAG, url);
@@ -353,7 +352,7 @@ function sample() {
             let result = probe(tag, primary_url);
             emit("outbound", { tag, test_url: primary_url == TEST_URL ? "default" : "configured", ...result },
                 result.status == "ok" ? "info" : "warn");
-            if (tag == sb.DIRECT_OUTBOUND_TAG && (slow_direct(result) || primary_url != TEST_URL)) {
+            if (tag == sb.DIRECT_OUTBOUND_TAG && extended_quality_enabled(settings)) {
                 try { direct_quality(primary_url); } catch (e) { emit("outbound.compare", { tag, status: "unavailable" }, "warn"); }
             }
         }
@@ -372,4 +371,4 @@ if (ARGV[0] == "run" && (sourcepath(1) == null || sourcepath(1) == "")) {
         sample();
     exit(0);
 }
-return { encoded, probe, ping_metrics, dns_packet, dns_result, curl_result, slow_direct, router_http_plan, latency_url, fakeip_address, route_target, route_result };
+return { encoded, probe, ping_metrics, dns_packet, dns_result, curl_result, extended_quality_enabled, router_http_plan, latency_url, fakeip_address, route_target, route_result };
