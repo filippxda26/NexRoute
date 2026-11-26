@@ -62,21 +62,17 @@ export function render() {
             ),
           ]),
         ]),
-        E(
-          'ul',
-          { class: 'cbi-tabmenu fkp_monitoring-page__ip-tabs' },
-          [
-            E('li', { id: 'monitoring-ip-all', class: 'cbi-tab' }, [
-              E('a', { href: '#' }, _('All IP versions')),
-            ]),
-            E('li', { id: 'monitoring-ip-v4', class: 'cbi-tab-disabled' }, [
-              E('a', { href: '#' }, 'IPv4'),
-            ]),
-            E('li', { id: 'monitoring-ip-v6', class: 'cbi-tab-disabled' }, [
-              E('a', { href: '#' }, 'IPv6'),
-            ]),
-          ],
-        ),
+        E('ul', { class: 'cbi-tabmenu fkp_monitoring-page__ip-tabs' }, [
+          E('li', { id: 'monitoring-ip-all', class: 'cbi-tab' }, [
+            E('a', { href: '#' }, _('All IP versions')),
+          ]),
+          E('li', { id: 'monitoring-ip-v4', class: 'cbi-tab-disabled' }, [
+            E('a', { href: '#' }, 'IPv4'),
+          ]),
+          E('li', { id: 'monitoring-ip-v6', class: 'cbi-tab-disabled' }, [
+            E('a', { href: '#' }, 'IPv6'),
+          ]),
+        ]),
         E('ul', { class: 'cbi-tabmenu fkp_monitoring-page__tabs' }, [
           E('li', { id: 'monitoring-tab-active', class: 'cbi-tab' }, [
             E('a', { href: '#' }, _('Active')),
