@@ -35,4 +35,15 @@ export function addServiceOptions(section: CBISection) {
   o.value('panic', 'Panic');
   o.default = 'warn';
   o.rmempty = false;
+
+  o = section.option(
+    form.Flag,
+    'connection_quality_logs',
+    _('Connection quality logs'),
+    _(
+      'Record WAN, Wi-Fi and section response times every minute in the NexRoute log',
+    ),
+  );
+  o.default = '0';
+  o.rmempty = false;
 }

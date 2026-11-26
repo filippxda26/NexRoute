@@ -2968,3 +2968,9 @@ msgstr "Домены проверки IP"
 
 msgid "Automatically include %s and %s in this section"
 msgstr "Автоматически включать %s и %s в эту секцию"
+
+msgid "Connection quality logs"
+msgstr "Журнал качества соединений"
+
+msgid "Record WAN, Wi-Fi and section response times every minute in the NexRoute log"
+msgstr "Записывать состояние WAN, Wi-Fi и время ответа секций каждую минуту в журнал NexRoute"

@@ -40,6 +40,8 @@ const LOG_PATTERN = constants.NEXROUTE_LOG_PATTERN;
 const LOG_TAIL_LINES = 200;
 const LOG_BUFFER_LINES = 400;
 const LOG_POLL_MS = 1500;
+const QUALITY_POLL_MS = 60000;
+let quality_running = false;
 // Keep the existing log interest tracking for state waiters.
 const LOG_INTEREST_MS = 60000;
 
@@ -343,6 +345,21 @@ function log_tick() {
     poll_log(true);
 }
 
+// Network probes can wait on remote servers. Keep them outside the ubus event loop.
+function quality_tick() {
+    reread_changed_config();
+    if (quality_running || !common.bool_option(uci.get_all(constants.NEXROUTE_CONFIG_NAME, "settings"), "connection_quality_logs", false))
+        return;
+    let library = getenv("NEXROUTE_LIB") || "/usr/lib/nexroute";
+    quality_running = true;
+    let child = require("uloop").process("/usr/bin/ucode", [ "-L", library, library + "/service/connection_quality.uc", "run" ],
+        getenv(), () => { quality_running = false; });
+    if (child == null) {
+        quality_running = false;
+        exec.log("warn", "Connection quality: could not start sample");
+    }
+}
+
 function object_methods() {
     return {
         state: {
@@ -518,6 +535,8 @@ function run() {
     uloop.interval(LOG_POLL_MS, function() {
         log_tick();
     });
+
+    uloop.interval(QUALITY_POLL_MS, quality_tick);
 
     // Enforced here, inside what the transport in front of a parked request will wait for.
     uloop.interval(MAX_WAIT_MS, function() {
