@@ -19933,7 +19933,7 @@ function validateSubscriptionUrlEntry(_section_id, value) {
 
 // src/nexroute/tabs/sections/constants.ts
 var RULE_SET_ITEM_SETTINGS_KEY = "rule_set_settings";
-var ROUTING_ACTIONS = ["connection", "bypass", "block"];
+var ROUTING_ACTIONS = ["connection", "bypass", "direct", "block"];
 var JSON_ENDPOINT_PLACEHOLDER = [
   "{",
   '  "type": "wireguard",',
@@ -23599,6 +23599,8 @@ function getActionOptionLabel(action) {
       return "Block";
     case "bypass":
       return "Bypass";
+    case "direct":
+      return "Direct";
     case "connection":
       return "Connection";
     case "dns":
@@ -23622,6 +23624,7 @@ function populateActionOptionValues(option2, currentAction) {
   delete option2.vallist;
   option2.value("connection", getActionOptionLabel("connection"));
   option2.value("bypass", "Bypass");
+  option2.value("direct", "Direct");
   option2.value("block", "Block");
   option2.value("dns", "DNS");
   const stored = `${currentAction || ""}`.trim();
