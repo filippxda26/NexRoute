@@ -716,11 +716,11 @@ msgstr "ID устройства"
 msgid "Device name"
 msgstr "Имя устройства"
 
-msgid "Device or IP"
-msgstr "Устройство или IP"
-
 msgid "device waiting for approval in the console"
 msgstr "устройство ждёт одобрения в консоли"
+
+msgid "Device, MAC or IP"
+msgstr "Устройство, MAC или IP"
 
 msgid "Devices"
 msgstr "Устройства"

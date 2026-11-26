@@ -995,13 +995,13 @@ msgstr ""
 msgid "Device name"
 msgstr ""
 
-#: fe-app-nexroute/src/nexroute/tabs/sections/conditions.ts
-#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
-msgid "Device or IP"
-msgstr ""
-
 #: fe-app-nexroute/src/nexroute/tabs/diagnostic/checks/servers.ts
 msgid "device waiting for approval in the console"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/sections/conditions.ts
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/network.ts
+msgid "Device, MAC or IP"
 msgstr ""
 
 #: fe-app-nexroute/src/nexroute/tabs/servers/tailscale.ts

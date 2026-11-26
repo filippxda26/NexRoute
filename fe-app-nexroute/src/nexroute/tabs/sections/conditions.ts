@@ -232,7 +232,7 @@ export function addLocalDeviceSubnetDynamicField(
   );
 
   o.modalonly = true;
-  o.placeholder = _('Device or IP');
+  o.placeholder = _('Device, MAC or IP');
   o.validate = function (_section_id: string, value: string) {
     if (!value || value.length === 0) {
       return true;

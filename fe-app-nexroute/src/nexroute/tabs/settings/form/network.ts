@@ -17,7 +17,7 @@ export function addNetworkOptions(section: CBISection) {
       'NexRoute ignores these devices entirely: their traffic is not routed and their DNS is not captured',
     ),
   );
-  excludedDevicesOption.placeholder = _('Device or IP');
+  excludedDevicesOption.placeholder = _('Device, MAC or IP');
   excludedDevicesOption.validate = function (
     _section_id: string,
     value: string,

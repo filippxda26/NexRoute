@@ -23782,7 +23782,7 @@ function addLocalDeviceSubnetDynamicField(section2, config) {
     config.description
   );
   o.modalonly = true;
-  o.placeholder = _("Device or IP");
+  o.placeholder = _("Device, MAC or IP");
   o.validate = function(_section_id, value) {
     if (!value || value.length === 0) {
       return true;
@@ -30268,7 +30268,7 @@ function addNetworkOptions(section2) {
       "NexRoute ignores these devices entirely: their traffic is not routed and their DNS is not captured"
     )
   );
-  excludedDevicesOption.placeholder = _("Device or IP");
+  excludedDevicesOption.placeholder = _("Device, MAC or IP");
   excludedDevicesOption.validate = function(_section_id, value) {
     if (!value || value.length === 0 || value === SYSTEM_DEVICE_VALUE || isMacDeviceValue(value)) {
       return true;
