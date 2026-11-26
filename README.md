@@ -1,66 +1,200 @@
 # NexRoute
 
-NexRoute — самостоятельный форк [Forkop](https://github.com/ushan0v/forkop), созданного ushan0v и участниками проекта. Исходная лицензия GPL-2.0-or-later сохранена. Ядро [sing-box-forkop](https://github.com/ushan0v/sing-box-forkop) и списки [forkop-lists](https://github.com/ushan0v/forkop-lists) остаются внешними зависимостями.
+**Гибкая маршрутизация трафика на OpenWrt с управлением через LuCI.**
 
-Маршрутизация трафика OpenWrt по правилам.
+NexRoute позволяет выбирать маршрут для отдельных сайтов, подсетей, приложений по их сетевым адресам и устройств локальной сети. Несколько VPN-подключений, прямой доступ, DNS и диагностика управляются из одного веб-интерфейса роутера.
 
-[![Релиз форка](https://img.shields.io/github/v/release/filippxda26/NexRoute?label=%D1%80%D0%B5%D0%BB%D0%B8%D0%B7&color=0d9488)](https://github.com/filippxda26/NexRoute/releases/latest)
-[![Документация](https://img.shields.io/badge/%D0%B4%D0%BE%D0%BA%D1%83%D0%BC%D0%B5%D0%BD%D1%82%D0%B0%D1%86%D0%B8%D1%8F-filippxda26.github.io-0d9488)](https://filippxda26.github.io/NexRoute/)
-[![Чат в Telegram](https://img.shields.io/badge/Telegram-%D1%87%D0%B0%D1%82-2CA5E0?logo=telegram&logoColor=white)](https://t.me/forkop_chat)
+[![OpenWrt 24.10+](https://img.shields.io/badge/OpenWrt-24.10%2B-00B5E2?logo=openwrt&logoColor=white)](https://openwrt.org/)
+[![Релизы](https://img.shields.io/github/v/release/filippxda26/NexRoute?label=Release&color=0d9488)](https://github.com/filippxda26/NexRoute/releases)
+[![Frontend CI](https://github.com/filippxda26/NexRoute/actions/workflows/frontend-ci.yml/badge.svg?branch=main)](https://github.com/filippxda26/NexRoute/actions/workflows/frontend-ci.yml)
+[![Backend CI](https://github.com/filippxda26/NexRoute/actions/workflows/backend-ci.yml/badge.svg?branch=main)](https://github.com/filippxda26/NexRoute/actions/workflows/backend-ci.yml)
+[![GPL-2.0-or-later](https://img.shields.io/badge/license-GPL--2.0--or--later-blue)](LICENSE)
 
-[Установка](docs/guide/install.md) · [Быстрый старт](docs/guide/quick-start.md) · [Руководство](docs/sections/index.md)
+[Документация](https://filippxda26.github.io/NexRoute/) · [Установка](docs/guide/install.md) · [Быстрый старт](docs/guide/quick-start.md) · [Сообщить об ошибке](https://github.com/filippxda26/NexRoute/issues)
 
-## Требования
+## Возможности
 
-- OpenWrt 24.10 или новее;
-- от 128 МБ оперативной памяти, лучше 256 МБ;
-- от 18 до 38 МБ свободной флеш-памяти, в зависимости от [сборки ядра](https://filippxda26.github.io/NexRoute/guide/install#сборки-ядра).
+| Компонент | Что поддерживается |
+| --- | --- |
+| Маршрутизация | Домены, IP-адреса, подсети IPv4/IPv6, порты, устройства, готовые списки и пользовательские наборы правил |
+| Устройства | Выбор по MAC для IPv4 и IPv6, ручной ввод IP/CIDR, полное исключение устройства из маршрутизации |
+| Подключения | URI серверов, подписки, туннели, сетевые интерфейсы и пользовательские JSON outbound |
+| Выбор сервера | Ручное переключение, URLTest и Fallback |
+| DNS | UDP, TCP, DoT, DoH, DoQ, HTTP/3, DNS Fallback, статические записи, DNS через секцию |
+| VPN-сервер | Подключение собственных клиентов к роутеру, отдельные настройки маршрутизации клиентов |
+| Управление | LuCI, дашборд, мониторинг соединений, проверка состояния и журнал качества |
 
-## Установка
+Доступность отдельных протоколов зависит от установленной сборки ядра.
 
-Подключитесь к роутеру по SSH и выполните:
+## Как работает маршрутизация
+
+Основная единица настройки — **секция**. У каждой секции есть условия совпадения и действие.
+
+| Действие | Назначение |
+| --- | --- |
+| `Connection` | Отправить совпавший трафик через выбранное подключение |
+| `Bypass` | Направить трафик напрямую, исключив его из нижестоящих секций |
+| `Direct` | Использовать системный DNS для совпавших доменов без FakeIP; обходить TProxy для подходящих IP-правил и полностью выбранных устройств |
+| `Block` | Заблокировать совпавшие соединения |
+| `DNS` | Назначить DNS-серверы для совпавших доменов, не меняя маршрут соединений |
+
+Секции проверяются сверху вниз: применяется первое подходящее правило. Трафик вне секций идёт напрямую.
+
+Например, можно направить отдельный сайт через одно подключение, весь остальной трафик выбранного устройства — через другое, а остальные устройства оставить на обычном интернет-соединении.
+
+> **Direct и Bypass — разные действия.** Доменные правила Direct не гарантируют полного обхода sing-box при перехвате всего трафика устройства. Для исключения устройства вместе с DNS предназначена общая настройка «Исключить устройства из маршрутизации».
+
+Подробнее: [секции](docs/sections/index.md), [встроенные списки](docs/sections/lists.md), [наборы правил](docs/sections/rule-sets.md).
+
+### Подключения и туннели
+
+- VLESS, Trojan, Shadowsocks, Hysteria2, TUIC, VMess, AnyTLS и другие протоколы ядра.
+- Подписки в форматах списков URI, Clash/mihomo, sing-box, Xray, SIP008 и Base64; фильтрация и автоматическое обновление.
+- WireGuard, AmneziaWG, Cloudflare WARP, OpenVPN, Tailscale и OpenConnect.
+- URLTest для выбора рабочего сервера с небольшой задержкой; Fallback для переключения на резервные серверы в заданном порядке.
+- Пользовательские JSON outbound и endpoint для расширенных конфигураций.
+
+### Особенности NexRoute
+
+NexRoute развивается отдельно от исходного Forkop, сохраняя совместимость с его ядром.
+
+- **MAC и dual-stack.** Одно устройство в списке вместо отдельных записей IPv4 и IPv6. Ранее сохранённые IP-правила продолжают работать.
+- **Direct.** Отдельное действие для прямой маршрутизации с системным DNS и обходом TProxy в поддерживаемых случаях.
+- **Расширенный FakeIP.** Опциональный режим для полностью проксируемых устройств с сохранением реальных адресов при совпадении с поддерживаемыми IP-исключениями.
+- **HTTPS DNS / ECH.** Опциональная передача DNS-ответов типа HTTPS (65). Для работы ECH необходима поддержка на стороне клиента и сервера.
+- **Диагностика IPv4 и IPv6.** Проверки публичных адресов, WAN, DNS, задержки секций и доступности явно настроенных TCP-узлов VPN.
+- **Независимая проверка direct-out.** Прямой выход проверяется через Яндекс; для узлов секций по умолчанию используется Google, адрес их проверки настраивается отдельно.
+
+Подробности и ограничения этих функций приведены в [настройках](docs/settings.md) и [руководстве по диагностике](docs/troubleshooting/diagnostics.md).
+
+## Системные требования
+
+| Параметр | Требование |
+| --- | --- |
+| Система | OpenWrt 24.10 или новее |
+| Оперативная память | От 128 МБ; рекомендуется 256 МБ |
+| Свободная флеш-память | Примерно 18–38 МБ в зависимости от сборки ядра |
+| Интерфейс управления | LuCI |
+| Ядро | [sing-box-forkop](https://github.com/ushan0v/sing-box-forkop) |
+
+### Сборки ядра
+
+| Сборка | Для каких задач | Свободное место (ориентир для ARM64) |
+| --- | --- | ---: |
+| `tiny` | Основные прокси-протоколы, без туннелей | 18 МБ |
+| `base` | Основные протоколы, WireGuard, AmneziaWG, WARP и OpenVPN | 22 МБ |
+| `full` | Расширенный набор протоколов, включая Tailscale и OpenConnect | 38 МБ |
+
+Для большинства роутеров рекомендуется `base`. Полный перечень протоколов и ограничения архитектур: [сборки ядра](docs/guide/install.md#сборки-ядра).
+
+## Установка и обновление
+
+> [!IMPORTANT]
+> Для установки необходим опубликованный [релиз NexRoute с пакетами](https://github.com/filippxda26/NexRoute/releases). Наличие исходного кода в ветке `main` не означает, что готовые пакеты уже доступны. До публикации первого релиза установка через этот скрипт недоступна.
+
+Подключиться к роутеру по SSH и выполнить:
 
 ```sh
 sh <(wget -O - https://raw.githubusercontent.com/filippxda26/NexRoute/main/install.sh)
 ```
 
-Команда устанавливает или обновляет [этот форк NexRoute](https://github.com/filippxda26/NexRoute) и использует оригинальное ядро [sing-box-forkop](https://github.com/ushan0v/sing-box-forkop). Для установки нужен опубликованный релиз с пакетами; один лишь исходный код из ветки `main` недостаточен.
+Установщик выбирает пакеты NexRoute для системы, устанавливает необходимую сборку ядра и используется также для обновления проекта. При обновлении сохраняется установленный вариант ядра; изменение формата конфигурации обрабатывается миграциями.
 
-В форке добавлен отключённый по умолчанию переключатель DNS-записей HTTPS (тип 65) для поддержки ECH. Для работы ECH также необходима поддержка на клиенте и сервере.
+Сменить сборку ядра:
 
-## Переход с Forkop
+```sh
+sh <(wget -O - https://raw.githubusercontent.com/filippxda26/NexRoute/main/install.sh) --variant
+```
 
-Для обновления с Forkop используй установщик NexRoute, а не прямую установку APK/IPK поверх старых пакетов. Он проверяет совместимость конфигурации, сохраняет её и состояние в отдельной резервной папке, удаляет старые пакеты в штатной транзакции и восстанавливает настройки в NexRoute. Подробнее: [миграция](docs/guide/migration-forkop.md).
+Журнал установки: `/tmp/nexroute-install.log`.
 
-## Возможности
+[Полная инструкция](docs/guide/install.md) · [Удаление](docs/guide/install.md#удаление)
 
-- **Секции** для точечной маршрутизации трафика по правилам и спискам.
-- **Подключения** по ссылкам VLESS, Trojan, Shadowsocks, Hysteria2 и другим.
-- **Подписки** с поддержкой всех основных форматов.
-- **Туннели** WireGuard, AmneziaWG, Cloudflare WARP, OpenVPN и Tailscale.
-- **URLTest и Fallback** сами выбирают рабочий сервер.
-- **DNS** с шифрованием и DNS Fallback.
-- **VPN-сервер** на самом роутере.
-- **Дашборд и мониторинг** соединений.
+### Переход с Forkop
+
+Не устанавливать APK/IPK NexRoute поверх работающего Forkop вручную: проекты используют общее ядро и одинаковые порты TProxy.
+
+Для поддерживаемой схемы конфигурации Forkop `2.0.0` установщик NexRoute проверяет совместимость, создаёт резервную копию, заменяет пакеты и переносит настройки. Автоматический откат пакетов после неудачной транзакции не предусмотрен.
+
+Перед переходом рекомендуется сохранить резервную копию OpenWrt вне роутера.
+
+[Инструкция миграции с Forkop](docs/guide/migration-forkop.md)
+
+## Быстрый старт
+
+После установки открыть **LuCI → Службы → NexRoute**.
+
+1. На вкладке **Секции** добавить секцию с действием Connection.
+2. Указать собственное подключение или подписку.
+3. На вкладке **Условия** выбрать нужные домены, списки или устройства.
+4. Сохранить и применить настройки; при необходимости запустить службу на вкладке **Статус**.
+5. Запустить диагностику и проверить соединения на дашборде.
+
+[Пошаговое руководство](docs/guide/quick-start.md)
+
+## Диагностика и мониторинг
+
+Веб-интерфейс позволяет проверять состояние службы, DNS, маршрутизацию, публичные адреса и задержки узлов, а также наблюдать активные соединения.
+
+В настройках можно включить журнал качества соединений:
+
+- базовый режим — регулярные проверки WAN, DNS и задержек секций;
+- расширенный режим — сравнение HTTP/HTTPS-проверок IPv4 и IPv6, диагностика IPv6-маршрутов и TCP-доступности явно настроенных VPN-узлов.
+
+Расширенные HTTP-проверки требуют `curl`. TCP-проверка доступности не заменяет проверку самого протокола VPN. Оба режима журнала по умолчанию выключены.
+
+[Настройки журнала](docs/settings.md#служба) · [Расшифровка ошибок диагностики](docs/troubleshooting/diagnostics.md)
 
 ## Документация
 
-Документация на русском находится в каталоге [docs](docs/). Сайт GitHub Pages публикуется отдельным workflow.
+Документация ведётся на русском языке. Если сайт GitHub Pages недоступен, все инструкции можно открыть непосредственно в репозитории.
 
-## Помощь
+| Раздел | Руководство |
+| --- | --- |
+| Начало работы | [Установка](docs/guide/install.md) · [Быстрый старт](docs/guide/quick-start.md) · [Миграция](docs/guide/migration-forkop.md) |
+| Маршрутизация | [Секции](docs/sections/index.md) · [Списки](docs/sections/lists.md) · [Rule sets](docs/sections/rule-sets.md) |
+| Подключения | [URI](docs/connections/links.md) · [Подписки](docs/connections/subscriptions.md) · [Сетевые интерфейсы](docs/connections/interface.md) · [JSON](docs/connections/json.md) |
+| Группы серверов | [URLTest](docs/connections/urltest.md) · [Fallback](docs/connections/fallback.md) |
+| Туннели | [Обзор](docs/tunnels/index.md) · [AmneziaWG](docs/tunnels/amneziawg.md) · [WARP](docs/tunnels/warp.md) · [Tailscale](docs/tunnels/tailscale.md) |
+| Служба | [DNS](docs/dns/index.md) · [VPN-сервер](docs/servers/index.md) · [Настройки](docs/settings.md) · [Диагностика](docs/troubleshooting/diagnostics.md) |
 
-Ошибки NexRoute: [Issues](https://github.com/filippxda26/NexRoute/issues). Чат ниже относится к исходному Forkop.
+## Разработка
 
-Вопросы и помощь в [чате в Telegram](https://t.me/forkop_chat). Об ошибках и предложениях пишите в [Issues](https://github.com/filippxda26/NexRoute/issues).
+| Каталог | Назначение |
+| --- | --- |
+| [`nexroute/`](nexroute/) | Служба, конфигурация и логика маршрутизации OpenWrt |
+| [`fe-app-nexroute/`](fe-app-nexroute/) | Исходный код интерфейса на TypeScript |
+| [`luci-app-nexroute/`](luci-app-nexroute/) | Пакет LuCI, собранный интерфейс и локализация |
+| [`docs/`](docs/) | Документация VitePress |
+| [`.github/workflows/`](.github/workflows/) | Автоматические проверки, сборка и публикация документации |
 
-## Поддержать оригинальный Forkop
+Для проверки интерфейса используются форматирование Prettier, ESLint, Vitest и сборка TypeScript. Готовый JavaScript и каталоги переводов должны соответствовать исходникам.
 
-* 💳 **Карты РФ / СБП / Tinkoff Pay:** [Донат на CloudTips](https://pay.cloudtips.ru/p/385e5af2)
-* 💎 **USDT (сеть TON):** `UQAOCDav39WJ2gvnzs9RQ_IsF2dcGrcpw4U0j6XGO7je7uwm`
-* 🟢 **USDT (сеть TRC-20):** `TEMaZFyM8RQpkbd5LvB8CFJwxCyhHauKAe`
-* 🪙 **USDT (сети ERC-20 / BEP-20 / Polygon / Monad):** `0xe8aabb21c320240fe45b6087e68c6fe40a92d8bf`
-* 🟠 **USDT (сеть Solana):** `AhhUjTci9zDKQjUfgLacFR4LiHX9nmZud6DZ8YdbpjEB`
+```sh
+cd fe-app-nexroute
+yarn install --frozen-lockfile
+yarn ci
+```
 
-## Лицензия
+[GitHub Actions](https://github.com/filippxda26/NexRoute/actions) · [История изменений](https://github.com/filippxda26/NexRoute/commits/main/)
+
+## Обратная связь
+
+Ошибки и предложения, относящиеся к NexRoute, принимаются в [GitHub Issues](https://github.com/filippxda26/NexRoute/issues).
+
+При сообщении об ошибке полезно указать версию OpenWrt, модель роутера, версию NexRoute и сборку ядра, описание проблемы, шаги воспроизведения и обезличенные результаты диагностики. Не публиковать ключи, пароли, ссылки на подписки и другие секреты конфигурации.
+
+[Telegram-чат](https://t.me/forkop_chat) относится к оригинальному Forkop, а не является отдельным официальным чатом NexRoute.
+
+## Происхождение проекта и лицензия
+
+NexRoute — самостоятельный форк [Forkop](https://github.com/ushan0v/forkop), созданного **ushan0v и участниками проекта**. Разработка NexRoute ведётся в этом репозитории; исходная лицензия и авторство сохраняются.
+
+Внешние зависимости:
+
+- [sing-box-forkop](https://github.com/ushan0v/sing-box-forkop) — ядро маршрутизации и подключений;
+- [forkop-lists](https://github.com/ushan0v/forkop-lists) — встроенные списки правил.
+
+Поддержать разработчиков оригинального Forkop можно через [CloudTips](https://pay.cloudtips.ru/p/385e5af2). Другие реквизиты и актуальные способы поддержки указаны в репозитории [Forkop](https://github.com/ushan0v/forkop).
 
 NexRoute распространяется по лицензии [GPL-2.0-or-later](LICENSE).
