@@ -12,6 +12,7 @@ let health = require("service.health");
 
 const TEST_URL = "https://www.gstatic.com/generate_204";
 const ALTERNATIVE_URL = "https://cp.cloudflare.com/generate_204";
+const APPLE_URL = "https://www.apple.com/library/test/success.html";
 const SLOW_DIRECT_MS = 150;
 const CURL_TIMINGS = '{"http_code":"%{http_code}","remote_ip":"%{remote_ip}","dns":%{time_namelookup},"connect":%{time_connect},"tls":%{time_appconnect},"first_byte":%{time_starttransfer},"total":%{time_total}}';
 const TIMEOUT_MS = 4000;
@@ -210,7 +211,7 @@ function probe(tag, url) {
 
 // These timings describe curl's system route, not sing-box's outbound. The router
 // can itself be covered by NexRoute rules, and its resolver may differ from the core's.
-function curl_result(result) {
+function curl_result(result, expected_status) {
     if (result.status != 0)
         return { status: "failed", exit_code: result.status };
     let data = common.parse_json(result.stdout);
@@ -225,7 +226,7 @@ function curl_result(result) {
     }
     let ms = (seconds) => int(seconds * 1000 + 0.5);
     return {
-        status: data.http_code == "204" ? "ok" : "unexpected_http_status",
+        status: int(data.http_code) == (expected_status ?? 204) ? "ok" : "unexpected_http_status",
         http_status: int(data.http_code), remote_ip: data.remote_ip ?? null,
         dns_ms: ms(data.dns), tcp_ms: ms(data.connect - data.dns),
         tls_ms: ms(data.tls - data.connect),
@@ -238,6 +239,26 @@ function slow_direct(result) {
     return result.status != "ok" || result.delay_ms >= SLOW_DIRECT_MS;
 }
 
+// Pair each HTTPS target with both address families. All six processes have the
+// same deadline and run in parallel; the original direct-out measurement is unchanged.
+function router_http_plan() {
+    let plan = [];
+    for (let target in [
+        { provider: "google", url: TEST_URL, expected_status: 204 },
+        { provider: "cloudflare", url: ALTERNATIVE_URL, expected_status: 204 },
+        { provider: "apple", url: APPLE_URL, expected_status: 200 }
+    ]) {
+        for (let family in [ 4, 6 ])
+            push(plan, {
+                ...target, family,
+                argv: [ "curl", "-q", "-" + family, "--silent", "--noproxy", "*",
+                    "--connect-timeout", "3", "--max-time", "4", "--output", "/dev/null",
+                    "--write-out", CURL_TIMINGS, target.url ]
+            });
+    }
+    return plan;
+}
+
 function direct_quality() {
     for (let url in [ "http://www.gstatic.com/generate_204", ALTERNATIVE_URL ]) {
         let result = probe(sb.DIRECT_OUTBOUND_TAG, url);
@@ -248,15 +269,12 @@ function direct_quality() {
         emit("router.http", { status: "unavailable", reason: "curl not installed" });
         return;
     }
-    let commands = [];
-    for (let family in [ 4, 6 ])
-        push(commands, [ "curl", "-q", "-" + family, "--silent", "--noproxy", "*",
-            "--connect-timeout", "3", "--max-time", "4", "--output", "/dev/null",
-            "--write-out", CURL_TIMINGS, TEST_URL ]);
-    let results = exec.capture_parallel(commands);
-    for (let i = 0; i < length(results); i++) {
-        let result = curl_result(results[i]);
-        emit("router.http", { family: i == 0 ? 4 : 6, url: TEST_URL, ...result },
+    let plan = router_http_plan();
+    let results = exec.capture_parallel(map(plan, (item) => item.argv));
+    for (let i = 0; i < length(plan); i++) {
+        let item = plan[i];
+        let result = curl_result(results[i] ?? { status: 1 }, item.expected_status);
+        emit("router.http", { family: item.family, provider: item.provider, url: item.url, ...result },
             result.status == "ok" ? "info" : "warn");
     }
 }
@@ -298,4 +316,4 @@ if (ARGV[0] == "run" && (sourcepath(1) == null || sourcepath(1) == "")) {
         sample();
     exit(0);
 }
-return { encoded, probe, ping_metrics, dns_packet, dns_result, curl_result, slow_direct };
+return { encoded, probe, ping_metrics, dns_packet, dns_result, curl_result, slow_direct, router_http_plan };

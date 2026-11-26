@@ -58,4 +58,22 @@ t.test("curl timings report separate phases and distinguish failures", () => {
     t.eq(quality.curl_result({ status: 0, stdout: replace(stdout, '0.150', '0.010') }), { status: "invalid_response" });
 });
 
+t.test("router HTTP comparison pairs each provider with IPv4 and IPv6", () => {
+    let plan = quality.router_http_plan();
+    t.eq(length(plan), 6);
+    t.eq(map(plan, (item) => [ item.provider, item.family, item.expected_status ]), [
+        [ "google", 4, 204 ], [ "google", 6, 204 ],
+        [ "cloudflare", 4, 204 ], [ "cloudflare", 6, 204 ],
+        [ "apple", 4, 200 ], [ "apple", 6, 200 ]
+    ]);
+    for (let item in plan) {
+        t.eq(item.argv[2], "-" + item.family);
+        t.eq(item.argv[length(item.argv) - 1], item.url);
+        t.ok(index(item.argv, "--max-time") >= 0);
+    }
+    let stdout = '{"http_code":"200","remote_ip":"2001:db8::1","dns":0.001,"connect":0.040,"tls":0.080,"first_byte":0.120,"total":0.121}';
+    t.eq(quality.curl_result({ status: 0, stdout }, 200).status, "ok");
+    t.eq(quality.curl_result({ status: 0, stdout }, 204).status, "unexpected_http_status");
+});
+
 t.done();
