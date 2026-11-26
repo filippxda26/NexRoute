@@ -6,7 +6,7 @@
       "config_path": "/etc/sing-box/config.json",
       "dns_rewrite_ttl": "60",
       "dns_timeout": "10s",
-      "latency_test_url": "https://www.gstatic.com/generate_204",
+      "latency_test_url": "https://api.browser.yandex.ru/generate_204",
       "source_network_interfaces": "br-lan",
       "update_interval": "1d"
     },
