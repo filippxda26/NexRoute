@@ -193,6 +193,4 @@ NexRoute — самостоятельный форк [Forkop](https://github.com
 - [sing-box-forkop](https://github.com/ushan0v/sing-box-forkop) — ядро маршрутизации и подключений;
 - [forkop-lists](https://github.com/ushan0v/forkop-lists) — встроенные списки правил.
 
-Поддержать разработчиков оригинального Forkop можно через [CloudTips](https://pay.cloudtips.ru/p/385e5af2). Другие реквизиты и актуальные способы поддержки указаны в репозитории [Forkop](https://github.com/ushan0v/forkop).
-
 NexRoute распространяется по лицензии [GPL-2.0-or-later](LICENSE).
