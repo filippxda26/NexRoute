@@ -278,6 +278,9 @@ msgstr "Кроме выбранных"
 msgid "All of the clients' traffic goes to the selected routing mode"
 msgstr "Весь трафик клиентов уходит в выбранный режим маршрутизации"
 
+msgid "All IP versions"
+msgstr "Все версии IP"
+
 msgid "All remaining"
 msgstr "Все оставшиеся"
 

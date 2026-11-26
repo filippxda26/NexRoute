@@ -65,6 +65,10 @@ rules leave it alone. */
     display: none;
 }
 
+.fkp_monitoring-page .fkp_monitoring-page__ip-tabs {
+    margin-bottom: 12px;
+}
+
 .fkp_monitoring-page__tab-count {
     color: var(--text-color-medium, #888);
     font-variant-numeric: tabular-nums;

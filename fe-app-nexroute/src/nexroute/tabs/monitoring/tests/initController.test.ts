@@ -129,6 +129,7 @@ function connection(
   id: string,
   {
     sourceIP = '192.168.1.101',
+    destinationIP = '',
     type = 'tproxy/tproxy-in',
     chains = ['direct-out'],
     rule = '',
@@ -143,6 +144,7 @@ function connection(
     metadata: {
       host: `${id}.example.com`,
       destinationPort: '443',
+      destinationIP,
       network: 'tcp',
       sourceIP,
       type,
@@ -467,6 +469,42 @@ describe('the Monitoring sources', () => {
 });
 
 describe('the Monitoring filters', () => {
+  it('filters destination IP families independently of status and device', async () => {
+    answerWith(
+      connection('a', { destinationIP: '192.0.2.1' }),
+      connection('b', {
+        destinationIP: '2001:db8::1',
+        sourceIP: '192.168.1.102',
+      }),
+      connection('c'),
+    );
+    await openMonitoring();
+
+    expect(activeCount()).toBe('3');
+    showTab('monitoring-ip-v4');
+    expect([hosts(), activeCount()]).toEqual([['a.example.com'], '1']);
+    expect(byId('monitoring-close-all').textContent).toBe('Close matching');
+
+    showTab('monitoring-ip-v6');
+    expect([hosts(), activeCount()]).toEqual([['b.example.com'], '1']);
+    choose('monitoring-device-filter', '192.168.1.101');
+    expect(activeCount()).toBe('0');
+    choose('monitoring-device-filter', '');
+
+    answerWith();
+    await vi.advanceTimersByTimeAsync(2000);
+    showTab('monitoring-tab-closed');
+    expect(hosts()).toEqual(['b.example.com']);
+    showTab('monitoring-ip-v4');
+    expect(hosts()).toEqual(['a.example.com']);
+    showTab('monitoring-ip-all');
+    expect(hosts().sort()).toEqual([
+      'a.example.com',
+      'b.example.com',
+      'c.example.com',
+    ]);
+  });
+
   it('shows only the connections of the chosen device', async () => {
     answerWith(connection('a'), connection('b', { sourceIP: '192.168.1.102' }));
     await openMonitoring();

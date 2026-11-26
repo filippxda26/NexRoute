@@ -372,6 +372,10 @@ msgstr ""
 msgid "All of the clients' traffic goes to the selected routing mode"
 msgstr ""
 
+#: fe-app-nexroute/src/nexroute/tabs/monitoring/render.ts
+msgid "All IP versions"
+msgstr ""
+
 #: fe-app-nexroute/src/nexroute/tabs/sections/fallback.ts
 msgid "All remaining"
 msgstr ""

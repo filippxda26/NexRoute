@@ -26,6 +26,7 @@ import {
   renderConnectionListState,
 } from './connectionList';
 import { formatEndpoint } from './endpoint';
+import { isIPv4, isIPv6 } from '../../../validators/validateIp';
 import { closeConnections } from './closeConnections';
 import {
   compareSources,
@@ -35,6 +36,8 @@ import {
 } from './source';
 
 type MonitoringTabId = 'active' | 'closed';
+type IpFilter = 'all' | 'v4' | 'v6';
+const IP_FILTERS: IpFilter[] = ['all', 'v4', 'v6'];
 
 interface ClashConnectionMetadata {
   destinationIP?: string;
@@ -108,6 +111,7 @@ let pendingConnectionsPayload: ClashConnectionsPayload | null = null;
 let activeTab: MonitoringTabId = 'active';
 let selectedDeviceFilter = ALL_FILTER_VALUE;
 let selectedRouteFilter = ALL_FILTER_VALUE;
+let selectedIpFilter: IpFilter = 'all';
 let searchQuery = '';
 let connectionSort: ConnectionListSort | null = null;
 let localDeviceNames: Record<string, string> = {};
@@ -414,6 +418,22 @@ function getSearchValues(connection: MonitoredConnection): string[] {
   ].filter(Boolean);
 }
 
+// The destination reported by the core is not necessarily the proxy's outbound address.
+// A domain without a known IP remains visible in the unfiltered view.
+function getDestinationIpFamily(connection: MonitoredConnection): IpFilter {
+  const metadata = connection.metadata;
+  for (const address of [metadata?.destinationIP, metadata?.host]) {
+    const ip = normalizeString(address);
+    if (isIPv4(ip)) {
+      return 'v4';
+    }
+    if (isIPv6(ip)) {
+      return 'v6';
+    }
+  }
+  return 'all';
+}
+
 function matchesConnectionFilters(
   connection: MonitoredConnection,
   normalizedSearch: string,
@@ -428,6 +448,13 @@ function matchesConnectionFilters(
   if (
     selectedRouteFilter !== ALL_FILTER_VALUE &&
     getRoute(connection)?.tag !== selectedRouteFilter
+  ) {
+    return false;
+  }
+
+  if (
+    selectedIpFilter !== 'all' &&
+    getDestinationIpFamily(connection) !== selectedIpFilter
   ) {
     return false;
   }
@@ -463,6 +490,7 @@ function hasConnectionFilters(): boolean {
   return (
     selectedDeviceFilter !== ALL_FILTER_VALUE ||
     selectedRouteFilter !== ALL_FILTER_VALUE ||
+    selectedIpFilter !== 'all' ||
     normalizeSearchValue(searchQuery) !== ''
   );
 }
@@ -669,6 +697,13 @@ function renderControls() {
   ) as HTMLInputElement | null;
 
   renderFilters();
+  IP_FILTERS.forEach((family) => {
+    const tab = document.getElementById(`monitoring-ip-${family}`);
+    if (tab) {
+      tab.className =
+        selectedIpFilter === family ? 'cbi-tab' : 'cbi-tab-disabled';
+    }
+  });
 
   const filteredActive = filterConnections(activeConnections);
 
@@ -1050,6 +1085,17 @@ function bindControls() {
     };
   }
 
+  IP_FILTERS.forEach((family) => {
+    const tab = document.getElementById(`monitoring-ip-${family}`);
+    if (tab) {
+      tab.onclick = (event) => {
+        event.preventDefault();
+        selectedIpFilter = family;
+        redrawForAction();
+      };
+    }
+  });
+
   if (closeAllButton) {
     closeAllButton.onclick = () => {
       void closeAllConnections();
@@ -1294,6 +1340,7 @@ function resetMonitoringState() {
   activeTab = 'active';
   selectedDeviceFilter = ALL_FILTER_VALUE;
   selectedRouteFilter = ALL_FILTER_VALUE;
+  selectedIpFilter = 'all';
   searchQuery = '';
   connectionSort = null;
   filterSignatures = {};
