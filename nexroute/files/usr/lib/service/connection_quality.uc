@@ -143,26 +143,31 @@ function dns_probe(name, kind) {
     let id = start & 65535;
     let packet = dns_packet(name, kind, id);
     let conn = null;
+    let result;
     try {
         conn = socket.connect(sb.DNS_INBOUND_ADDRESS, sb.DNS_INBOUND_PORT,
             { socktype: socket.SOCK_DGRAM }, 1000);
-        if (!conn || conn.send(packet) != length(packet))
-            return { status: "socket_error", delay_ms: common.monotonic_ms() - start };
-        let ready = socket.poll(3500, conn);
-        if (ready?.[0]?.[1] === 0)
-            return { status: "timeout", delay_ms: common.monotonic_ms() - start };
-        if (!ready)
-            return { status: "socket_error", delay_ms: common.monotonic_ms() - start };
-        let reply = conn.recv(4096);
-        return dns_result(reply, id, common.monotonic_ms() - start);
+        if (!conn || conn.send(packet) != length(packet)) {
+            result = { status: "socket_error", delay_ms: common.monotonic_ms() - start };
+        }
+        else {
+            let ready = socket.poll(3500, conn);
+            if (ready?.[0]?.[1] === 0)
+                result = { status: "timeout", delay_ms: common.monotonic_ms() - start };
+            else if (!ready)
+                result = { status: "socket_error", delay_ms: common.monotonic_ms() - start };
+            else {
+                let reply = conn.recv(4096);
+                result = dns_result(reply, id, common.monotonic_ms() - start);
+            }
+        }
     }
     catch (e) {
-        return { status: "socket_error", delay_ms: common.monotonic_ms() - start };
+        result = { status: "socket_error", delay_ms: common.monotonic_ms() - start };
     }
-    finally {
-        if (conn)
-            conn.close();
-    }
+    if (conn)
+        conn.close();
+    return result;
 }
 
 function dns_quality(settings) {
