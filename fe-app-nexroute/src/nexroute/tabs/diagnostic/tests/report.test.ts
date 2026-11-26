@@ -64,9 +64,7 @@ describe('the diagnostic report', () => {
         },
       ],
     };
-    expect(checksText([traffic])).toContain(
-      'FakeIP (IPv6): Works — 2001:2::7',
-    );
+    expect(checksText([traffic])).toContain('FakeIP (IPv6): Works — 2001:2::7');
   });
 
   it('puts the system first and every attachment under a heading of its own', () => {

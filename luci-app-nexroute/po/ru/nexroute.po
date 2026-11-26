@@ -2792,8 +2792,8 @@ msgstr "Настройки URLTest"
 msgid "URLTest: %s"
 msgstr "URLTest: %s"
 
-msgid "Use FakeIP for unmatched A and AAAA queries from fully proxied devices. IP-based routing rules may behave differently."
-msgstr "Использовать FakeIP для запросов A и AAAA от полностью проксируемых устройств, не совпавших с правилами. Маршрутизация по IP-адресам может измениться."
+msgid "Use FakeIP for unmatched A and AAAA queries from fully proxied devices after checking real DNS answers against IP rules."
+msgstr "Использовать FakeIP для запросов A и AAAA от полностью проксируемых устройств вне правил после проверки реальных DNS-ответов по IP-правилам."
 
 msgid "Use pin-sha256 instead of a certificate SHA-256"
 msgstr "Нужен pin-sha256, а не SHA-256 сертификата"

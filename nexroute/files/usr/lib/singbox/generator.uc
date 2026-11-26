@@ -1425,15 +1425,43 @@ function add_source_aware_dns_fallback(config) {
     add_device_dns_rules(config, { inbound: captured_dns_inbound_matcher() }, unmatched_dns_server_tag(), rewrite_ttl);
 }
 
-// The names a tunnel's server declares resolve through that server when the tunnel dials
-// them: the endpoint's lookups pass every captured-query rule, a device's stop before this.
-// Keep explicit section DNS rules and static hosts ahead of the optional device fallback.
-// Non-address queries still reach the configured resolver, not the FakeIP server.
+// Retain real answers for IP rules so the kernel and sing-box still see the
+// destination IP. Be conservative: an IP match in any enabled traffic section
+// can keep the real answer, regardless of that section's source or port filters.
+function extended_fakeip_ip_matchers(sections) {
+    let cidrs = {};
+    let tags = {};
+    for (let section in sections) {
+        if (option(section, "action", "") == "dns")
+            continue;
+        for (let cidr in connections.destinations(section).ip_cidr)
+            cidrs[cidr] = true;
+        for (let community in connections.community_lists(section))
+            if (runtime_rulesets.community_has_subnets(community))
+                tags[runtime_rulesets.community_tag(section[".name"], community)] = true;
+        // Custom rule sets can contain IP rules even without the nft subnet flag.
+        for (let reference in connections.rule_sets(section))
+            tags[runtime_rulesets.custom_reference_tag(reference)] = true;
+        for (let reference in connections.rule_sets_with_subnets(section))
+            tags[runtime_rulesets.custom_reference_tag(reference)] = true;
+    }
+    let result = [ { ip_is_private: true } ];
+    if (length(keys(cidrs)) > 0)
+        push(result, { ip_cidr: keys(cidrs) });
+    if (length(keys(tags)) > 0)
+        push(result, { rule_set: single_or_array(keys(tags)) });
+    return result;
+}
+
+// Keep explicit section DNS rules and static hosts ahead of the optional device
+// fallback. Only synthesize an address after a real answer was evaluated and
+// none of the configured IP rules matched it.
 function add_fully_routed_fakeip_fallback(config, sections) {
     if (!bool_option(runtime_settings(), "fakeip_fully_routed", false))
         return;
 
     let rewrite_ttl = int_option(runtime_settings(), "dns_rewrite_ttl", "60");
+    let ip_matchers = extended_fakeip_ip_matchers(sections);
     for (let section in sections) {
         if (!connections.is_connections_action(option(section, "action", "")) ||
             !connections.device_matchers(section, "fully_routed_ips").selected)
@@ -1441,16 +1469,29 @@ function add_fully_routed_fakeip_fallback(config, sections) {
 
         for (let matchers in device_matcher_variants(section, "fully_routed_ips", true)) {
             add_local_zone_rules(config, matchers, rewrite_ttl);
-            let rule = copy_matchers(matchers);
-            rule.action = "route";
-            rule.server = runtime_constants.FAKEIP_DNS_SERVER_TAG;
-            rule.query_type = FAKEIP_QUERY_TYPES;
-            rule.rewrite_ttl = rewrite_ttl;
-            push_dns_matcher_rule(config, rule);
+            let address_query = { ...matchers, query_type: FAKEIP_QUERY_TYPES };
+            push_dns_matcher_rule(config, {
+                ...address_query, action: "evaluate", server: unmatched_dns_server_tag(), rewrite_ttl
+            });
+            for (let ip_matcher in ip_matchers)
+                push_dns_matcher_rule(config, {
+                    ...address_query, ...ip_matcher, match_response: true, action: "respond"
+                });
+            push_dns_matcher_rule(config, {
+                ...address_query, match_response: true, ip_accept_any: true,
+                action: "route", server: runtime_constants.FAKEIP_DNS_SERVER_TAG, rewrite_ttl
+            });
+            // Preserve NXDOMAIN and empty answers. If evaluation failed entirely,
+            // let the ordinary resolver fallback retry instead of inventing an IP.
+            push_dns_matcher_rule(config, {
+                ...address_query, match_response: true, action: "respond"
+            });
         }
     }
 }
 
+// The names a tunnel's server declares resolve through that server when the tunnel dials
+// them: the endpoint's lookups pass every captured-query rule, a device's stop before this.
 function add_tunnel_dns_rules(config) {
     for (let server in config.dns.servers)
         if (server.__tunnel)

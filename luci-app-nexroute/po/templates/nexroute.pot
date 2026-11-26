@@ -3874,7 +3874,7 @@ msgid "URLTest: %s"
 msgstr ""
 
 #: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
-msgid "Use FakeIP for unmatched A and AAAA queries from fully proxied devices. IP-based routing rules may behave differently."
+msgid "Use FakeIP for unmatched A and AAAA queries from fully proxied devices after checking real DNS answers against IP rules."
 msgstr ""
 
 #: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts

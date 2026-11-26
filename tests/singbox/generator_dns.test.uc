@@ -301,4 +301,43 @@ t.test("extended FakeIP is opt-in and applies to unmatched address queries of fu
     t.eq(q.dns_rule(enabled, (r) => catchall(r) && q.has(r.source_ip_cidr, "192.168.1.40/32")), null);
 });
 
+t.test("extended FakeIP evaluates real DNS before preserving GeoIP, CIDR and private addresses", () => {
+    let section = [
+        { ".name": "direct", enabled: "1", action: "bypass", destinations: "192.0.2.0/24\n2001:db8:1::/48",
+            rule_set: [ "https://example.com/geoip-direct.srs" ] },
+        { ".name": "proxy", enabled: "1", action: "connection",
+            outbound_jsons: [ "{\"type\":\"direct\",\"tag\":\"fixture\"}" ],
+            community_lists: [ "cloudflare" ],
+            rule_set_with_subnets: [ "https://example.com/geoip-proxy.srs" ],
+            fully_routed_ips: [ "192.168.1.20/32" ] }
+    ];
+    let device = (r) => q.has(r.source_ip_cidr, "192.168.1.20/32");
+    for (let mode in [ "forkop", "router" ]) {
+        let config = build({ settings: { ...DNS, fakeip_fully_routed: "1", unmatched_dns_mode: mode }, section });
+        let at = (predicate) => q.dns_rule_index(config, (r) => device(r) && predicate(r));
+        let evaluate = at((r) => r.action == "evaluate");
+        let fakeip = at((r) => r.server == "fakeip-server" && r.match_response == true);
+        t.ok(evaluate >= 0 && fakeip > evaluate);
+        t.eq(config.dns.rules[evaluate].server, mode == "router" ? "dnsmasq-server" : "dns-server");
+        t.eq(config.dns.rules[evaluate].query_type, [ "A", "AAAA" ]);
+        t.eq(config.dns.rules[fakeip].ip_accept_any, true);
+        for (let matcher in [
+            (r) => r.ip_is_private == true,
+            (r) => q.has(r.ip_cidr, "192.0.2.0/24") && q.has(r.ip_cidr, "2001:db8:1::/48"),
+            (r) => q.has(r.rule_set, "proxy-cloudflare-community-ruleset")
+        ]) {
+            let guard = at((r) => r.action == "respond" && r.match_response == true && matcher(r));
+            t.ok(guard > evaluate && guard < fakeip);
+        }
+        let sets = config.dns.rules[at((r) => r.action == "respond" && r.rule_set != null)];
+        t.eq(length(sets.rule_set), 3, "both custom IP sets and the community set");
+        t.eq(sets.rule_set_domain_only, null, "the response matcher must see addresses");
+        let last = at((r) => r.action == "respond" && r.match_response == true &&
+            r.ip_cidr == null && r.ip_is_private == null && r.rule_set == null);
+        t.ok(last > fakeip, "no-address DNS responses are returned without synthesis");
+    }
+    let off = build({ settings: DNS, section });
+    t.eq(q.dns_rule(off, (r) => r.action == "evaluate"), null);
+});
+
 t.done();

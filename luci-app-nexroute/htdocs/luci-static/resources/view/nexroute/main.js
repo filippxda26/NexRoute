@@ -30181,7 +30181,7 @@ function addDnsOptions(section2) {
     "fakeip_fully_routed",
     _("Extended FakeIP for fully routed devices"),
     _(
-      "Use FakeIP for unmatched A and AAAA queries from fully proxied devices. IP-based routing rules may behave differently."
+      "Use FakeIP for unmatched A and AAAA queries from fully proxied devices after checking real DNS answers against IP rules."
     )
   );
   o.default = "0";
