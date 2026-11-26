@@ -29,7 +29,8 @@ export const DETOUR_TARGET_ACTIONS = ['connection'];
 export const TAILSCALE_CONTROL_URL = 'https://controlplane.tailscale.com';
 
 export const DEFAULT_LATENCY_TEST_URL = 'https://www.gstatic.com/generate_204';
-export const DIRECT_LATENCY_TEST_URL = 'https://api.browser.yandex.ru/generate_204';
+export const DIRECT_LATENCY_TEST_URL =
+  'https://api.browser.yandex.ru/generate_204';
 export const LATENCY_TEST_URL_OPTIONS = [
   DEFAULT_LATENCY_TEST_URL,
   DIRECT_LATENCY_TEST_URL,

@@ -374,12 +374,15 @@ it('a LuCI that drops defaults takes from the shipped config only what the backe
 
 it('defaults to Google and keeps extended quality diagnostics opt-in', () => {
   const section = loadShippedConfig();
-  const option = (name) => section.children.find((child) => child.option === name);
+  const option = (name) =>
+    section.children.find((child) => child.option === name);
   expect(option('latency_test_url').default).toBe(
     'https://www.gstatic.com/generate_204',
   );
   expect(option('connection_quality_extended').default).toBe('0');
-  expect(harness.uci.get('nexroute', 'settings', 'connection_quality_extended')).toBe('0');
+  expect(
+    harness.uci.get('nexroute', 'settings', 'connection_quality_extended'),
+  ).toBe('0');
 });
 
 describe('a subscription tag', () => {

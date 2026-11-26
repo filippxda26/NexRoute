@@ -3844,7 +3844,7 @@ msgid "Uptime"
 msgstr ""
 
 #: fe-app-nexroute/src/nexroute/tabs/settings/form/updates.ts
-msgid "URL for the shared latency test of section nodes"
+msgid "URL for the shared latency test of section nodes; direct-out always uses Yandex"
 msgstr ""
 
 #: fe-app-nexroute/src/validators/messages.ts

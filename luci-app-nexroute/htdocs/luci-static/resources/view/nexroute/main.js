@@ -40,10 +40,11 @@ var RESERVED_RUNTIME_TAGS = /* @__PURE__ */ new Set([
 ]);
 var DETOUR_TARGET_ACTIONS = ["connection"];
 var TAILSCALE_CONTROL_URL = "https://controlplane.tailscale.com";
-var DEFAULT_LATENCY_TEST_URL = "https://api.browser.yandex.ru/generate_204";
+var DEFAULT_LATENCY_TEST_URL = "https://www.gstatic.com/generate_204";
+var DIRECT_LATENCY_TEST_URL = "https://api.browser.yandex.ru/generate_204";
 var LATENCY_TEST_URL_OPTIONS = [
   DEFAULT_LATENCY_TEST_URL,
-  "https://www.gstatic.com/generate_204",
+  DIRECT_LATENCY_TEST_URL,
   "https://cp.cloudflare.com/generate_204",
   "https://captive.apple.com",
   "https://connectivity-check.ubuntu.com"
@@ -2137,7 +2138,10 @@ async function requestClashApi(path, init, timeout, options) {
   }
   return fetchClashApiThroughCli(method, path, body, options?.summary);
 }
-function getLatencyTestUrl() {
+function getLatencyTestUrl(tag) {
+  if (tag === "direct-out") {
+    return DIRECT_LATENCY_TEST_URL;
+  }
   return getSettingsSection(clashApiConfigSections)?.latency_test_url || DEFAULT_LATENCY_TEST_URL;
 }
 function latencyRequestTimeout(timeout, overshoot = 0) {
@@ -2146,7 +2150,7 @@ function latencyRequestTimeout(timeout, overshoot = 0) {
 async function getClashApiProxyLatency(tag, timeout = "5000") {
   await ensureClashApiConfigSections();
   const params = new URLSearchParams({
-    url: getLatencyTestUrl(),
+    url: getLatencyTestUrl(tag),
     timeout
   });
   return requestClashApi(
@@ -2159,7 +2163,7 @@ async function getClashApiProxyLatency(tag, timeout = "5000") {
 async function getClashApiGroupLatency(tag, timeout = GROUP_LATENCY_TIMEOUT_MS) {
   await ensureClashApiConfigSections();
   const params = new URLSearchParams({
-    url: getLatencyTestUrl(),
+    url: getLatencyTestUrl(tag),
     timeout
   });
   return requestClashApi(
@@ -30535,7 +30539,9 @@ function addUpdateOptions(section2) {
     form.Value,
     "latency_test_url",
     _("Latency test URL"),
-    _("URL for the shared latency test of section nodes")
+    _(
+      "URL for the shared latency test of section nodes; direct-out always uses Yandex"
+    )
   );
   LATENCY_TEST_URL_OPTIONS.forEach((value) => o.value(value));
   o.default = DEFAULT_LATENCY_TEST_URL;

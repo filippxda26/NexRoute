@@ -86,7 +86,9 @@ it('keeps direct-out independent of the configured section test URL', async () =
     .fn()
     .mockResolvedValue({ status: 200, text: async () => '{}' });
   vi.stubGlobal('fetch', fetchMock);
-  const { getClashApiProxyLatency, getClashApiGroupLatency } = await import('../clashApi');
+  const { getClashApiProxyLatency, getClashApiGroupLatency } = await import(
+    '../clashApi'
+  );
 
   await getClashApiProxyLatency('direct-out');
   expect(fetchMock).toHaveBeenLastCalledWith(
@@ -102,7 +104,9 @@ it('keeps direct-out independent of the configured section test URL', async () =
 
 it('defaults section tests to Google when no URL is configured', async () => {
   mocks.config.mockResolvedValue([{ '.type': 'settings' }]);
-  const fetchMock = vi.fn().mockResolvedValue({ status: 200, text: async () => '{}' });
+  const fetchMock = vi
+    .fn()
+    .mockResolvedValue({ status: 200, text: async () => '{}' });
   vi.stubGlobal('fetch', fetchMock);
   const { getClashApiProxyLatency } = await import('../clashApi');
   await getClashApiProxyLatency('node');
