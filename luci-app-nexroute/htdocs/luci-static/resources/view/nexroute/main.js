@@ -30414,6 +30414,16 @@ function addServiceOptions(section2) {
   o.value("panic", "Panic");
   o.default = "warn";
   o.rmempty = false;
+  o = section2.option(
+    form.Flag,
+    "connection_quality_logs",
+    _("Connection quality logs"),
+    _(
+      "Record WAN, Wi-Fi and section response times every minute in the NexRoute log"
+    )
+  );
+  o.default = "0";
+  o.rmempty = false;
 }
 
 // src/nexroute/tabs/settings/form/traffic.ts
