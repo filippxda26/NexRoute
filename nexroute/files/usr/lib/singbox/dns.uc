@@ -262,7 +262,7 @@ function quality_rules(servers) {
     let rules = [];
     for (let i = 0; i < length(servers); i++) {
         let server = servers[i];
-        if (!contains([ "udp", "tcp", "tls", "https", "quic", "h3", "fallback" ], server.type) ||
+        if ((DNS_URI_TYPES[server.type] == null && server.type != "fallback") ||
             server.tag == runtime_constants.DNSMASQ_DNS_SERVER_TAG)
             continue;
         push(rules, {

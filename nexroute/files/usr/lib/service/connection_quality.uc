@@ -89,13 +89,13 @@ function ping_metrics(output) {
     let sent = int(packets[1]), received = int(packets[2]);
     if (received > sent)
         return { status: "unavailable" };
-    let rtt = match(output, /(?:round-trip|rtt) min\/avg\/max(?:\/[a-z]+)? = ([0-9.]+)\/([0-9.]+)\/([0-9.]+)/);
+    let rtt = match(output, /(round-trip|rtt) min\/avg\/max(\/[a-z]+)? = ([0-9.]+)\/([0-9.]+)\/([0-9.]+)/);
     return {
         status: received == sent ? "ok" : received == 0 ? "no_reply" : "packet_loss",
         sent, received, loss_pct: (sent - received) * 100.0 / sent,
-        min_ms: rtt ? common.parse_json(rtt[1]) : null,
-        avg_ms: rtt ? common.parse_json(rtt[2]) : null,
-        max_ms: rtt ? common.parse_json(rtt[3]) : null
+        min_ms: rtt ? common.parse_json(rtt[3]) : null,
+        avg_ms: rtt ? common.parse_json(rtt[4]) : null,
+        max_ms: rtt ? common.parse_json(rtt[5]) : null
     };
 }
 
