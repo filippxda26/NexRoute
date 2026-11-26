@@ -409,17 +409,31 @@ t.test("DNS detour bypass", () => {
     }, "whose action is 'bypass'");
 });
 
-t.test("bad direct action", () => {
+t.test("Direct is a supported routing action", () => {
+    v.accepts({
+        "settings": {},
+        "section": [
+            {
+                ".name": "native_direct",
+                "enabled": "1",
+                "action": "direct",
+                "destinations": "example.org 192.0.2.0/24 2001:db8::/32"
+            }
+        ]
+    });
+});
+
+t.test("unknown section action is refused", () => {
     v.refuses({
         "settings": {},
         "section": [
             {
                 ".name": "old",
                 "enabled": "1",
-                "action": "direct"
+                "action": "unknown_action"
             }
         ]
-    }, "unsupported action 'direct'");
+    }, "unsupported action 'unknown_action'");
 });
 
 t.test("a Connection section without servers is accepted and skipped with a warning", () => {
