@@ -4081,3 +4081,9 @@ msgstr ""
 
 msgid "Not working"
 msgstr ""
+
+msgid "IP check domains"
+msgstr ""
+
+msgid "Automatically include %s and %s in this section"
+msgstr ""

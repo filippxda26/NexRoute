@@ -550,6 +550,21 @@ export function createSectionContent(section: CBISection) {
   );
   dependsOnRoutingAction(destinationOption);
 
+  o = section.taboption(
+    'conditions',
+    form.Flag,
+    'include_ip_check_domains',
+    _('IP check domains'),
+    _('Automatically include %s and %s in this section').format(
+      'api.ipify.org',
+      'api6.ipify.org',
+    ),
+  );
+  o.depends('action', 'connection');
+  o.default = '0';
+  o.rmempty = false;
+  o.modalonly = true;
+
   const dnsDestinationOption = addDestinationField(
     section,
     '_dns_destinations',

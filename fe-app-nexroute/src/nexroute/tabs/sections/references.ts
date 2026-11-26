@@ -139,6 +139,7 @@ export function dependsOnRuleConditions(option: CBIOption) {
       option.depends({ action, [condition]: /\S/ }),
     ),
   );
+  option.depends({ action: 'connection', include_ip_check_domains: '1' });
   ['_dns_destinations', 'community_lists', 'rule_set', '_dns_rule_set'].forEach(
     (condition) => option.depends({ action: 'dns', [condition]: /\S/ }),
   );

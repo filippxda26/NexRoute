@@ -415,7 +415,12 @@ function rule_sets_with_subnets(section) {
 }
 
 function destinations(section) {
-    return rule_config.destination_conditions(option(section, "destinations", ""));
+    let result = rule_config.destination_conditions(option(section, "destinations", ""));
+    if (is_connections_action(option(section, "action", "")) && bool_option(section, "include_ip_check_domains", false))
+        for (let domain in [ "api.ipify.org", "api6.ipify.org" ])
+            if (!list_contains(result.domain, domain) && !list_contains(result.domain_suffix, domain))
+                push(result.domain, domain);
+    return result;
 }
 
 function download_via_proxy_flag_option(purpose) {
