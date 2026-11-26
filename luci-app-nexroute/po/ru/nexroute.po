@@ -2771,8 +2771,8 @@ msgstr "Отдано"
 msgid "Uptime"
 msgstr "Работает"
 
-msgid "URL for the shared latency test of section nodes"
-msgstr "URL для общего тестирования задержки узлов секции"
+msgid "URL for the shared latency test of section nodes; direct-out always uses Yandex"
+msgstr "URL для общей проверки задержки узлов секций; direct-out всегда использует Яндекс"
 
 msgid "URL or absolute path only"
 msgstr "Только URL или абсолютный путь"

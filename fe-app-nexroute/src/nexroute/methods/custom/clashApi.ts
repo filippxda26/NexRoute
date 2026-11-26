@@ -5,7 +5,10 @@ import {
   getClashApiUrl,
 } from '../../../helpers/getClashApiUrl';
 import { NexRouteShellMethods } from '../shell';
-import { DEFAULT_LATENCY_TEST_URL } from '../../../constants';
+import {
+  DEFAULT_LATENCY_TEST_URL,
+  DIRECT_LATENCY_TEST_URL,
+} from '../../../constants';
 
 type ClashConnectionsSnapshot = {
   downloadTotal?: number;
@@ -280,7 +283,10 @@ async function requestClashApi<T>(
   return fetchClashApiThroughCli<T>(method, path, body, options?.summary);
 }
 
-function getLatencyTestUrl() {
+function getLatencyTestUrl(tag: string) {
+  if (tag === 'direct-out') {
+    return DIRECT_LATENCY_TEST_URL;
+  }
   return (
     getSettingsSection(clashApiConfigSections)?.latency_test_url ||
     DEFAULT_LATENCY_TEST_URL
@@ -298,7 +304,7 @@ function latencyRequestTimeout(timeout: string, overshoot = 0) {
 export async function getClashApiProxyLatency(tag: string, timeout = '5000') {
   await ensureClashApiConfigSections();
   const params = new URLSearchParams({
-    url: getLatencyTestUrl(),
+    url: getLatencyTestUrl(tag),
     timeout,
   });
 
@@ -316,7 +322,7 @@ export async function getClashApiGroupLatency(
 ) {
   await ensureClashApiConfigSections();
   const params = new URLSearchParams({
-    url: getLatencyTestUrl(),
+    url: getLatencyTestUrl(tag),
     timeout,
   });
 

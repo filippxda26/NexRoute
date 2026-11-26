@@ -80,3 +80,34 @@ it('loads the configured test URL before the first latency request', async () =>
     expect.anything(),
   );
 });
+
+it('keeps direct-out independent of the configured section test URL', async () => {
+  const fetchMock = vi
+    .fn()
+    .mockResolvedValue({ status: 200, text: async () => '{}' });
+  vi.stubGlobal('fetch', fetchMock);
+  const { getClashApiProxyLatency, getClashApiGroupLatency } = await import('../clashApi');
+
+  await getClashApiProxyLatency('direct-out');
+  expect(fetchMock).toHaveBeenLastCalledWith(
+    'http://router.example:9090/proxies/direct-out/delay?url=https%3A%2F%2Fapi.browser.yandex.ru%2Fgenerate_204&timeout=5000',
+    expect.anything(),
+  );
+  await getClashApiGroupLatency('my-group');
+  expect(fetchMock).toHaveBeenLastCalledWith(
+    'http://router.example:9090/group/my-group/delay?url=https%3A%2F%2Fexample.com%2Fcheck&timeout=40000',
+    expect.anything(),
+  );
+});
+
+it('defaults section tests to Google when no URL is configured', async () => {
+  mocks.config.mockResolvedValue([{ '.type': 'settings' }]);
+  const fetchMock = vi.fn().mockResolvedValue({ status: 200, text: async () => '{}' });
+  vi.stubGlobal('fetch', fetchMock);
+  const { getClashApiProxyLatency } = await import('../clashApi');
+  await getClashApiProxyLatency('node');
+  expect(fetchMock).toHaveBeenLastCalledWith(
+    'http://router.example:9090/proxies/node/delay?url=https%3A%2F%2Fwww.gstatic.com%2Fgenerate_204&timeout=5000',
+    expect.anything(),
+  );
+});

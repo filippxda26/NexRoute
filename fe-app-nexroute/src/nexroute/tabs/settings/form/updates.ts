@@ -58,7 +58,7 @@ export function addUpdateOptions(section: CBISection) {
     form.Value,
     'latency_test_url',
     _('Latency test URL'),
-    _('URL for the shared latency test of section nodes'),
+    _('URL for the shared latency test of section nodes; direct-out always uses Yandex'),
   );
   LATENCY_TEST_URL_OPTIONS.forEach((value: string) => o.value(value));
   o.default = DEFAULT_LATENCY_TEST_URL;

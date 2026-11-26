@@ -14,7 +14,7 @@ let health = require("service.health");
 const GOOGLE_URL = "https://www.gstatic.com/generate_204";
 const ALTERNATIVE_URL = "https://cp.cloudflare.com/generate_204";
 const APPLE_URL = "https://www.apple.com/library/test/success.html";
-const TEST_URL = "https://api.browser.yandex.ru/generate_204";
+const DIRECT_TEST_URL = "https://api.browser.yandex.ru/generate_204";
 const CURL_TIMINGS = '{"http_code":"%{http_code}","remote_ip":"%{remote_ip}","dns":%{time_namelookup},"connect":%{time_connect},"tls":%{time_appconnect},"first_byte":%{time_starttransfer},"total":%{time_total}}';
 const TIMEOUT_MS = 4000;
 
@@ -195,9 +195,11 @@ function wan() {
         emit("wan", { status: "no_wan_interface_detected" });
 }
 
-function latency_url(settings) {
-    let url = trim(common.option(settings, "latency_test_url", TEST_URL));
-    return length(url) <= 1000 && match(url, /^https?:\/\/[^ \t\r\n]+$/) ? url : TEST_URL;
+function latency_url(settings, tag) {
+    if (tag == sb.DIRECT_OUTBOUND_TAG)
+        return DIRECT_TEST_URL;
+    let url = trim(common.option(settings, "latency_test_url", GOOGLE_URL));
+    return length(url) <= 1000 && match(url, /^https?:\/\/[^ \t\r\n]+$/) ? url : GOOGLE_URL;
 }
 
 function fakeip_address(address) {
@@ -222,7 +224,7 @@ function route_result(result) {
 }
 
 function probe(tag, url) {
-    let path = "/proxies/" + encoded(tag) + "/delay?url=" + encoded(url ?? TEST_URL) + "&timeout=" + TIMEOUT_MS;
+    let path = "/proxies/" + encoded(tag) + "/delay?url=" + encoded(url ?? latency_url({}, tag)) + "&timeout=" + TIMEOUT_MS;
     try {
         let response = clash.request("GET", path, "");
         let data = common.parse_json(response.body);
@@ -274,7 +276,7 @@ function router_http_plan() {
         { provider: "google", url: GOOGLE_URL, expected_status: 204 },
         { provider: "cloudflare", url: ALTERNATIVE_URL, expected_status: 204 },
         { provider: "apple", url: APPLE_URL, expected_status: 200 },
-        { provider: "yandex", url: TEST_URL, expected_status: 204 }
+        { provider: "yandex", url: DIRECT_TEST_URL, expected_status: 204 }
     ]) {
         for (let family in [ 4, 6 ])
             push(plan, {
@@ -288,7 +290,7 @@ function router_http_plan() {
 }
 
 function direct_quality(primary_url) {
-    for (let url in [ GOOGLE_URL, "http://www.gstatic.com/generate_204", ALTERNATIVE_URL, TEST_URL ]) {
+    for (let url in [ GOOGLE_URL, "http://www.gstatic.com/generate_204", ALTERNATIVE_URL, DIRECT_TEST_URL ]) {
         if (url == primary_url)
             continue;
         let result = probe(sb.DIRECT_OUTBOUND_TAG, url);
@@ -339,7 +341,6 @@ function sample() {
     }
     else {
         let settings = uci.get_all(constants.NEXROUTE_CONFIG_NAME, "settings") ?? {};
-        let primary_url = latency_url(settings);
         let tags = [ sb.DIRECT_OUTBOUND_TAG ];
         for (let section in uci.section_objects(constants.NEXROUTE_CONFIG_NAME, "section")) {
             if (!common.bool_option(section, "enabled", true) || !connections.is_connections_action(section.action))
@@ -349,8 +350,10 @@ function sample() {
                 push(tags, tag);
         }
         for (let tag in tags) {
+            let primary_url = latency_url(settings, tag);
+            let source = tag == sb.DIRECT_OUTBOUND_TAG ? "fixed" : primary_url == GOOGLE_URL ? "default" : "configured";
             let result = probe(tag, primary_url);
-            emit("outbound", { tag, test_url: primary_url == TEST_URL ? "default" : "configured", ...result },
+            emit("outbound", { tag, test_url: source, ...result },
                 result.status == "ok" ? "info" : "warn");
             if (tag == sb.DIRECT_OUTBOUND_TAG && extended_quality_enabled(settings)) {
                 try { direct_quality(primary_url); } catch (e) { emit("outbound.compare", { tag, status: "unavailable" }, "warn"); }

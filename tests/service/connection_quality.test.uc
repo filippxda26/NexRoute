@@ -81,15 +81,18 @@ t.test("configured latency test URL is used with a safe default", () => {
     let url = "https://api.browser.yandex.ru/generate_204";
     t.eq(quality.latency_url({ latency_test_url: url }), url);
     t.eq(quality.latency_url({ latency_test_url: "https://www.gstatic.com/generate_204" }), "https://www.gstatic.com/generate_204");
-    t.eq(quality.latency_url({}), "https://api.browser.yandex.ru/generate_204");
-    t.eq(quality.latency_url({ latency_test_url: "" }), "https://api.browser.yandex.ru/generate_204");
-    t.eq(quality.latency_url({ latency_test_url: "file:///etc/passwd" }), "https://api.browser.yandex.ru/generate_204");
+    t.eq(quality.latency_url({}), "https://www.gstatic.com/generate_204");
+    t.eq(quality.latency_url({ latency_test_url: "" }), "https://www.gstatic.com/generate_204");
+    t.eq(quality.latency_url({ latency_test_url: "file:///etc/passwd" }), "https://www.gstatic.com/generate_204");
+    t.eq(quality.latency_url({ latency_test_url: "https://www.gstatic.com/generate_204" }, "direct-out"), url);
+    t.eq(quality.latency_url({ latency_test_url: "https://example.com/check" }, "direct-out"), url);
+    t.eq(quality.latency_url({ latency_test_url: "https://example.com/check" }, "My VPN"), "https://example.com/check");
     let real = clash.request;
     clash.request = (method, path, body) => {
         t.eq(path, "/proxies/direct-out/delay?url=https%3A%2F%2Fapi.browser.yandex.ru%2Fgenerate_204&timeout=4000");
         return { status: 200, body: '{"delay":35}' };
     };
-    t.eq(quality.probe("direct-out", quality.latency_url({ latency_test_url: url })), { status: "ok", delay_ms: 35 });
+    t.eq(quality.probe("direct-out", quality.latency_url({ latency_test_url: "https://www.gstatic.com/generate_204" }, "direct-out")), { status: "ok", delay_ms: 35 });
     clash.request = real;
 });
 
