@@ -1265,6 +1265,10 @@ msgstr ""
 msgid "Expires %s"
 msgstr ""
 
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Extended FakeIP for fully routed devices"
+msgstr ""
+
 #: fe-app-nexroute/src/nexroute/tabs/components/initController.ts
 msgid "failed"
 msgstr ""
@@ -3867,6 +3871,10 @@ msgstr ""
 
 #: fe-app-nexroute/src/nexroute/tabs/sections/urltest.ts
 msgid "URLTest: %s"
+msgstr ""
+
+#: fe-app-nexroute/src/nexroute/tabs/settings/form/dns.ts
+msgid "Use FakeIP for unmatched A and AAAA queries from fully proxied devices. IP-based routing rules may behave differently."
 msgstr ""
 
 #: fe-app-nexroute/src/helpers/parseOpenConnectConfig.ts

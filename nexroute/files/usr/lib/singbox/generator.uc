@@ -1427,6 +1427,30 @@ function add_source_aware_dns_fallback(config) {
 
 // The names a tunnel's server declares resolve through that server when the tunnel dials
 // them: the endpoint's lookups pass every captured-query rule, a device's stop before this.
+// Keep explicit section DNS rules and static hosts ahead of the optional device fallback.
+// Non-address queries still reach the configured resolver, not the FakeIP server.
+function add_fully_routed_fakeip_fallback(config, sections) {
+    if (!bool_option(runtime_settings(), "fakeip_fully_routed", false))
+        return;
+
+    let rewrite_ttl = int_option(runtime_settings(), "dns_rewrite_ttl", "60");
+    for (let section in sections) {
+        if (!connections.is_connections_action(option(section, "action", "")) ||
+            !connections.device_matchers(section, "fully_routed_ips").selected)
+            continue;
+
+        for (let matchers in device_matcher_variants(section, "fully_routed_ips", true)) {
+            add_local_zone_rules(config, matchers, rewrite_ttl);
+            let rule = copy_matchers(matchers);
+            rule.action = "route";
+            rule.server = runtime_constants.FAKEIP_DNS_SERVER_TAG;
+            rule.query_type = FAKEIP_QUERY_TYPES;
+            rule.rewrite_ttl = rewrite_ttl;
+            push_dns_matcher_rule(config, rule);
+        }
+    }
+}
+
 function add_tunnel_dns_rules(config) {
     for (let server in config.dns.servers)
         if (server.__tunnel)
@@ -1861,6 +1885,7 @@ function build(context) {
     for (let section in sections)
         add_route_for_section(config, section);
     add_static_hosts_dns_rule(config, static_hosts);
+    add_fully_routed_fakeip_fallback(config, sections);
     add_source_aware_dns_fallback(config);
     add_tunnel_dns_rules(config);
     add_server_routes(config, servers, sections);

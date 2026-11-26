@@ -259,4 +259,46 @@ t.test("MAC devices keep source constraints in DNS and route rules", () => {
     t.ok(q.dns_rule(config, (r) => q.has(r.source_mac_address, "02:00:00:00:00:12")) != null);
 });
 
+t.test("extended FakeIP is opt-in and applies to unmatched address queries of fully routed devices", () => {
+    let mac = "02:00:00:00:00:11";
+    let sections = [
+        { ".name": "direct", enabled: "1", action: "bypass", destinations: "example.org" },
+        { ".name": "dns_all", enabled: "1", action: "dns", dns_server: [ "8.8.4.4" ], fully_routed_ips: [ "192.168.1.40/32" ] },
+        { ".name": "direct_all", enabled: "1", action: "bypass", fully_routed_ips: [ "192.168.1.30/32" ] },
+        { ".name": "proxy", enabled: "1", action: "connection",
+            outbound_jsons: [ "{\"type\":\"direct\",\"tag\":\"fixture\"}" ],
+            fully_routed_ips: [ "@system", "192.168.1.20/32", "2001:db8::20/128", "@mac:" + mac ] }
+    ];
+    let build_mode = (enabled) => build({
+        settings: { ...DNS, fakeip_fully_routed: enabled, static_hosts_text: "192.0.2.1 pinned.example" },
+        dhcp_dnsmasq: { domain: "home" },
+        section: sections
+    });
+    let catchall = (r) => r.server == "fakeip-server" && r.domain == null &&
+        r.domain_suffix == null && r.domain_regex == null && r.rule_set == null;
+    t.eq(length(filter(build_mode("0").dns.rules, catchall)), 0, "disabled by default");
+    let enabled = build_mode("1");
+    let rules = filter(enabled.dns.rules, catchall);
+    t.eq(length(rules), 3, "IP, MAC and system variants");
+    let ip = (r) => q.has(r.source_ip_cidr, "192.168.1.20/32");
+    let mac_match = (r) => q.has(r.source_mac_address, mac);
+    let system = (r) => q.has(r.inbound, "system-dns-in");
+    t.ok(q.has(q.dns_rule(enabled, (r) => catchall(r) && ip(r)).source_ip_cidr, "2001:db8::20/128"));
+    for (let device in [ ip, mac_match, system ]) {
+        let at = q.dns_rule_index(enabled, (r) => catchall(r) && device(r));
+        t.ok(at >= 0);
+        t.eq(enabled.dns.rules[at].query_type, [ "A", "AAAA" ]);
+        t.ok(q.dns_rule_index(enabled, (r) => r.server == "hosts-server") < at);
+        t.ok(q.dns_rule_index(enabled, (r) => r.server == "dns-server" && q.has(r.domain_suffix, "example.org")) < at);
+        for (let zone in [ (r) => r.domain_regex == "^[^.]+$", (r) => r.domain_suffix == ".home", (r) => q.has(r.query_type, "PTR") ]) {
+            let local = q.dns_rule_index(enabled, (r) => r.server == "dnsmasq-server" && device(r) && zone(r));
+            t.ok(local >= 0 && local < at);
+        }
+        t.ok(at < q.dns_rule_index(enabled, (r) => r.server == "dns-server" && q.has(r.inbound, "source-dns-in") &&
+            r.source_ip_cidr == null && r.source_mac_address == null && r.domain_regex == null && r.domain_suffix == null && r.query_type == null));
+    }
+    t.eq(q.dns_rule(enabled, (r) => catchall(r) && q.has(r.source_ip_cidr, "192.168.1.30/32")), null);
+    t.eq(q.dns_rule(enabled, (r) => catchall(r) && q.has(r.source_ip_cidr, "192.168.1.40/32")), null);
+});
+
 t.done();

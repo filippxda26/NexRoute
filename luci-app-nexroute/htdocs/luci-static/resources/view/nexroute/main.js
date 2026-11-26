@@ -30176,6 +30176,16 @@ function addDnsOptions(section2) {
   );
   o.depends("dns_detour_enabled", "1");
   configureDownloadSectionOption(o, "dns_detour_section");
+  o = section2.option(
+    form.Flag,
+    "fakeip_fully_routed",
+    _("Extended FakeIP for fully routed devices"),
+    _(
+      "Use FakeIP for unmatched A and AAAA queries from fully proxied devices. IP-based routing rules may behave differently."
+    )
+  );
+  o.default = "0";
+  o.rmempty = false;
   createStaticHostsOption(section2);
   o = section2.option(
     form.Value,
