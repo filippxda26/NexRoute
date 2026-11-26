@@ -33,4 +33,29 @@ t.test("wire DNS supports HTTPS and reports response status and truncation", () 
     t.eq(quality.dns_result("", 4660, 25).status, "invalid_response");
 });
 
+t.test("slow direct probes request additional diagnostics at the threshold or on failure", () => {
+    t.eq(quality.slow_direct({ status: "ok", delay_ms: 149 }), false);
+    t.eq(quality.slow_direct({ status: "ok", delay_ms: 150 }), true);
+    t.eq(quality.slow_direct({ status: "failed" }), true);
+    let real = clash.request;
+    clash.request = (method, path, body) => {
+        t.eq(path, "/proxies/direct-out/delay?url=https%3A%2F%2Fcp.cloudflare.com%2Fgenerate_204&timeout=4000");
+        return { status: 200, body: '{"delay":45}' };
+    };
+    t.eq(quality.probe("direct-out", "https://cp.cloudflare.com/generate_204"), { status: "ok", delay_ms: 45 });
+    clash.request = real;
+});
+
+t.test("curl timings report separate phases and distinguish failures", () => {
+    let stdout = '{"http_code":"204","remote_ip":"192.0.2.1","dns":0.050,"connect":0.080,"tls":0.150,"first_byte":0.210,"total":0.211}';
+    t.eq(quality.curl_result({ status: 0, stdout }), {
+        status: "ok", http_status: 204, remote_ip: "192.0.2.1",
+        dns_ms: 50, tcp_ms: 30, tls_ms: 70, first_byte_after_tls_ms: 60, total_ms: 211
+    });
+    t.eq(quality.curl_result({ status: 28, stdout: "" }), { status: "failed", exit_code: 28 });
+    t.eq(quality.curl_result({ status: 0, stdout: "invalid" }), { status: "invalid_response" });
+    t.eq(quality.curl_result({ status: 0, stdout: replace(stdout, '"204"', '"302"') }).status, "unexpected_http_status");
+    t.eq(quality.curl_result({ status: 0, stdout: replace(stdout, '0.150', '0.010') }), { status: "invalid_response" });
+});
+
 t.done();
