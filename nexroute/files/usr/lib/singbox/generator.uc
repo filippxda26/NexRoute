@@ -1934,6 +1934,8 @@ function build(context) {
     add_tunnel_dns_rules(config);
     add_server_routes(config, servers, sections);
     add_service_mixed_proxy(config, settings);
+    if (bool_option(settings, "connection_quality_logs", false))
+        config.dns.rules = [ ...runtime_dns.quality_rules(config.dns.servers), ...config.dns.rules ];
 
     assert_unique_outbound_tags(config);
     assert_compatible_wireguard_endpoints(config);

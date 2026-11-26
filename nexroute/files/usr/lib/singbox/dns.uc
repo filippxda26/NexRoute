@@ -257,7 +257,25 @@ function default_domain_resolver(settings) {
         : runtime_constants.DNS_SERVER_TAG;
 }
 
+// Only diagnostics sent to the private loopback DNS inbound can select an individual transport.
+function quality_rules(servers) {
+    let rules = [];
+    for (let i = 0; i < length(servers); i++) {
+        let server = servers[i];
+        if (!contains([ "udp", "tcp", "tls", "https", "quic", "h3", "fallback" ], server.type) ||
+            server.tag == runtime_constants.DNSMASQ_DNS_SERVER_TAG)
+            continue;
+        push(rules, {
+            inbound: runtime_constants.DNS_INBOUND_TAG,
+            domain: "nexroute-quality-" + i + ".example.com",
+            action: "route", server: server.tag, disable_cache: true, timeout: "3s"
+        });
+    }
+    return rules;
+}
+
 return {
+    quality_rules,
     add_uri_server_group,
     config,
     default_domain_resolver,

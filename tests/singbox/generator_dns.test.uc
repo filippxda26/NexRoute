@@ -354,4 +354,23 @@ t.test("Direct resolves domains and whole devices through the router resolver, u
         "already intercepted connections still go direct");
 });
 
+t.test("quality DNS probes address individual real transports only on the private diagnostic inbound", () => {
+    let data = {
+        settings: { dns_server: [ "https://dns.google/dns-query", "tls://1.1.1.1" ],
+            bootstrap_dns_server: [ "8.8.8.8" ], connection_quality_logs: "1" },
+        section: BYPASS
+    };
+    let config = build(data);
+    let rules = filter(config.dns.rules, (r) => type(r.domain) == "string" && match(r.domain, /^nexroute-quality-/));
+    t.eq(map(rules, (r) => r.server), ["bootstrap-dns-server", "dns-server-1", "dns-server-2", "dns-server"]);
+    for (let rule in rules) {
+        t.eq(rule.inbound, "dns-in");
+        t.eq(rule.disable_cache, true);
+        t.eq(rule.timeout, "3s");
+    }
+    t.eq(config.dns.rules[0], rules[0], "before the ordinary HTTPS rule");
+    data.settings.connection_quality_logs = "0";
+    t.eq(length(filter(build(data).dns.rules, (r) => type(r.domain) == "string" && match(r.domain, /^nexroute-quality-/))), 0);
+});
+
 t.done();
