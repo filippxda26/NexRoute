@@ -379,7 +379,7 @@ t.test("device-scoped sections keep FakeIP and their priority in DNS rules", () 
     let ruleset_dns = q.dns_rule(m, (r) => r.server == "fakeip-server" && has(r.rule_set, port_ruleset.tag) && has(r.source_ip_cidr, "10.0.0.4/32"));
     t.ok(ruleset_dns != null, "rule-set and port bypass keeps FakeIP domain identity");
     t.eq(ruleset_dns.rule_set_domain_only, true, "a rule-set domain limited to a port of its own gets FakeIP as well");
-    t.eq(q.dns_rule(m, (r) => r.server == "dns-server" && has(r.domain_suffix, "example.org") && r.source_ip_cidr == null), null,
+    t.eq(q.dns_rule(m, (r) => r.action == "route" && r.server == "dns-server" && has(r.domain_suffix, "example.org") && r.source_ip_cidr == null), null,
         "a filtered bypass does not change DNS for every device");
     t.ok(q.dns_rule(m, (r) => r.server == "fakeip-server" && has(r.domain_suffix, "example.org") && r.source_ip_cidr == null) != null,
         "a lower global proxy still gives FakeIP to other devices");
@@ -390,8 +390,11 @@ t.test("device-scoped sections keep FakeIP and their priority in DNS rules", () 
 
     let fakeip_rules = filter(m.dns.rules, (r) => r.server == "fakeip-server");
     t.ok(length(fakeip_rules) > 0);
-    for (let rule in fakeip_rules)
-        t.eq(rule.query_type, [ "A", "AAAA" ], "FakeIP rules stay limited to address queries");
+    for (let rule in fakeip_rules) {
+        t.ok(length(rule.query_type) > 0);
+        for (let query in rule.query_type)
+            t.ok(query == "A" || query == "AAAA", "FakeIP rules stay limited to address queries");
+    }
 
     let fallback = q.dns_rule(m, (r) => r.server == "dns-server" && r.type == null && r.domain == null && r.domain_suffix == null &&
         r.domain_regex == null && r.rule_set == null && r.query_type == null && has(r.inbound, "source-dns-in"));

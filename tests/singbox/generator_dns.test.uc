@@ -259,6 +259,45 @@ t.test("MAC devices keep source constraints in DNS and route rules", () => {
     t.ok(q.dns_rule(config, (r) => q.has(r.source_mac_address, "02:00:00:00:00:12")) != null);
 });
 
+t.test("explicit section FakeIP synthesizes AAAA only after real IPv6 is found", () => {
+    let source = "192.168.1.20/32";
+    let config = build({
+        settings: { ...DNS, dns_strategy: "prefer_ipv6" },
+        section: [
+            { ".name": "proxy", enabled: "1", action: "connection",
+                outbound_jsons: [ "{\"type\":\"direct\",\"tag\":\"fixture\"}" ],
+                destinations: "example.org", source_ip_cidr: [ source ],
+                rule_set: [ "https://example.com/domains.srs" ] },
+            { ".name": "direct", enabled: "1", action: "bypass", destinations: "example.org" }
+        ]
+    });
+    let tag = q.ruleset_url(config, "https://example.com/domains.srs").tag;
+    for (let matches in [
+        (r) => q.has(r.domain_suffix, "example.org"),
+        (r) => q.has(r.rule_set, tag)
+    ]) {
+        let at = q.dns_rule_index(config, (r) => r.server == "fakeip-server" &&
+            q.has(r.source_ip_cidr, source) && matches(r));
+        t.ok(at >= 0);
+        let a = config.dns.rules[at];
+        let probe = config.dns.rules[at + 1];
+        let fake6 = config.dns.rules[at + 2];
+        let response = config.dns.rules[at + 3];
+        t.eq(a.query_type, [ "A" ], "IPv4 FakeIP keeps the old behavior");
+        t.eq([ probe.action, probe.server, probe.query_type ], [ "evaluate", "dns-server", [ "AAAA" ] ]);
+        t.ok(matches(probe) && q.has(probe.source_ip_cidr, source));
+        t.eq(probe.rule_set_domain_only, a.rule_set_domain_only);
+        t.eq(fake6, {
+            query_type: [ "AAAA" ], match_response: true, ip_cidr: [ "::/0" ],
+            action: "route", server: "fakeip-server", rewrite_ttl: a.rewrite_ttl
+        }, "only the evaluated response's IPv6 addresses can trigger synthesis");
+        t.eq([ response.action, response.server, response.query_type ], [ "respond", null, [ "AAAA" ] ]);
+        t.ok(matches(response) && q.has(response.source_ip_cidr, source),
+            "empty answers and errors cannot fall through to a lower section");
+    }
+    t.eq(config.dns.strategy, "prefer_ipv6");
+});
+
 t.test("extended FakeIP is opt-in and applies to unmatched address queries of fully routed devices", () => {
     let mac = "02:00:00:00:00:11";
     let sections = [
@@ -337,7 +376,8 @@ t.test("extended FakeIP evaluates real DNS before preserving GeoIP, CIDR and pri
         t.ok(last > fakeip, "no-address DNS responses are returned without synthesis");
     }
     let off = build({ settings: DNS, section });
-    t.eq(q.dns_rule(off, (r) => r.action == "evaluate"), null);
+    t.eq(q.dns_rule(off, (r) => r.action == "evaluate" && device(r)), null,
+        "the extended device evaluation stays opt-in");
 });
 
 t.test("Direct resolves domains and whole devices through the router resolver, unlike Bypass", () => {

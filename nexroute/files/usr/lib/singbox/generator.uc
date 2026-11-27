@@ -1361,14 +1361,39 @@ function add_section_dns_matcher_rule(config, section, matchers, rewrite_ttl) {
         apply_matchers(rule, device_matchers);
         rule.action = "route";
         rule.server = section_dns_server(section);
-        if (rule.server == runtime_constants.FAKEIP_DNS_SERVER_TAG)
-            rule.query_type = FAKEIP_QUERY_TYPES;
         // A query has no destination address or port, so only the domains of a set can match it;
         // the core refuses a set of subnets alone in a DNS rule that reads the whole set.
         if (rule.rule_set != null)
             rule.rule_set_domain_only = true;
         rule.rewrite_ttl = rewrite_ttl;
+        if (rule.server != runtime_constants.FAKEIP_DNS_SERVER_TAG) {
+            push_dns_matcher_rule(config, rule);
+            continue;
+        }
+
+        // Keep ordinary FakeIP A replies. For AAAA, ask the configured real DNS
+        // server first, and synthesize only when its answer contains IPv6.
+        rule.query_type = [ "A" ];
         push_dns_matcher_rule(config, rule);
+        let probe = {
+            ...rule, query_type: [ "AAAA" ], action: "evaluate",
+            server: runtime_constants.DNS_SERVER_TAG
+        };
+        push_dns_matcher_rule(config, probe);
+        // Keep the address test separate from the domain/rule-set matchers:
+        // sing-box ORs domain and destination IP fields in one default rule.
+        push_dns_matcher_rule(config, {
+            query_type: [ "AAAA" ], match_response: true, ip_cidr: [ "::/0" ],
+            action: "route", server: runtime_constants.FAKEIP_DNS_SERVER_TAG, rewrite_ttl
+        });
+        // Only a matching probe can reach this terminal rule. Return its
+        // NODATA/NXDOMAIN response as-is; if evaluation failed, respond fails
+        // rather than falling through to a lower section or inventing IPv6.
+        let response = copy_matchers(probe);
+        delete response.server;
+        delete response.rewrite_ttl;
+        response.action = "respond";
+        push_dns_matcher_rule(config, response);
     }
 }
 
